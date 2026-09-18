@@ -1,0 +1,92 @@
+diff --git a/src/Makefile b/src/Makefile
+index 58b96c3c5..a11b3d0b5 100644
+--- a/src/Makefile
++++ b/src/Makefile
+@@ -636,10 +636,9 @@ CCFLAGS                 := -std=gnu99
+ ifeq ($(UNAME),Android)
+ CFLAGS_NATIVE           := $(CFLAGS)
+ CFLAGS_NATIVE           += -D__ANDROID__
++CFLAGS_NATIVE           += -I$(DEPS_SSE2NEON)
+ LFLAGS_NATIVE           := $(LFLAGS)
+-LFLAGS_NATIVE           += -lpthread
+ LFLAGS_NATIVE           += -ldl
+-LFLAGS_NATIVE           += -lrt
+ LFLAGS_NATIVE           += -lm
+ LFLAGS_NATIVE           += -L$(PREFIX)/lib
+ $(info Android environment detected.)
+diff --git a/src/dynloader.c b/src/dynloader.c
+index c6c60392a..9c4cbbba2 100644
+--- a/src/dynloader.c
++++ b/src/dynloader.c
+@@ -7,7 +7,7 @@
+ #include "types.h"
+ #include "dynloader.h"
+ 
+-#ifndef _WIN
++#if !defined (_WIN) && !defined (__ANDROID__)
+ #include <glob.h>
+ #endif
+ 
+@@ -431,6 +431,7 @@ static size_t hc_dynlib_dirs (char dirs[][HC_DYNLIB_PATH_MAX])
+     }
+   }
+ 
++#if !defined (__ANDROID__)
+   glob_t gl;
+ 
+   if (glob ("/etc/ld.so.conf.d/*.conf", 0, NULL, &gl) == 0)
+@@ -457,6 +458,7 @@ static size_t hc_dynlib_dirs (char dirs[][HC_DYNLIB_PATH_MAX])
+ 
+     globfree (&gl);
+   }
++#endif
+ 
+   hc_dynlib_dir_add (dirs, &dirs_cnt, "/lib");
+   hc_dynlib_dir_add (dirs, &dirs_cnt, "/usr/lib");
+@@ -466,6 +468,7 @@ static size_t hc_dynlib_dirs (char dirs[][HC_DYNLIB_PATH_MAX])
+   return dirs_cnt;
+ }
+ 
++#if !defined (__ANDROID__)
+ static void hc_dynlib_best (const char *pattern, const char *stem, char *best, const size_t best_size, int *best_ver, bool *have)
+ {
+   glob_t gl;
+@@ -495,11 +498,30 @@ static void hc_dynlib_best (const char *pattern, const char *stem, char *best, c
+ 
+   globfree (&gl);
+ }
++#endif
+ 
+ hc_dynlib_t hc_dynlib_open_newest (const char *stem, char *err, const size_t err_size)
+ {
+   if (stem == NULL) return NULL;
+ 
++#if defined (__ANDROID__)
++  char plain[HC_DYNLIB_PATH_MAX];
++
++  snprintf (plain, sizeof (plain), "%s.so", stem);
++
++  hc_dynlib_t lib = hc_dlopen (plain);
++
++  if (lib) return lib;
++
++  if (err == NULL) return NULL;
++  if (err_size == 0) return NULL;
++
++  snprintf (err, err_size, "no %s.so in Android library search path", stem);
++
++  err[err_size - 1] = 0;
++
++  return NULL;
++#else
+   char dirs[HC_DYNLIB_DIR_MAX][HC_DYNLIB_PATH_MAX];
+ 
+   const size_t dirs_cnt = hc_dynlib_dirs (dirs);
+@@ -562,6 +584,7 @@ hc_dynlib_t hc_dynlib_open_newest (const char *stem, char *err, const size_t err
+   err[err_size - 1] = 0;
+ 
+   return NULL;
++#endif
+ }
+ 
+ #endif // _WIN

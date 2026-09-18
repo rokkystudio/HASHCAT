@@ -1,0 +1,12 @@
+# upstream checkout and generated outputs
+/source/
+/build/
+/release/*/package/
+/release/**/*.zip
+/release/**/*.sha256
+
+# IDE/local
+.idea/workspace.xml
+.idea/shelf/
+*.iml
+.DS_Store
