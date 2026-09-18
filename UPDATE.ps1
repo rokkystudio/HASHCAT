@@ -29,24 +29,24 @@ function Invoke-Git([string[]]$GitArgs, [string]$WorkingDirectory = $SourceDir) 
     finally { Pop-Location }
 }
 
+if ([string]::IsNullOrWhiteSpace($Branch)) { $Branch = 'master' }
+
 if (-not (Test-Path (Join-Path $SourceDir '.git'))) {
     if (Test-Path $SourceDir) {
         $entries = Get-ChildItem $SourceDir -Force -ErrorAction SilentlyContinue
         if (($entries | Measure-Object).Count -gt 0) {
-            throw "source exists but is not a git checkout: $SourceDir"
+            if (-not $ForceReset) { throw "source exists but is not a git checkout: $SourceDir" }
+            Remove-Item -Recurse -Force $SourceDir
         }
-    }
-    else {
-        New-Item -ItemType Directory -Force -Path (Split-Path $SourceDir -Parent) | Out-Null
     }
 
     Write-Output "Cloning upstream hashcat source into: $SourceDir"
-    & git clone $RepoUrl $SourceDir
+    # This is intentionally shallow: UPDATE needs the complete working tree sources,
+    # not the full upstream history. It keeps clean-project setup fast and reliable.
+    & git clone --depth 1 --single-branch --branch $Branch $RepoUrl $SourceDir
     if ($LASTEXITCODE -ne 0) { throw "git clone failed with exit code $LASTEXITCODE" }
 }
 
-# Make sure origin points to the intended upstream. This script manages only the
-# upstream checkout in source/, not the wrapper repository itself.
 $currentRemote = ''
 try { $currentRemote = (& git -C $SourceDir remote get-url $Remote 2>$null) } catch {}
 if ([string]::IsNullOrWhiteSpace($currentRemote)) {
@@ -67,36 +67,16 @@ if ($dirty -and $ForceReset) {
 }
 
 Write-Output 'Fetching upstream source, tags and pruning deleted refs.'
-Invoke-Git -GitArgs @('fetch',$Remote,'--tags','--prune')
-
-$isShallow = (& git -C $SourceDir rev-parse --is-shallow-repository).Trim()
-if ($isShallow -eq 'true') {
-    Write-Output 'Repository is shallow; unshallowing to get complete history.'
-    Invoke-Git -GitArgs @('fetch','--unshallow',$Remote)
-}
-
-if ([string]::IsNullOrWhiteSpace($Branch)) {
-    $Branch = (& git -C $SourceDir branch --show-current).Trim()
-}
-if ([string]::IsNullOrWhiteSpace($Branch)) {
-    $remoteHead = (& git -C $SourceDir remote show $Remote | Select-String 'HEAD branch' | Select-Object -First 1).Line
-    if ($remoteHead -match 'HEAD branch:\s*(\S+)') { $Branch = $Matches[1] }
-}
-if ([string]::IsNullOrWhiteSpace($Branch)) { $Branch = 'master' }
-
-Write-Output "Updating branch: $Branch"
+Invoke-Git -GitArgs @('fetch',$Remote,$Branch,'--depth','1','--tags','--prune')
 Invoke-Git -GitArgs @('checkout',$Branch)
 Invoke-Git -GitArgs @('pull','--ff-only',$Remote,$Branch)
 
 if (Test-Path (Join-Path $SourceDir '.gitmodules')) {
     Write-Output 'Updating submodules recursively.'
     Invoke-Git -GitArgs @('submodule','sync','--recursive')
-    Invoke-Git -GitArgs @('submodule','update','--init','--recursive')
+    Invoke-Git -GitArgs @('submodule','update','--init','--recursive','--depth','1')
 }
 
-# Verify that the source checkout contains every source/runtime directory needed
-# for building and packaging the Android runtime. These are source files, not
-# generated build outputs.
 $requiredPaths = @(
     'src',
     'src/Makefile',
@@ -124,6 +104,7 @@ $summary = [ordered]@{
     Remote = (& git -C $SourceDir remote get-url $Remote).Trim()
     Branch = (& git -C $SourceDir branch --show-current).Trim()
     Commit = (& git -C $SourceDir rev-parse HEAD).Trim()
+    Shallow = (& git -C $SourceDir rev-parse --is-shallow-repository).Trim()
     Tags = ((& git -C $SourceDir tag | Measure-Object).Count)
     OpenCLFiles = (Get-ChildItem (Join-Path $SourceDir 'OpenCL') -Recurse -File | Measure-Object).Count
     RuleFiles = (Get-ChildItem (Join-Path $SourceDir 'rules') -Recurse -File | Measure-Object).Count
