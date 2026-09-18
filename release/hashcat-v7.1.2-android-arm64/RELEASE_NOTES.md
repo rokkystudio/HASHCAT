@@ -5,11 +5,11 @@ Prebuilt hashcat runtime package for Android `arm64-v8a`.
 ## Asset
 
 - `hashcat-v7.1.2-android-arm64.zip`
-- SHA-256: `697f3452b642926a402d0e83e1b891fda5ceb3b7b4362d44339ee9d46d513538`
+- SHA-256: `238c3faa62aa528995504e26aca862a33f4b4ddf850bd29af8bf90090dff53b1`
 
 ## Payload
 
-- hashcat executable: 1098448 bytes
+- hashcat executable: 1099136 bytes
 - modules: 598
 - bridges: 4
 - feeds: 6
@@ -23,13 +23,13 @@ Prebuilt hashcat runtime package for Android `arm64-v8a`.
 
 - upstream: `hashcat/hashcat`
 - branch: `master`
-- commit: `1e86dd8c81ed2073791da9ddc0b6181dc0a3b832`
+- commit: `a36879049b91175768a9fff1407c0042ce3e7503`
 - wrapper version tag: `v7.1.2`
 
 Current upstream status at packaging time:
 
 ```text
-## master...origin/master [behind 2]
+## master...origin/master
 ```
 
 ## Notes
