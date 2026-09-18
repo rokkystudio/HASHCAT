@@ -1,0 +1,8 @@
+# Keep patch files byte-stable. Git apply can fail if core.autocrlf turns LF patches into CRLF.
+*.patch text eol=lf
+
+# PowerShell and markdown are text files.
+*.ps1 text
+*.md text
+*.xml text
+*.txt text
