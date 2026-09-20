@@ -1,16 +1,62 @@
 param(
+    [ValidateSet('android', 'android-arm64-v8a', 'windows-x64', 'linux-x64', 'macos-x64', 'macos-arm64', 'macos-universal', 'all')]
+    [string[]]$Target = @('android-arm64-v8a', 'windows-x64'),
     [string]$AndroidAbi = 'arm64-v8a',
     [string]$Msys2Bash = '',
+    [string]$Msys2Root = '',
+    [string]$WslDistro = '',
+    [string]$MakeJobs = '8',
     [string]$AndroidNdk = '',
     [string]$AndroidApi = '26',
-    [string]$VersionTag = 'v7.1.2'
+    [string]$VersionTag = 'v7.1.2',
+    [bool]$Package = $true,
+    [switch]$Clean
 )
-
 $ErrorActionPreference = 'Stop'
 $utf8NoBom = [System.Text.UTF8Encoding]::new($false)
 [Console]::InputEncoding = $utf8NoBom
 [Console]::OutputEncoding = $utf8NoBom
 $OutputEncoding = $utf8NoBom
+$expandedTargetList = [System.Collections.Generic.List[string]]::new()
+foreach ($item in $Target) {
+    switch ($item) {
+        'android' { [void]$expandedTargetList.Add('android-arm64-v8a') }
+        'all' {
+            foreach ($expanded in @('android-arm64-v8a', 'windows-x64', 'linux-x64', 'macos-x64', 'macos-arm64', 'macos-universal')) {
+                [void]$expandedTargetList.Add($expanded)
+            }
+        }
+        default { [void]$expandedTargetList.Add($item) }
+    }
+}
+
+$ExpandedTargets = @($expandedTargetList | Select-Object -Unique)
+$AndroidRequested = $ExpandedTargets -contains 'android-arm64-v8a'
+$DesktopTargets = @($ExpandedTargets | Where-Object { $_ -ne 'android-arm64-v8a' })
+
+function Invoke-DesktopTargets([string[]]$RequestedTargets) {
+    $RequestedTargets = @($RequestedTargets | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+    if ($RequestedTargets.Count -eq 0) { return }
+
+    $desktopScript = Join-Path $ScriptDir 'BUILD-DESKTOP.ps1'
+    if (-not (Test-Path -LiteralPath $desktopScript)) {
+        throw "Desktop build script is missing: $desktopScript"
+    }
+
+    $desktopParams = @{
+        Target = $RequestedTargets
+    }
+    if (-not [string]::IsNullOrWhiteSpace($Msys2Bash)) { $desktopParams.Msys2Bash = $Msys2Bash }
+    if (-not [string]::IsNullOrWhiteSpace($Msys2Root)) { $desktopParams.Msys2Root = $Msys2Root }
+    if (-not [string]::IsNullOrWhiteSpace($WslDistro)) { $desktopParams.WslDistro = $WslDistro }
+    if (-not [string]::IsNullOrWhiteSpace($MakeJobs)) { $desktopParams.MakeJobs = $MakeJobs }
+    if (-not [string]::IsNullOrWhiteSpace($VersionTag)) { $desktopParams.VersionTag = $VersionTag }
+    if ($Clean) { $desktopParams.Clean = $true }
+    if ($Package) { $desktopParams.Package = $true }
+
+    Write-Output "Starting desktop build target(s): $($RequestedTargets -join ', ')"
+    & $desktopScript @desktopParams
+}
 
 function Resolve-Msys2Bash([string]$ExplicitPath) {
     if (-not [string]::IsNullOrWhiteSpace($ExplicitPath)) { return (Resolve-Path $ExplicitPath).Path }
@@ -28,6 +74,21 @@ function Resolve-Msys2Bash([string]$ExplicitPath) {
 
 function Resolve-AndroidNdk([string]$ExplicitPath) {
     if (-not [string]::IsNullOrWhiteSpace($ExplicitPath)) { return (Resolve-Path $ExplicitPath).Path }
+
+    $localProperties = Join-Path $RootDir 'local.properties'
+    if (Test-Path -LiteralPath $localProperties) {
+        foreach ($line in Get-Content -LiteralPath $localProperties) {
+            $trimmed = $line.Trim()
+            if ($trimmed.Length -eq 0 -or $trimmed.StartsWith('#')) { continue }
+            $match = [regex]::Match($trimmed, '^(android\.ndk|android\.ndk\.home|ndk\.dir)\s*=\s*(.+)$')
+            if (-not $match.Success) { continue }
+            $value = $match.Groups[2].Value.Trim().Trim('"').Replace('/', [IO.Path]::DirectorySeparatorChar)
+            if (-not [string]::IsNullOrWhiteSpace($value) -and (Test-Path -LiteralPath $value)) {
+                return (Resolve-Path $value).Path
+            }
+        }
+    }
+
     foreach ($name in @('ANDROID_NDK_HOME', 'ANDROID_NDK_ROOT')) {
         $value = [Environment]::GetEnvironmentVariable($name)
         if (-not [string]::IsNullOrWhiteSpace($value) -and (Test-Path $value)) { return (Resolve-Path $value).Path }
@@ -41,10 +102,33 @@ function Resolve-AndroidNdk([string]$ExplicitPath) {
             if ($latest) { return $latest.FullName }
         }
     }
-    throw 'Android NDK was not found. Pass -AndroidNdk or set ANDROID_NDK_HOME / ANDROID_NDK_ROOT / ANDROID_HOME.'
+    return ''
 }
 
-$RootDir = $PSScriptRoot
+$ScriptDir = $PSScriptRoot
+$RootDir = (Resolve-Path (Join-Path $ScriptDir '..')).Path
+
+$script:HashcatBuildMutex = [System.Threading.Mutex]::new($false, 'Global\HASHCAT_WRAPPER_D_PROJECTS_HASHCAT')
+$script:HashcatBuildLockTaken = $false
+function Release-HashcatBuildLock {
+    if ($script:HashcatBuildLockTaken) {
+        $script:HashcatBuildMutex.ReleaseMutex() | Out-Null
+        $script:HashcatBuildLockTaken = $false
+    }
+    if ($script:HashcatBuildMutex) {
+        $script:HashcatBuildMutex.Dispose()
+        $script:HashcatBuildMutex = $null
+    }
+}
+trap {
+    Release-HashcatBuildLock
+    break
+}
+$script:HashcatBuildLockTaken = $script:HashcatBuildMutex.WaitOne(0)
+if (-not $script:HashcatBuildLockTaken) {
+    throw 'Another HASHCAT build/update/clean process is already running. Close/stop the other run and try again.'
+}
+
 $SourceDir = Join-Path $RootDir 'source'
 $BuildRootDir = Join-Path $RootDir 'build'
 $BuildAbiDir = Join-Path $BuildRootDir $AndroidAbi
@@ -52,8 +136,23 @@ $TempDir = Join-Path $SourceDir '.tmp'
 $PatchFile = Join-Path $RootDir 'patches\hashcat-android-ndk.patch'
 $PatchApplied = $false
 
-$Msys2Bash = Resolve-Msys2Bash $Msys2Bash
+if (-not $AndroidRequested) {
+    try { Invoke-DesktopTargets $DesktopTargets } finally { Release-HashcatBuildLock }
+    return
+}
+
 $AndroidNdk = Resolve-AndroidNdk $AndroidNdk
+if ([string]::IsNullOrWhiteSpace($AndroidNdk)) {
+    if ($DesktopTargets.Count -gt 0) {
+        Write-Warning "Android NDK was not found; skipping android-arm64-v8a and building desktop target(s): $($DesktopTargets -join ', ')"
+        try { Invoke-DesktopTargets $DesktopTargets } finally { Release-HashcatBuildLock }
+        return
+    }
+
+    throw 'Android NDK was not found. Pass -AndroidNdk or set ANDROID_NDK_HOME / ANDROID_NDK_ROOT / ANDROID_HOME.'
+}
+
+$Msys2Bash = Resolve-Msys2Bash $Msys2Bash
 $NdkToolchainBin = Join-Path $AndroidNdk 'toolchains\llvm\prebuilt\windows-x86_64\bin'
 
 if (-not (Test-Path $SourceDir)) { throw "hashcat source directory is missing: $SourceDir" }
@@ -95,11 +194,12 @@ try {
     $makeCommand = @(
         'set -e',
         "cd $sourceForMsys",
+        'mkdir -p obj modules bridges feeds',
         "export PATH=${ndkBinForMsys}:`$PATH",
         "export TMPDIR=$tempForMsys",
         "export TMP=$tempForMsys",
         "export TEMP=$tempForMsys",
-        "make hashcat modules bridges feeds UNAME=Android IS_AARCH64=1 VERSION_TAG=$VersionTag CC=aarch64-linux-android$AndroidApi-clang CXX=aarch64-linux-android$AndroidApi-clang++ AR=llvm-ar"
+        "make hashcat modules bridges feeds UNAME=Android IS_AARCH64=1 VERSION_TAG=$VersionTag CC=aarch64-linux-android$AndroidApi-clang CXX=aarch64-linux-android$AndroidApi-clang++ AR=llvm-ar PYTHON_MP_SKIP_SO=true PYTHON_SP_SKIP_SO=true"
     ) -join '; '
 
     $skipNoticeRegex = 'Skipping (freethreaded|regular) plugin (72000|73000|74000)'
@@ -158,6 +258,10 @@ try {
 finally {
     if ($PatchApplied) {
         Write-Output 'Reverting temporary wrapper Android patch.'
-        git -C $SourceDir checkout -- src/Makefile src/dynloader.c
+        git -C $SourceDir checkout -- src/Makefile src/dynloader.c modules feeds bridges obj
     }
 }
+if ($DesktopTargets.Count -gt 0) {
+    Invoke-DesktopTargets $DesktopTargets
+}
+Release-HashcatBuildLock

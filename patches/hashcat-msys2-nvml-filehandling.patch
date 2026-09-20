@@ -1,0 +1,12 @@
+diff --git a/src/ext_nvml.c b/src/ext_nvml.c
+index cfc098485..a44ad9faf 100644
+--- a/src/ext_nvml.c
++++ b/src/ext_nvml.c
+@@ -8,6 +8,7 @@
+ #include "memory.h"
+ #include "shared.h"
+ #include "event.h"
++#include "filehandling.h"
+ #include "ext_nvml.h"
+ 
+ #include "dynloader.h"

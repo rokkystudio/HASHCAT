@@ -17,7 +17,8 @@ $utf8NoBom = [System.Text.UTF8Encoding]::new($false)
 [Console]::OutputEncoding = $utf8NoBom
 $OutputEncoding = $utf8NoBom
 
-$RootDir = $PSScriptRoot
+$ScriptDir = $PSScriptRoot
+$RootDir = (Resolve-Path (Join-Path $ScriptDir '..')).Path
 $SourceDir = Join-Path $RootDir 'source'
 
 function Invoke-Git([string[]]$GitArgs, [string]$WorkingDirectory = $SourceDir) {
@@ -68,8 +69,11 @@ if ($dirty -and $ForceReset) {
 
 Write-Output 'Fetching upstream source, tags and pruning deleted refs.'
 Invoke-Git -GitArgs @('fetch',$Remote,$Branch,'--depth','1','--tags','--prune')
-Invoke-Git -GitArgs @('checkout',$Branch)
-Invoke-Git -GitArgs @('pull','--ff-only',$Remote,$Branch)
+
+# This wrapper keeps source as a disposable upstream checkout. After the dirty
+# working tree guard above, resetting to the fetched upstream branch is safer
+# than pull --ff-only because hashcat upstream can force-update shallow refs.
+Invoke-Git -GitArgs @('checkout','-B',$Branch,"$Remote/$Branch")
 
 if (Test-Path (Join-Path $SourceDir '.gitmodules')) {
     Write-Output 'Updating submodules recursively.'
@@ -115,7 +119,7 @@ $summary = [ordered]@{
 [pscustomobject]$summary | Format-List
 
 if ($BuildAfterUpdate) {
-    $buildScript = Join-Path $RootDir 'BUILD.ps1'
+    $buildScript = Join-Path $ScriptDir 'BUILD.ps1'
     if (-not (Test-Path $buildScript)) { throw "BUILD.ps1 is missing: $buildScript" }
     & $buildScript -AndroidAbi $AndroidAbi -Msys2Bash $Msys2Bash -AndroidNdk $AndroidNdk -AndroidApi $AndroidApi -VersionTag $VersionTag
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

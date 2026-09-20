@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="BUILD" type="ShConfigurationType">
-    <option name="SCRIPT_TEXT" value="&amp; '$PROJECT_DIR$\scripts\BUILD.ps1'" />
+  <configuration default="false" name="BUILD MACOS UNIVERSAL" type="ShConfigurationType">
+    <option name="SCRIPT_TEXT" value="&amp; '$PROJECT_DIR$\scripts\BUILD-MACOS-UNIVERSAL.ps1'" />
     <option name="INDEPENDENT_SCRIPT_PATH" value="true" />
     <option name="SCRIPT_PATH" value="C:\WINDOWS\System32\WindowsPowerShell\v1.0\powershell.exe" />
     <option name="SCRIPT_OPTIONS" value="-NoProfile -ExecutionPolicy Bypass" />

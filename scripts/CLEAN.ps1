@@ -28,6 +28,21 @@ function Resolve-Msys2Bash([string]$ExplicitPath) {
 
 function Resolve-AndroidNdk([string]$ExplicitPath) {
     if (-not [string]::IsNullOrWhiteSpace($ExplicitPath)) { return (Resolve-Path $ExplicitPath).Path }
+
+    $localProperties = Join-Path $RootDir 'local.properties'
+    if (Test-Path -LiteralPath $localProperties) {
+        foreach ($line in Get-Content -LiteralPath $localProperties) {
+            $trimmed = $line.Trim()
+            if ($trimmed.Length -eq 0 -or $trimmed.StartsWith('#')) { continue }
+            $match = [regex]::Match($trimmed, '^(android\.ndk|android\.ndk\.home|ndk\.dir)\s*=\s*(.+)$')
+            if (-not $match.Success) { continue }
+            $value = $match.Groups[2].Value.Trim().Trim('"').Replace('/', [IO.Path]::DirectorySeparatorChar)
+            if (-not [string]::IsNullOrWhiteSpace($value) -and (Test-Path -LiteralPath $value)) {
+                return (Resolve-Path $value).Path
+            }
+        }
+    }
+
     foreach ($name in @('ANDROID_NDK_HOME', 'ANDROID_NDK_ROOT')) {
         $value = [Environment]::GetEnvironmentVariable($name)
         if (-not [string]::IsNullOrWhiteSpace($value) -and (Test-Path $value)) { return (Resolve-Path $value).Path }
@@ -44,7 +59,8 @@ function Resolve-AndroidNdk([string]$ExplicitPath) {
     return ''
 }
 
-$RootDir = $PSScriptRoot
+$ScriptDir = $PSScriptRoot
+$RootDir = (Resolve-Path (Join-Path $ScriptDir '..')).Path
 $SourceDir = Join-Path $RootDir 'source'
 $BuildRootDir = Join-Path $RootDir 'build'
 $TempDir = Join-Path $SourceDir '.tmp'
@@ -76,7 +92,7 @@ if (Test-Path $SourceDir) {
     )) {
         if (Test-Path $p) { Remove-Item -Recurse -Force -Path $p }
     }
-    git -C $SourceDir checkout -- src/Makefile src/dynloader.c 2>$null
+    git -C $SourceDir checkout -- src/Makefile src/dynloader.c modules feeds bridges obj 2>$null
 }
 
 if (Test-Path $BuildRootDir) { Remove-Item -Recurse -Force -Path $BuildRootDir }
