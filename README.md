@@ -37,16 +37,30 @@ HASHCAT\
 
 ## Основные команды
 
-Единый `BUILD.ps1` собирает выбранные target'ы. По умолчанию он собирает Android `arm64-v8a` и Windows x64 portable runtime:
+Единый `BUILD.ps1` собирает выбранные target'ы. По умолчанию он собирает все Android ABI (`arm64-v8a`, `armeabi-v7a`, `x86_64`, `x86`) и Windows x64 portable runtime:
 
 ```powershell
 .\scripts\BUILD.ps1
 ```
 
+Собрать все Android ABI:
+
+```powershell
+.\scripts\BUILD-ANDROID.ps1 -Abi all
+```
+
 Собрать только Android `arm64-v8a`:
 
 ```powershell
-.\scripts\BUILD.ps1 -Target android-arm64-v8a
+.\scripts\BUILD-ANDROID-ARM64.ps1
+```
+
+Собрать отдельные Android ABI:
+
+```powershell
+.\scripts\BUILD-ANDROID-ARMV7.ps1
+.\scripts\BUILD-ANDROID-X86_64.ps1
+.\scripts\BUILD-ANDROID-X86.ps1
 ```
 
 Собрать только Windows x64 portable runtime:
