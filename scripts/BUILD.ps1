@@ -63,6 +63,23 @@ function Add-UniqueTarget([System.Collections.Generic.List[string]]$List, [strin
     if (-not $List.Contains($Item)) { [void]$List.Add($Item) }
 }
 
+function Invoke-GitApplyCheck([string]$PatchPath, [switch]$Reverse) {
+    $gitApplyErrorActionPreference = $ErrorActionPreference
+    try {
+        $ErrorActionPreference = 'Continue'
+        $arguments = @('apply')
+        if ($Reverse) { $arguments += '--reverse' }
+        $arguments += @('--check', '--ignore-space-change', '--ignore-whitespace', $PatchPath)
+
+        & git @arguments *> $null
+
+        return $LASTEXITCODE
+    }
+    finally {
+        $ErrorActionPreference = $gitApplyErrorActionPreference
+    }
+}
+
 function Convert-AndroidAbiToTarget([string]$Abi) {
     switch ($Abi) {
         'arm64-v8a' { return 'android-arm64-v8a' }
@@ -73,6 +90,69 @@ function Convert-AndroidAbiToTarget([string]$Abi) {
     }
 }
 
+<#
+.SYNOPSIS
+Checks whether the current Windows host has a runnable default WSL distribution.
+
+.DESCRIPTION
+Runs a no-op bash command through wsl.exe and returns true only when the default distribution can execute Linux build commands.
+#>
+function Test-WslBuildHost {
+    if (-not [System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform([System.Runtime.InteropServices.OSPlatform]::Windows)) { return $false }
+    if (-not (Get-Command wsl.exe -ErrorAction SilentlyContinue)) { return $false }
+
+    $wslErrorActionPreference = $ErrorActionPreference
+    try {
+        $ErrorActionPreference = 'Continue'
+        & wsl.exe -- bash -lc true *> $null
+        return $LASTEXITCODE -eq 0
+    }
+    catch {
+        return $false
+    }
+    finally {
+        $ErrorActionPreference = $wslErrorActionPreference
+    }
+}
+
+<#
+.SYNOPSIS
+Returns desktop build targets supported by the current host.
+
+.DESCRIPTION
+Windows builds windows-x64 and adds linux-x64 when a default WSL distribution can run bash. Linux builds linux-x64. macOS builds all macOS variants.
+#>
+function Get-SupportedDesktopTargets {
+    if ([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform([System.Runtime.InteropServices.OSPlatform]::Windows)) {
+        $targets = @('windows-x64')
+        if (Test-WslBuildHost) {
+            $targets += 'linux-x64'
+        }
+        else {
+            Write-Warning 'Skipping linux-x64 for -Target all because no runnable default WSL distribution is available.'
+        }
+        Write-Warning 'Skipping macOS targets for -Target all because the current host is Windows.'
+        return $targets
+    }
+
+    if ([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform([System.Runtime.InteropServices.OSPlatform]::Linux)) {
+        return @('linux-x64')
+    }
+
+    if ([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform([System.Runtime.InteropServices.OSPlatform]::OSX)) {
+        return @('macos-x64', 'macos-arm64', 'macos-universal')
+    }
+
+    return @()
+}
+
+<#
+.SYNOPSIS
+Expands aggregate build targets into concrete targets.
+
+.DESCRIPTION
+Expands android and android-all into Android ABI targets. The all target includes every Android ABI and only desktop targets supported by the current host.
+#>
 function Expand-BuildTargets([string[]]$RequestedTargets, [string]$DefaultAndroidAbi) {
     $expanded = [System.Collections.Generic.List[string]]::new()
 
@@ -84,7 +164,7 @@ function Expand-BuildTargets([string[]]$RequestedTargets, [string]$DefaultAndroi
             }
             'all' {
                 foreach ($targetName in $AndroidTargetSpecs.Keys) { Add-UniqueTarget $expanded $targetName }
-                foreach ($targetName in @('windows-x64', 'linux-x64', 'macos-x64', 'macos-arm64', 'macos-universal')) { Add-UniqueTarget $expanded $targetName }
+                foreach ($targetName in (Get-SupportedDesktopTargets)) { Add-UniqueTarget $expanded $targetName }
             }
             default { Add-UniqueTarget $expanded $item }
         }
@@ -159,6 +239,15 @@ function Resolve-AndroidNdk([string]$ExplicitPath) {
             if ($latest) { return $latest.FullName }
         }
     }
+
+    if (-not [string]::IsNullOrWhiteSpace($env:LOCALAPPDATA)) {
+        $ndkRoot = Join-Path $env:LOCALAPPDATA 'Android\Sdk\ndk'
+        if (Test-Path $ndkRoot) {
+            $latest = Get-ChildItem $ndkRoot -Directory | Sort-Object Name -Descending | Select-Object -First 1
+            if ($latest) { return $latest.FullName }
+        }
+    }
+
     return ''
 }
 
@@ -174,17 +263,53 @@ function New-DirectoryPackage([string]$Directory, [string]$Platform) {
     Copy-Item -Recurse -Force -Path (Join-Path $Directory '*') -Destination $stagingDir
 
     $files = @(Get-ChildItem -LiteralPath $stagingDir -Recurse -File)
+    $stagingFullPath = [System.IO.Path]::GetFullPath($stagingDir).TrimEnd([System.IO.Path]::DirectorySeparatorChar, [System.IO.Path]::AltDirectorySeparatorChar)
     if ($files.Count -eq 0) { throw "Cannot package empty directory: $Directory" }
 
+    Add-Type -AssemblyName System.IO.Compression
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+
     if (Test-Path $archive) { Remove-Item -Force -Path $archive }
-    Compress-Archive -Path (Join-Path $stagingDir '*') -DestinationPath $archive -Force
+
+    $archiveStream = [System.IO.File]::Open($archive, [System.IO.FileMode]::CreateNew, [System.IO.FileAccess]::ReadWrite, [System.IO.FileShare]::None)
+    try {
+        $zip = [System.IO.Compression.ZipArchive]::new($archiveStream, [System.IO.Compression.ZipArchiveMode]::Create, $false)
+        try {
+            foreach ($file in $files) {
+                $fileFullPath = [System.IO.Path]::GetFullPath($file.FullName)
+                $relativePath = $fileFullPath.Substring($stagingFullPath.Length).TrimStart([System.IO.Path]::DirectorySeparatorChar, [System.IO.Path]::AltDirectorySeparatorChar).Replace('\', '/')
+                $entry = $zip.CreateEntry($relativePath, [System.IO.Compression.CompressionLevel]::Optimal)
+
+                $sourceStream = [System.IO.File]::Open($file.FullName, [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read, [System.IO.FileShare]::ReadWrite -bor [System.IO.FileShare]::Delete)
+                try {
+                    $entryStream = $entry.Open()
+                    try {
+                        $sourceStream.CopyTo($entryStream)
+                    }
+                    finally {
+                        $entryStream.Dispose()
+                    }
+                }
+                finally {
+                    $sourceStream.Dispose()
+                }
+            }
+        }
+        finally {
+            $zip.Dispose()
+        }
+    }
+    finally {
+        $archiveStream.Dispose()
+    }
+
     Remove-Item -Recurse -Force -Path $stagingDir
 
     return $archive
 }
 
 function Reset-AndroidSourceOutputs([string]$SourceDirectory) {
-    git -C $SourceDirectory clean -fdx -- obj modules bridges feeds *> $null
+    git -C $SourceDirectory clean -fdx -- .tmp obj modules bridges feeds *> $null
     git -C $SourceDirectory checkout -- obj modules bridges feeds *> $null
     foreach ($fileName in @('hashcat', 'hashcat.exe', 'hashcat.bin')) {
         $path = Join-Path $SourceDirectory $fileName
@@ -218,6 +343,9 @@ function Invoke-AndroidTarget([pscustomobject]$Config, [string]$ResolvedAndroidN
     if ($patchedTypesText -ne $typesText) {
         [IO.File]::WriteAllText($typesHeader, $patchedTypesText, $utf8NoBom)
     }
+    if ((Get-Content -LiteralPath $typesHeader -Raw) -match 'typedef\s+struct\s+user\s*\{') {
+        throw 'Android struct user collision remains in include/types.h'
+    }
 
     # Android i686 NDK exposes CPUID helpers in cpuid.h, but upstream cpu_features.c does not include it explicitly.
     $cpuFeaturesSource = Join-Path $SourceDir 'src\cpu_features.c'
@@ -233,6 +361,146 @@ function Invoke-AndroidTarget([pscustomobject]$Config, [string]$ResolvedAndroidN
         $cpuFeaturesText = $cpuFeaturesText.Replace('#include "cpu_features.h"', $cpuFeaturesInclude)
         [IO.File]::WriteAllText($cpuFeaturesSource, $cpuFeaturesText, $utf8NoBom)
     }
+
+    # Android cannot execute a copy from writable app data. The app runs the packaged
+    # executable from nativeLibraryDir and points Hashcat at its extracted runtime tree.
+    $mainSource = Join-Path $SourceDir 'src\main.c'
+    $mainText = Get-Content -LiteralPath $mainSource -Raw
+    if ($mainText -notmatch 'HASHCAT_SHARED_FOLDER') {
+        $sharedFolderPattern = '(?ms)^  #if defined \(SHARED_FOLDER\)\r?\n  shared_folder = SHARED_FOLDER;\r?\n  #endif'
+        $androidSharedFolderBlock = @'
+  #if defined (SHARED_FOLDER)
+  shared_folder = SHARED_FOLDER;
+  #endif
+
+  #if defined (__ANDROID__)
+  const char *android_shared_folder = getenv ("HASHCAT_SHARED_FOLDER");
+
+  if (android_shared_folder != NULL)
+  {
+    if (android_shared_folder[0] != 0) shared_folder = android_shared_folder;
+  }
+  #endif
+'@
+        $patchedMainText = [regex]::Replace($mainText, $sharedFolderPattern, $androidSharedFolderBlock, 1)
+        if ($patchedMainText -eq $mainText) {
+            throw 'Unable to locate shared_folder initialization in src/main.c'
+        }
+        [IO.File]::WriteAllText($mainSource, $patchedMainText, $utf8NoBom)
+    }
+
+    # Android runs the frontend from read-only nativeLibraryDir while shared runtime and mutable
+    # state live under the application's files directory supplied through HASHCAT_SHARED_FOLDER.
+    $folderSource = Join-Path $SourceDir 'src\folder.c'
+    $folderText = Get-Content -LiteralPath $folderSource -Raw
+    if ($folderText -notmatch 'HASHCAT_ANDROID_SHARED_ROOT') {
+        $folderPattern = '(?m)^  if \(strcmp \(install_dir, resolved_install_folder\) == 0\)$'
+        $androidFolderBlock = @'
+  #if defined (__ANDROID__)
+  /* HASHCAT_ANDROID_SHARED_ROOT */
+  if ((shared_folder != NULL) && (shared_folder[0] != 0))
+  {
+    profile_dir = hcstrdup (shared_folder);
+    cache_dir   = hcstrdup (shared_folder);
+    session_dir = hcstrdup (shared_folder);
+    shared_dir  = hcstrdup (shared_folder);
+  }
+  else
+  #endif
+  if (strcmp (install_dir, resolved_install_folder) == 0)
+'@
+        $patchedFolderText = [regex]::Replace($folderText, $folderPattern, $androidFolderBlock, 1)
+        if ($patchedFolderText -eq $folderText) {
+            throw 'Unable to locate Android folder configuration insertion point in src/folder.c'
+        }
+        [IO.File]::WriteAllText($folderSource, $patchedFolderText, $utf8NoBom)
+    }
+
+    # Android does not use the desktop versioned-library directory scan.
+    $dynloaderSource = Join-Path $SourceDir 'src\dynloader.c'
+    $dynloaderText = Get-Content -LiteralPath $dynloaderSource -Raw
+    if ($dynloaderText -notmatch '#if !defined \(__ANDROID__\)\r?\nstatic bool hc_dynlib_ver_parse') {
+        $dynloaderText = $dynloaderText.Replace(
+            'static bool hc_dynlib_ver_parse (const char *name, const char *stem, int *ver)',
+            ('#if !defined (__ANDROID__)' + [Environment]::NewLine + 'static bool hc_dynlib_ver_parse (const char *name, const char *stem, int *ver)')
+        )
+        $dynloaderText = [regex]::Replace(
+            $dynloaderText,
+            '(?m)^#if !defined \(__ANDROID__\)\r?\n(?=static void hc_dynlib_best)',
+            '',
+            1
+        )
+        if ($dynloaderText -notmatch '#if !defined \(__ANDROID__\)\r?\nstatic bool hc_dynlib_ver_parse') {
+            throw 'Unable to isolate desktop dynamic-loader helpers in src/dynloader.c'
+        }
+        [IO.File]::WriteAllText($dynloaderSource, $dynloaderText, $utf8NoBom)
+    }
+
+    # -fno-plt is not used by Android NDK targets and Clang reports it for ARMv7 compilation units.
+    $makefileSource = Join-Path $SourceDir 'src\Makefile'
+    $makefileText = Get-Content -LiteralPath $makefileSource -Raw
+    if ($makefileText -notmatch 'ifneq \(\$\(UNAME\),Android\)\r?\nCFLAGS\s+\+= -fno-plt') {
+        $fnoPltPattern = '(?m)^ifeq \(\$\(and \$\(filter MSYS2,\$\(UNAME\)\),\$\(filter 1,\$\(CC_NATIVE_CLANG\)\)\),\)\r?\nCFLAGS\s+\+= -fno-plt\r?\nendif$'
+        $androidFnoPltBlock = @'
+ifeq ($(and $(filter MSYS2,$(UNAME)),$(filter 1,$(CC_NATIVE_CLANG))),)
+ifneq ($(UNAME),Android)
+CFLAGS                  += -fno-plt
+endif
+endif
+'@
+        $patchedMakefileText = [regex]::Replace($makefileText, $fnoPltPattern, $androidFnoPltBlock, 1)
+        if ($patchedMakefileText -eq $makefileText) {
+            throw 'Unable to locate -fno-plt configuration in src/Makefile'
+        }
+        [IO.File]::WriteAllText($makefileSource, $patchedMakefileText, $utf8NoBom)
+    }
+
+    # Host CPU tuning describes the build machine and is not part of Android cross-target ABI selection.
+    $makefileText = Get-Content -LiteralPath $makefileSource -Raw
+    if ($makefileText -notmatch 'ifneq \(\$\(UNAME\),Android\)\r?\nCFLAGS\s+\+= \$\(CFLAGS_HOST_ONLY\)') {
+        $hostFlagsPattern = '(?m)^CFLAGS\s+\+= \$\(CFLAGS_HOST_ONLY\)$'
+        $androidHostFlagsBlock = @'
+ifneq ($(UNAME),Android)
+CFLAGS                  += $(CFLAGS_HOST_ONLY)
+endif
+'@
+        $patchedMakefileText = [regex]::Replace($makefileText, $hostFlagsPattern, $androidHostFlagsBlock, 1)
+        if ($patchedMakefileText -eq $makefileText) {
+            throw 'Unable to isolate host-only CPU flags from Android targets in src/Makefile'
+        }
+        [IO.File]::WriteAllText($makefileSource, $patchedMakefileText, $utf8NoBom)
+    }
+
+    # GCC-compatible Android ARM targets do not implement the x86 fastcall calling convention.
+    $scryptPortableSource = Join-Path $SourceDir 'deps\scrypt-jane-master\code\scrypt-jane-portable.h'
+    $scryptPortableText = Get-Content -LiteralPath $scryptPortableSource -Raw
+    if ($scryptPortableText -notmatch 'defined\(__ANDROID__\).*defined\(__i386__\)') {
+        $fastcallPattern = '(?m)^\t#undef FASTCALL\r?\n\t#if \(COMPILER_GCC >= 30400\)\r?\n\t\t#define FASTCALL __attribute__\(\(fastcall\)\)\r?\n\t#else\r?\n\t\t#define FASTCALL\r?\n\t#endif$'
+        $androidFastcallBlock = @'
+	#undef FASTCALL
+	#if defined(__ANDROID__) && !defined(__i386__) && !defined(__x86_64__)
+		#define FASTCALL
+	#elif (COMPILER_GCC >= 30400)
+		#define FASTCALL __attribute__((fastcall))
+	#else
+		#define FASTCALL
+	#endif
+'@
+        $patchedScryptPortableText = [regex]::Replace($scryptPortableText, $fastcallPattern, $androidFastcallBlock, 1)
+        if ($patchedScryptPortableText -eq $scryptPortableText) {
+            throw 'Unable to locate FASTCALL configuration in scrypt-jane-portable.h'
+        }
+        [IO.File]::WriteAllText($scryptPortableSource, $patchedScryptPortableText, $utf8NoBom)
+    }
+
+    # bypass_delay is stored as u32 while the elapsed timer uses time_t.
+    $monitorSource = Join-Path $SourceDir 'src\monitor.c'
+    $monitorText = Get-Content -LiteralPath $monitorSource -Raw
+    $monitorText = $monitorText.Replace(
+        'if ((status_ctx->timer_bypass_cur - status_ctx->timer_bypass_start) >= user_options->bypass_delay)',
+        'if ((status_ctx->timer_bypass_cur - status_ctx->timer_bypass_start) >= (time_t) user_options->bypass_delay)'
+    )
+    [IO.File]::WriteAllText($monitorSource, $monitorText, $utf8NoBom)
 
     # hashcat's Rust bridge rules can build host .dll/.so plugins, but they do not currently cross-build
     # Rust sub-plugins for Android ABIs. Keep Android artifacts native/NDK-only instead of mixing host Rust output.
@@ -251,7 +519,8 @@ function Invoke-AndroidTarget([pscustomobject]$Config, [string]$ResolvedAndroidN
         "export TMPDIR=$tempForMsys",
         "export TMP=$tempForMsys",
         "export TEMP=$tempForMsys",
-        "make hashcat modules bridges feeds UNAME=Android VERSION_TAG=$VersionTag CC=$cc CXX=$cxx AR=llvm-ar $($makeVars -join ' ')"
+        "make -j $MakeJobs hashcat UNAME=Android PRODUCTION=1 VERSION_TAG=$VersionTag CC=$cc CXX=$cxx AR=llvm-ar $($makeVars -join ' ')",
+        "make -j $MakeJobs modules bridges feeds UNAME=Android PRODUCTION=1 VERSION_TAG=$VersionTag CC=$cc CXX=$cxx AR=llvm-ar $($makeVars -join ' ')"
     ) -join '; '
 
     $skipNoticeRegex = 'Skipping (freethreaded|regular) plugin (72000|73000|74000)'
@@ -265,8 +534,16 @@ function Invoke-AndroidTarget([pscustomobject]$Config, [string]$ResolvedAndroidN
     $filteredCommand = "$makeCommand 2>&1 | grep -v -E '$skipNoticeRegex'; exit `${PIPESTATUS[0]}"
 
     Write-Output "Starting Android build: $($Config.Abi)"
-    & $ResolvedMsys2Bash -lc $filteredCommand
-    if ($LASTEXITCODE -ne 0) { throw "hashcat Android build failed for $($Config.Abi) with exit code $LASTEXITCODE" }
+    $buildErrorActionPreference = $ErrorActionPreference
+    try {
+        $ErrorActionPreference = 'Continue'
+        & $ResolvedMsys2Bash -lc $filteredCommand
+        $buildExitCode = $LASTEXITCODE
+    }
+    finally {
+        $ErrorActionPreference = $buildErrorActionPreference
+    }
+    if ($buildExitCode -ne 0) { throw "hashcat Android build failed for $($Config.Abi) with exit code $buildExitCode" }
 
     if (Test-Path $buildAbiDir) { Remove-Item -Recurse -Force -Path $buildAbiDir }
     New-Item -ItemType Directory -Force -Path $buildAbiDir | Out-Null
@@ -331,7 +608,7 @@ $ExpandedTargets = Expand-BuildTargets $Target $AndroidAbi
 $AndroidTargets = @($ExpandedTargets | Where-Object { $AndroidTargetSpecs.Contains($_) })
 $DesktopTargets = @($ExpandedTargets | Where-Object { -not $AndroidTargetSpecs.Contains($_) })
 
-$buildMutex = [System.Threading.Mutex]::new($false, 'Global\HASHCAT_WRAPPER_D_PROJECTS_HASHCAT')
+$buildMutex = [System.Threading.Mutex]::new($false, 'Global\HASHCAT_WRAPPER_D_PROJECTS_HASHCAT_ANDROID_RUNTIME_V2')
 $lockTaken = $false
 $patchApplied = $false
 
@@ -360,17 +637,18 @@ try {
             if (Test-Path $PatchFile) {
                 Push-Location $SourceDir
                 try {
-                    git apply --check $PatchFile *> $null
-                    if ($LASTEXITCODE -eq 0) {
+                    $applyCheckExitCode = Invoke-GitApplyCheck $PatchFile
+                    if ($applyCheckExitCode -eq 0) {
                         Write-Output "Applying wrapper Android patch: $PatchFile"
                         git apply $PatchFile
                         if ($LASTEXITCODE -ne 0) { throw "git apply failed for: $PatchFile" }
                         $patchApplied = $true
                     }
                     else {
-                        git apply --reverse --check $PatchFile *> $null
-                        if ($LASTEXITCODE -eq 0) {
+                        $reverseCheckExitCode = Invoke-GitApplyCheck $PatchFile -Reverse
+                        if ($reverseCheckExitCode -eq 0) {
                             Write-Output 'Wrapper Android patch is already applied.'
+                            $patchApplied = $true
                         }
                         else {
                             throw "Wrapper Android patch cannot be applied cleanly: $PatchFile"
@@ -394,10 +672,27 @@ finally {
     if (Test-Path $SourceDir) {
         if ($patchApplied) {
             Write-Output 'Reverting temporary wrapper Android patch.'
-            git -C $SourceDir checkout -- src/Makefile src/dynloader.c include/types.h src/cpu_features.c modules feeds bridges obj 2>$null
+            git -C $SourceDir checkout -- src/Makefile src/dynloader.c src/main.c src/folder.c src/monitor.c include/types.h src/cpu_features.c deps/scrypt-jane-master/code/scrypt-jane-portable.h modules feeds bridges obj 2>$null
         }
-        git -C $SourceDir clean -fdx -- obj modules bridges feeds 2>$null | Out-Null
-        git -C $SourceDir checkout -- include/types.h src/cpu_features.c obj modules bridges feeds 2>$null
+        $restoreErrorActionPreference = $ErrorActionPreference
+        try {
+            $ErrorActionPreference = 'Continue'
+            git -C $SourceDir clean -fdx -- .tmp obj modules bridges feeds 2>$null | Out-Null
+            if ($LASTEXITCODE -ne 0) {
+                Start-Sleep -Milliseconds 500
+                git -C $SourceDir clean -fdx -- .tmp obj modules bridges feeds 2>$null | Out-Null
+                if ($LASTEXITCODE -ne 0) {
+                    Write-Warning 'Generated Android build artifacts could not be completely removed.'
+                }
+            }
+            git -C $SourceDir checkout -- src/main.c src/folder.c src/monitor.c include/types.h src/cpu_features.c deps/scrypt-jane-master/code/scrypt-jane-portable.h obj modules bridges feeds 2>$null
+            if ($LASTEXITCODE -ne 0) {
+                Write-Warning 'Generated Android source changes could not be completely restored.'
+            }
+        }
+        finally {
+            $ErrorActionPreference = $restoreErrorActionPreference
+        }
     }
     if ($lockTaken) { $buildMutex.ReleaseMutex() | Out-Null }
     if ($buildMutex) { $buildMutex.Dispose() }

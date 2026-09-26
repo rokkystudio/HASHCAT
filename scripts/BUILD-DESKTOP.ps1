@@ -60,6 +60,84 @@ function Test-MacOsHost
 
 <#
 .SYNOPSIS
+Checks whether Windows has a runnable default WSL distribution.
+
+.DESCRIPTION
+Runs a no-op bash command through wsl.exe and returns true only when Linux build commands can execute in the default distribution.
+#>
+function Test-WslBuildHost
+{
+    if (-not (Test-WindowsHost))
+    {
+        return $false
+    }
+
+    if (-not (Get-Command wsl.exe -ErrorAction SilentlyContinue))
+    {
+        return $false
+    }
+
+    $wslErrorActionPreference = $ErrorActionPreference
+
+    try
+    {
+        $ErrorActionPreference = 'Continue'
+        & wsl.exe -- bash -lc true *> $null
+
+        return $LASTEXITCODE -eq 0
+    }
+    catch
+    {
+        return $false
+    }
+    finally
+    {
+        $ErrorActionPreference = $wslErrorActionPreference
+    }
+}
+
+<#
+.SYNOPSIS
+Returns desktop targets supported by the current host.
+
+.DESCRIPTION
+Windows builds windows-x64 and adds linux-x64 when WSL can execute bash. Linux builds linux-x64. macOS builds all macOS variants.
+#>
+function Get-SupportedDesktopTargets
+{
+    if (Test-WindowsHost)
+    {
+        $targets = @('windows-x64')
+
+        if (Test-WslBuildHost)
+        {
+            $targets += 'linux-x64'
+        }
+        else
+        {
+            Write-Warning 'Skipping linux-x64 for -Target all because no runnable default WSL distribution is available.'
+        }
+
+        Write-Warning 'Skipping macOS targets for -Target all because the current host is Windows.'
+
+        return $targets
+    }
+
+    if (Test-LinuxHost)
+    {
+        return @('linux-x64')
+    }
+
+    if (Test-MacOsHost)
+    {
+        return @('macos-x64', 'macos-arm64', 'macos-universal')
+    }
+
+    return @()
+}
+
+<#
+.SYNOPSIS
 Returns an absolute path for an existing or planned filesystem entry.
 
 .DESCRIPTION
@@ -204,19 +282,19 @@ function ConvertFrom-MsysPath([string]$Path, [string]$Root)
 Converts a Windows path into a WSL path.
 
 .DESCRIPTION
-Maps D:\dir\file to /mnt/d/dir/file for Linux builds executed through WSL.
+Validates an absolute Windows drive-letter path and maps D:\dir\file to /mnt/d/dir/file for Linux builds executed through WSL.
 #>
 function ConvertTo-WslPath([string]$Path)
 {
     $absolute = Resolve-AbsolutePath $Path
 
-    if ($absolute -notmatch '^([A-Za-z]):\(.*)$')
+    if ($absolute.Length -lt 3 -or -not [char]::IsLetter($absolute[0]) -or $absolute[1] -ne ':' -or $absolute[2] -ne [System.IO.Path]::DirectorySeparatorChar)
     {
         throw "WSL path conversion expects a drive-letter path: $absolute"
     }
 
-    $drive = $matches[1].ToLowerInvariant()
-    $tail = $matches[2] -replace '\\', '/'
+    $drive = $absolute[0].ToString().ToLowerInvariant()
+    $tail = $absolute.Substring(3).Replace('\', '/')
 
     return "/mnt/$drive/$tail"
 }
@@ -448,7 +526,7 @@ function Copy-Msys2RuntimeDependencies([string]$BashPath, [string]$Root, [string
 Builds Windows x64 artifacts with MSYS2.
 
 .DESCRIPTION
-Runs the upstream native MSYS2 build and collects hashcat.exe, plugins, assets and required MSYS2 DLLs into build\windows-x64.
+Runs the upstream native MSYS2 production build with the requested version tag, supplies the four-part numeric Windows resource version and collects hashcat.exe, plugins, assets and required MSYS2 DLLs into build\windows-x64.
 #>
 function Build-WindowsX64([string]$SourceDir, [string]$BuildRoot)
 {
@@ -463,6 +541,13 @@ function Build-WindowsX64([string]$SourceDir, [string]$BuildRoot)
     $cleanCommand = if ($Clean) { 'make clean' } else { 'true' }
     $patchFile = Join-Path $RootDir 'patches\hashcat-msys2-nvml-filehandling.patch'
     $patchApplied = $false
+
+    if ($VersionTag -notmatch '^v?(\d+)\.(\d+)\.(\d+)$')
+    {
+        throw "windows-x64 production version must use vMAJOR.MINOR.PATCH format: $VersionTag"
+    }
+
+    $windowsVersionNumber = "$($matches[1]),$($matches[2]),$($matches[3]),0"
 
     try
     {
@@ -515,7 +600,7 @@ function Build-WindowsX64([string]$SourceDir, [string]$BuildRoot)
             'export PATH=/mingw64/bin:/usr/bin:$PATH',
             $cleanCommand,
             'set +e',
-            "make -j$MakeJobs VERSION_TAG=$(Quote-Bash $VersionTag) WIN_PYTHON= 2>&1 | grep -v -E $(Quote-Bash $skipNoticeRegex)",
+            "make -j$MakeJobs PRODUCTION=1 VERSION_TAG=$(Quote-Bash $VersionTag) VERSION_NUM=$(Quote-Bash $windowsVersionNumber) WIN_PYTHON= 2>&1 | grep -v -E $(Quote-Bash $skipNoticeRegex)",
             'make_status=${PIPESTATUS[0]}',
             'set -e',
             'exit $make_status'
@@ -547,7 +632,7 @@ function Build-WindowsX64([string]$SourceDir, [string]$BuildRoot)
 Builds Linux x64 artifacts through WSL or a Linux host.
 
 .DESCRIPTION
-Runs the upstream native Linux build and collects the Linux binary, shared library, plugins and runtime assets into build\linux-x64.
+Runs the upstream native Linux production build with the requested version tag and collects the Linux binary, shared library, plugins and runtime assets into build\linux-x64.
 #>
 function Build-LinuxX64([string]$SourceDir, [string]$BuildRoot)
 {
@@ -560,7 +645,7 @@ function Build-LinuxX64([string]$SourceDir, [string]$BuildRoot)
             'set -e',
             "cd $(Quote-Bash $wslPath)",
             $cleanCommand,
-            "make -j$MakeJobs VERSION_TAG=$(Quote-Bash $VersionTag)"
+            "make -j$MakeJobs PRODUCTION=1 VERSION_TAG=$(Quote-Bash $VersionTag)"
         ) -join '; '
 
         Invoke-Wsl $command $WslDistro | Out-Host
@@ -572,7 +657,7 @@ function Build-LinuxX64([string]$SourceDir, [string]$BuildRoot)
             'set -e',
             "cd $(Quote-Bash $sourceForShell)",
             $cleanCommand,
-            "make -j$MakeJobs VERSION_TAG=$(Quote-Bash $VersionTag)"
+            "make -j$MakeJobs PRODUCTION=1 VERSION_TAG=$(Quote-Bash $VersionTag)"
         ) -join '; '
 
         Invoke-LocalBash $command | Out-Host
@@ -596,7 +681,7 @@ function Build-LinuxX64([string]$SourceDir, [string]$BuildRoot)
 Builds macOS artifacts on a macOS host.
 
 .DESCRIPTION
-Runs the upstream native macOS build and collects the binary, dylib files, plugins and runtime assets into a macOS platform directory.
+Runs the upstream native macOS production build with the requested version tag and collects the binary, dylib files, plugins and runtime assets into a macOS platform directory.
 #>
 function Build-MacOs([string]$SourceDir, [string]$BuildRoot, [string]$Platform, [string]$ArchArgument)
 {
@@ -607,7 +692,7 @@ function Build-MacOs([string]$SourceDir, [string]$BuildRoot, [string]$Platform, 
 
     $sourceForShell = Resolve-AbsolutePath $SourceDir
     $cleanCommand = if ($Clean) { 'make clean' } else { 'true' }
-    $makeFlags = @("VERSION_TAG=$(Quote-Bash $VersionTag)")
+    $makeFlags = @("PRODUCTION=1 VERSION_TAG=$(Quote-Bash $VersionTag)")
 
     if (-not [string]::IsNullOrWhiteSpace($ArchArgument))
     {
@@ -702,7 +787,7 @@ foreach ($item in $Target)
 {
     if ($item -eq 'all')
     {
-        $resolvedTargets += @('windows-x64', 'linux-x64', 'macos-x64', 'macos-arm64', 'macos-universal')
+        $resolvedTargets += Get-SupportedDesktopTargets
     }
     else
     {
