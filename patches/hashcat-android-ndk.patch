@@ -237,3 +237,46 @@ index 7489d4aa0..2dcf0649e 100644
          {
            time (&status_ctx->timer_bypass_start);
  
+diff --git a/src/backend.c b/src/backend.c
+index 242c45a2..3af7fbb4 100644
+--- a/src/backend.c
++++ b/src/backend.c
+@@ -16250,6 +16250,25 @@ int backend_session_begin (hashcat_ctx_t *hashcat_ctx)
+       accel_limit_host = MIN (accel_limit_host, GiB8);
+     }
+ 
++    #if defined (__ANDROID__)
++    const char *android_memory_limit_mb = getenv ("HASHCAT_MEMORY_LIMIT_MB");
++
++    u64 android_memory_limit = 0;
++
++    if ((android_memory_limit_mb != NULL) && (android_memory_limit_mb[0] != 0))
++    {
++      char *end = NULL;
++      const unsigned long long limit_mb = strtoull (android_memory_limit_mb, &end, 10);
++
++      if ((end != android_memory_limit_mb) && (*end == 0) && (limit_mb > 0))
++      {
++        android_memory_limit = (u64) limit_mb * 1024 * 1024;
++        device_param->device_available_mem = MIN (device_param->device_available_mem, android_memory_limit);
++        accel_limit_host = MIN (accel_limit_host, android_memory_limit);
++      }
++    }
++    #endif
++
+     // Opposite direction check: find out if we would request too much memory on memory blocks which are based on kernel_accel
+ 
+     u64 size_pws      = 4;
+@@ -16434,7 +16453,11 @@ int backend_session_begin (hashcat_ctx_t *hashcat_ctx)
+ 
+       if (size_total > device_param->device_available_mem) memory_limit_hit = 1;
+ 
+-      const u64 size_host_extra = (512 * 1024 * 1024) / backend_ctx->backend_devices_active;
++      u64 size_host_extra = (512 * 1024 * 1024) / backend_ctx->backend_devices_active;
++
++      #if defined (__ANDROID__)
++      if (android_memory_limit > 0) size_host_extra = MIN (size_host_extra, android_memory_limit / 8);
++      #endif
+ 
+       const u64 size_total_host
+         = size_pws_comp

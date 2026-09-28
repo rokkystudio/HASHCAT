@@ -391,8 +391,8 @@ function Invoke-AndroidTarget([pscustomobject]$Config, [string]$ResolvedAndroidN
     # Rust sub-plugins for Android ABIs. Keep Android artifacts native/NDK-only instead of mixing host Rust output.
     $makeVars += @(
         'MAINTAINER_MODE=1',
-        'PYTHON_MP_SKIP_SO=true',
-        'PYTHON_SP_SKIP_SO=true',
+        'PYTHON_CONFIG=',
+        'REPORT_MISSING_SO=true',
         'RUST_CARGO=__hashcat_android_cross_cargo_disabled__',
         'RUST_RUSTUP=__hashcat_android_cross_rustup_disabled__'
     )
