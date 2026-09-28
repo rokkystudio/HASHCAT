@@ -1,92 +1,239 @@
+diff --git a/deps/scrypt-jane-master/code/scrypt-jane-portable.h b/deps/scrypt-jane-master/code/scrypt-jane-portable.h
+index 29095a10f..29d6ad01c 100644
+--- a/deps/scrypt-jane-master/code/scrypt-jane-portable.h
++++ b/deps/scrypt-jane-master/code/scrypt-jane-portable.h
+@@ -127,7 +127,9 @@
+ 		#define INLINE inline
+ 	#endif
+ 	#undef FASTCALL
+-	#if (COMPILER_GCC >= 30400)
++	#if defined(__ANDROID__) && !defined(__i386__) && !defined(__x86_64__)
++		#define FASTCALL
++	#elif (COMPILER_GCC >= 30400)
+ 		#define FASTCALL __attribute__((fastcall))
+ 	#else
+ 		#define FASTCALL
+diff --git a/include/types.h b/include/types.h
+index 3f63e0783..df6168215 100644
+--- a/include/types.h
++++ b/include/types.h
+@@ -32,6 +32,63 @@
+ 
+ #include <iconv.h>
+ 
++#if defined (__ANDROID__) && (__ANDROID_API__ < 28)
++#include <dlfcn.h>
++#include <errno.h>
++
++static inline iconv_t hc_android_iconv_open (const char *tocode, const char *fromcode)
++{
++  typedef iconv_t (*hc_iconv_open_t) (const char *, const char *);
++
++  const hc_iconv_open_t fn = (hc_iconv_open_t) dlsym (RTLD_DEFAULT, "iconv_open");
++
++  if (fn == NULL)
++  {
++    errno = ENOSYS;
++
++    return (iconv_t) -1;
++  }
++
++  return fn (tocode, fromcode);
++}
++
++static inline size_t hc_android_iconv (iconv_t cd, char **inbuf, size_t *inbytesleft, char **outbuf, size_t *outbytesleft)
++{
++  typedef size_t (*hc_iconv_t) (iconv_t, char **, size_t *, char **, size_t *);
++
++  const hc_iconv_t fn = (hc_iconv_t) dlsym (RTLD_DEFAULT, "iconv");
++
++  if (fn == NULL)
++  {
++    errno = ENOSYS;
++
++    return (size_t) -1;
++  }
++
++  return fn (cd, inbuf, inbytesleft, outbuf, outbytesleft);
++}
++
++static inline int hc_android_iconv_close (iconv_t cd)
++{
++  typedef int (*hc_iconv_close_t) (iconv_t);
++
++  const hc_iconv_close_t fn = (hc_iconv_close_t) dlsym (RTLD_DEFAULT, "iconv_close");
++
++  if (fn == NULL)
++  {
++    errno = ENOSYS;
++
++    return -1;
++  }
++
++  return fn (cd);
++}
++
++#define iconv_open  hc_android_iconv_open
++#define iconv       hc_android_iconv
++#define iconv_close hc_android_iconv_close
++#endif
++
+ #if defined (_WIN)
+ #include <windows.h>
+ #if defined (_BASETSD_H)
+@@ -991,7 +1048,7 @@ typedef struct dynamicx
+ 
+ } dynamicx_t;
+ 
+-typedef struct user
++typedef struct hashcat_hash_user
+ {
+   char *user_name;
+   u32   user_len;
 diff --git a/src/Makefile b/src/Makefile
-index 58b96c3c5..a11b3d0b5 100644
+index 72986407c..e416a2e37 100644
 --- a/src/Makefile
 +++ b/src/Makefile
-@@ -636,10 +636,9 @@ CCFLAGS                 := -std=gnu99
- ifeq ($(UNAME),Android)
- CFLAGS_NATIVE           := $(CFLAGS)
- CFLAGS_NATIVE           += -D__ANDROID__
-+CFLAGS_NATIVE           += -I$(DEPS_SSE2NEON)
- LFLAGS_NATIVE           := $(LFLAGS)
--LFLAGS_NATIVE           += -lpthread
- LFLAGS_NATIVE           += -ldl
--LFLAGS_NATIVE           += -lrt
+@@ -32,7 +32,7 @@ UNAME                   := $(patsubst MSYS_NT-%,MSYS2,$(UNAME))
+ UNAME                   := $(patsubst MINGW32_NT-%,MSYS2,$(UNAME))
+ UNAME                   := $(patsubst MINGW64_NT-%,MSYS2,$(UNAME))
+ 
+-ifeq (,$(filter $(UNAME),Linux OpenBSD FreeBSD NetBSD DragonFly Darwin CYGWIN MSYS2))
++ifeq (,$(filter $(UNAME),Linux OpenBSD FreeBSD NetBSD DragonFly Darwin CYGWIN MSYS2 Android))
+ $(error "! Your Operating System ($(UNAME)) is not supported by this Makefile")
+ endif
+ 
+@@ -361,6 +361,15 @@ LFLAGS_NATIVE           += -lrt
  LFLAGS_NATIVE           += -lm
- LFLAGS_NATIVE           += -L$(PREFIX)/lib
- $(info Android environment detected.)
-diff --git a/src/dynloader.c b/src/dynloader.c
-index c6c60392a..9c4cbbba2 100644
---- a/src/dynloader.c
-+++ b/src/dynloader.c
-@@ -7,7 +7,7 @@
- #include "types.h"
- #include "dynloader.h"
+ endif # Linux
  
--#ifndef _WIN
-+#if !defined (_WIN) && !defined (__ANDROID__)
- #include <glob.h>
- #endif
- 
-@@ -431,6 +431,7 @@ static size_t hc_dynlib_dirs (char dirs[][HC_DYNLIB_PATH_MAX])
-     }
-   }
- 
-+#if !defined (__ANDROID__)
-   glob_t gl;
- 
-   if (glob ("/etc/ld.so.conf.d/*.conf", 0, NULL, &gl) == 0)
-@@ -457,6 +458,7 @@ static size_t hc_dynlib_dirs (char dirs[][HC_DYNLIB_PATH_MAX])
- 
-     globfree (&gl);
-   }
-+#endif
- 
-   hc_dynlib_dir_add (dirs, &dirs_cnt, "/lib");
-   hc_dynlib_dir_add (dirs, &dirs_cnt, "/usr/lib");
-@@ -466,6 +468,7 @@ static size_t hc_dynlib_dirs (char dirs[][HC_DYNLIB_PATH_MAX])
-   return dirs_cnt;
- }
- 
-+#if !defined (__ANDROID__)
- static void hc_dynlib_best (const char *pattern, const char *stem, char *best, const size_t best_size, int *best_ver, bool *have)
- {
-   glob_t gl;
-@@ -495,11 +498,30 @@ static void hc_dynlib_best (const char *pattern, const char *stem, char *best, c
- 
-   globfree (&gl);
- }
-+#endif
- 
- hc_dynlib_t hc_dynlib_open_newest (const char *stem, char *err, const size_t err_size)
- {
-   if (stem == NULL) return NULL;
++ifeq ($(UNAME),Android)
++CFLAGS_NATIVE           := $(CFLAGS)
++CFLAGS_NATIVE           += -D__ANDROID__
++CFLAGS_UNRAR            += -DSILENT
++LFLAGS_NATIVE           := $(LFLAGS)
++LFLAGS_NATIVE           += -ldl
++LFLAGS_NATIVE           += -lm
++endif # Android
++
+ ifneq (,$(filter $(UNAME),FreeBSD DragonFly))
+ ifndef PORTNAME
+ CFLAGS_NATIVE           := $(CFLAGS)
+diff --git a/src/affinity.c b/src/affinity.c
+index 5ccf95796..13789be10 100644
+--- a/src/affinity.c
++++ b/src/affinity.c
+@@ -9,6 +9,11 @@
+ #include "event.h"
+ #include "affinity.h"
  
 +#if defined (__ANDROID__)
-+  char plain[HC_DYNLIB_PATH_MAX];
-+
-+  snprintf (plain, sizeof (plain), "%s.so", stem);
-+
-+  hc_dynlib_t lib = hc_dlopen (plain);
-+
-+  if (lib) return lib;
-+
-+  if (err == NULL) return NULL;
-+  if (err_size == 0) return NULL;
-+
-+  snprintf (err, err_size, "no %s.so in Android library search path", stem);
-+
-+  err[err_size - 1] = 0;
-+
-+  return NULL;
-+#else
-   char dirs[HC_DYNLIB_DIR_MAX][HC_DYNLIB_PATH_MAX];
- 
-   const size_t dirs_cnt = hc_dynlib_dirs (dirs);
-@@ -562,6 +584,7 @@ hc_dynlib_t hc_dynlib_open_newest (const char *stem, char *err, const size_t err
-   err[err_size - 1] = 0;
- 
-   return NULL;
++#include <sched.h>
++#include <unistd.h>
 +#endif
- }
++
+ #if defined (__APPLE__)
+ static void CPU_ZERO (cpu_set_t *cs)
+ {
+@@ -177,6 +182,17 @@ int set_cpu_affinity (MAYBE_UNUSED hashcat_ctx_t *hashcat_ctx)
  
- #endif // _WIN
+   #elif defined (__OpenBSD__)
+   // no thread affinity support with pthread
++  #elif defined (__ANDROID__)
++
++  const int rc = sched_setaffinity (gettid (), sizeof (cpu_set_t), &cpuset);
++
++  if (rc != 0)
++  {
++    event_log_error (hashcat_ctx, "sched_setaffinity() failed with error: %d", errno);
++
++    return -1;
++  }
++
+   #else
+ 
+   pthread_t thread = pthread_self ();
+diff --git a/src/bridges/bridge_argon2id_reference.c b/src/bridges/bridge_argon2id_reference.c
+index 88d9df3da..8d7f37545 100644
+--- a/src/bridges/bridge_argon2id_reference.c
++++ b/src/bridges/bridge_argon2id_reference.c
+@@ -18,7 +18,7 @@
+ #include "core.c"
+ #include "blake2/blake2b.c"
+ 
+-#if defined(__riscv)
++#if defined(__riscv) || (defined(__ANDROID__) && defined(__arm__) && !defined(__aarch64__))
+ #include "ref.c"
+ #else
+ #include "opt.c"
+diff --git a/src/cpu_features.c b/src/cpu_features.c
+index 46547aec1..476974e43 100644
+--- a/src/cpu_features.c
++++ b/src/cpu_features.c
+@@ -7,7 +7,11 @@
+ #include "types.h"
+ #include "cpu_features.h"
+ 
+-#if defined (__aarch64__) || defined (__arm64__)
++#if defined (__x86_64__) || defined (__i386__)
++#include <cpuid.h>
++#endif
++
++#if defined (__aarch64__) || defined (__arm64__) || defined (__arm__)
+ 
+ int cpu_supports_sse2 ()     { return 1; }
+ int cpu_supports_ssse3 ()    { return 0; }
+diff --git a/src/folder.c b/src/folder.c
+index 56387ed2f..2d5d14c7e 100644
+--- a/src/folder.c
++++ b/src/folder.c
+@@ -429,6 +429,16 @@ int folder_config_init (hashcat_ctx_t *hashcat_ctx, MAYBE_UNUSED const char *ins
+   char *session_dir = NULL;
+   char *shared_dir  = NULL;
+ 
++  #if defined (__ANDROID__)
++  if ((shared_folder != NULL) && (shared_folder[0] != 0))
++  {
++    profile_dir = hcstrdup (shared_folder);
++    cache_dir   = hcstrdup (shared_folder);
++    session_dir = hcstrdup (shared_folder);
++    shared_dir  = hcstrdup (shared_folder);
++  }
++  else
++  #endif
+   if (strcmp (install_dir, resolved_install_folder) == 0)
+   {
+     struct passwd pw;
+diff --git a/src/main.c b/src/main.c
+index 13109bbfb..d241c10c3 100644
+--- a/src/main.c
++++ b/src/main.c
+@@ -1363,6 +1363,15 @@ int main (int argc, char **argv)
+   shared_folder = SHARED_FOLDER;
+   #endif
+ 
++  #if defined (__ANDROID__)
++  const char *android_shared_folder = getenv ("HASHCAT_SHARED_FOLDER");
++
++  if (android_shared_folder != NULL)
++  {
++    if (android_shared_folder[0] != 0) shared_folder = android_shared_folder;
++  }
++  #endif
++
+   // initialize the user options with some defaults (you can override them later)
+ 
+   if (user_options_init (hashcat_ctx) == -1)
+diff --git a/src/monitor.c b/src/monitor.c
+index 7489d4aa0..2dcf0649e 100644
+--- a/src/monitor.c
++++ b/src/monitor.c
+@@ -344,7 +344,7 @@ static int monitor (hashcat_ctx_t *hashcat_ctx)
+       if (status_ctx->devices_status == STATUS_RUNNING)
+       {
+         // --bypass-delay check
+-        if ((status_ctx->timer_bypass_cur - status_ctx->timer_bypass_start) >= user_options->bypass_delay)
++        if ((status_ctx->timer_bypass_cur - status_ctx->timer_bypass_start) >= (time_t) user_options->bypass_delay)
+         {
+           time (&status_ctx->timer_bypass_start);
+ 

@@ -65,8 +65,17 @@ $SourceDir = Join-Path $RootDir 'source'
 $BuildRootDir = Join-Path $RootDir 'build'
 $TempDir = Join-Path $SourceDir '.tmp'
 
-$Msys2Bash = Resolve-Msys2Bash $Msys2Bash
-$AndroidNdk = Resolve-AndroidNdk $AndroidNdk
+$cleanMutex = [System.Threading.Mutex]::new($false, 'Global\HASHCAT_WRAPPER_D_PROJECTS_HASHCAT_ANDROID_RUNTIME_V2')
+$lockTaken = $false
+
+try {
+    $lockTaken = $cleanMutex.WaitOne(0)
+    if (-not $lockTaken) {
+        throw 'Another HASHCAT build/update/clean process is already running. Close/stop the other run and try again.'
+    }
+
+    $Msys2Bash = Resolve-Msys2Bash $Msys2Bash
+    $AndroidNdk = Resolve-AndroidNdk $AndroidNdk
 
 if ((Test-Path $SourceDir) -and -not [string]::IsNullOrWhiteSpace($Msys2Bash) -and -not [string]::IsNullOrWhiteSpace($AndroidNdk)) {
     $NdkToolchainBin = Join-Path $AndroidNdk 'toolchains\llvm\prebuilt\windows-x86_64\bin'
@@ -98,8 +107,13 @@ if (Test-Path $SourceDir) {
 if (Test-Path $BuildRootDir) { Remove-Item -Recurse -Force -Path $BuildRootDir }
 New-Item -ItemType Directory -Force -Path $BuildRootDir | Out-Null
 
-[pscustomobject][ordered]@{
-    Source = $SourceDir
-    BuildRoot = $BuildRootDir
-    BuildRootEmpty = ((Get-ChildItem $BuildRootDir -Force -ErrorAction SilentlyContinue | Measure-Object).Count -eq 0)
-} | Format-List
+    [pscustomobject][ordered]@{
+        Source = $SourceDir
+        BuildRoot = $BuildRootDir
+        BuildRootEmpty = ((Get-ChildItem $BuildRootDir -Force -ErrorAction SilentlyContinue | Measure-Object).Count -eq 0)
+    } | Format-List
+}
+finally {
+    if ($lockTaken) { $cleanMutex.ReleaseMutex() | Out-Null }
+    if ($cleanMutex) { $cleanMutex.Dispose() }
+}

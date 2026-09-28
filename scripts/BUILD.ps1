@@ -10,6 +10,7 @@ param(
     [string]$AndroidNdk = '',
     [string]$AndroidApi = '26',
     [string]$VersionTag = 'v7.1.2',
+    [string]$SourceRef = 'v7.1.2',
     [bool]$Package = $true,
     [switch]$Clean
 )
@@ -28,29 +29,66 @@ $ReleaseDir = Join-Path $RootDir 'release'
 $TempDir = Join-Path $SourceDir '.tmp'
 $PatchFile = Join-Path $RootDir 'patches\hashcat-android-ndk.patch'
 
+<#
+.SYNOPSIS
+Prepares the exact upstream source revision used by the build.
+
+.DESCRIPTION
+Requires source HEAD to resolve to SourceRef, refuses tracked source changes and removes untracked or ignored source outputs before release artifacts are produced.
+#>
+function Prepare-SourceRevision([string]$ExpectedRef) {
+    if (-not (Test-Path (Join-Path $SourceDir '.git'))) {
+        throw "hashcat source checkout is missing: $SourceDir. Run scripts\UPDATE.ps1 first."
+    }
+
+    $head = (& git -C $SourceDir rev-parse HEAD).Trim()
+    $expected = (& git -C $SourceDir rev-parse "$ExpectedRef^{commit}" 2>$null)
+    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($expected)) {
+        throw "Required upstream source ref is not available: $ExpectedRef. Run scripts\UPDATE.ps1."
+    }
+
+    if ($head -ne $expected.Trim()) {
+        throw "source HEAD $head does not match required SourceRef $($expected.Trim()). Run scripts\UPDATE.ps1 before building."
+    }
+
+    $trackedChanges = (& git -C $SourceDir status --porcelain --untracked-files=no)
+    if ($trackedChanges) {
+        throw 'source contains tracked local changes. Release builds require the pinned upstream checkout.'
+    }
+
+    & git -C $SourceDir clean -fdx | Out-Null
+    if ($LASTEXITCODE -ne 0) {
+        throw 'Unable to remove generated, untracked or ignored files from source.'
+    }
+}
+
 $AndroidTargetSpecs = [ordered]@{
     'android-arm64-v8a' = [pscustomobject][ordered]@{
         Target = 'android-arm64-v8a'
         Abi = 'arm64-v8a'
         ClangPrefix = 'aarch64-linux-android'
+        RuntimeTriple = 'aarch64-linux-android'
         MakeVars = @('IS_AARCH64=1', 'IS_ARM=1')
     }
     'android-armeabi-v7a' = [pscustomobject][ordered]@{
         Target = 'android-armeabi-v7a'
         Abi = 'armeabi-v7a'
         ClangPrefix = 'armv7a-linux-androideabi'
+        RuntimeTriple = 'arm-linux-androideabi'
         MakeVars = @('IS_AARCH64=0', 'IS_ARM=1')
     }
     'android-x86_64' = [pscustomobject][ordered]@{
         Target = 'android-x86_64'
         Abi = 'x86_64'
         ClangPrefix = 'x86_64-linux-android'
+        RuntimeTriple = 'x86_64-linux-android'
         MakeVars = @('IS_AARCH64=0', 'IS_ARM=0')
     }
     'android-x86' = [pscustomobject][ordered]@{
         Target = 'android-x86'
         Abi = 'x86'
         ClangPrefix = 'i686-linux-android'
+        RuntimeTriple = 'i686-linux-android'
         MakeVars = @('IS_AARCH64=0', 'IS_ARM=0')
     }
 }
@@ -188,6 +226,7 @@ function Invoke-DesktopTargets([string[]]$RequestedTargets) {
     if (-not [string]::IsNullOrWhiteSpace($WslDistro)) { $desktopParams.WslDistro = $WslDistro }
     if (-not [string]::IsNullOrWhiteSpace($MakeJobs)) { $desktopParams.MakeJobs = $MakeJobs }
     if (-not [string]::IsNullOrWhiteSpace($VersionTag)) { $desktopParams.VersionTag = $VersionTag }
+    if (-not [string]::IsNullOrWhiteSpace($SourceRef)) { $desktopParams.SourceRef = $SourceRef }
     if ($Clean) { $desktopParams.Clean = $true }
     if ($Package) { $desktopParams.Package = $true }
 
@@ -308,15 +347,27 @@ function New-DirectoryPackage([string]$Directory, [string]$Platform) {
     return $archive
 }
 
+<#
+.SYNOPSIS
+Removes generated Android outputs from the disposable upstream checkout.
+
+.DESCRIPTION
+Deletes every untracked and ignored file produced by prior builds while preserving tracked source files and temporary tracked Android patch changes.
+#>
 function Reset-AndroidSourceOutputs([string]$SourceDirectory) {
-    git -C $SourceDirectory clean -fdx -- .tmp obj modules bridges feeds *> $null
-    git -C $SourceDirectory checkout -- obj modules bridges feeds *> $null
-    foreach ($fileName in @('hashcat', 'hashcat.exe', 'hashcat.bin')) {
-        $path = Join-Path $SourceDirectory $fileName
-        if (Test-Path -LiteralPath $path) { Remove-Item -Force -Path $path }
+    & git -C $SourceDirectory clean -fdx | Out-Null
+    if ($LASTEXITCODE -ne 0) {
+        throw "Unable to clean generated Android source outputs: $SourceDirectory"
     }
 }
 
+<#
+.SYNOPSIS
+Builds one Android ABI from the pinned upstream source plus the repository Android patch.
+
+.DESCRIPTION
+Uses Android NDK Clang through MSYS2, builds the hashcat frontend and native modules/bridges, then copies ABI-specific binaries and shared runtime assets into build and release directories.
+#>
 function Invoke-AndroidTarget([pscustomobject]$Config, [string]$ResolvedAndroidNdk, [string]$ResolvedMsys2Bash) {
     $ndkToolchainBin = Join-Path $ResolvedAndroidNdk 'toolchains\llvm\prebuilt\windows-x86_64\bin'
     $clang = Join-Path $ndkToolchainBin "$($Config.ClangPrefix)$AndroidApi-clang.cmd"
@@ -336,175 +387,10 @@ function Invoke-AndroidTarget([pscustomobject]$Config, [string]$ResolvedAndroidN
     $cxx = "$($Config.ClangPrefix)$AndroidApi-clang++"
     $makeVars = @($Config.MakeVars)
 
-    # Avoid Android NDK 32-bit sys/user.h conflict with hashcat's own struct tag name.
-    $typesHeader = Join-Path $SourceDir 'include\types.h'
-    $typesText = Get-Content -LiteralPath $typesHeader -Raw
-    $patchedTypesText = $typesText -replace 'typedef\s+struct\s+user\s*\{', "typedef struct hashcat_hash_user`r`n{"
-    if ($patchedTypesText -ne $typesText) {
-        [IO.File]::WriteAllText($typesHeader, $patchedTypesText, $utf8NoBom)
-    }
-    if ((Get-Content -LiteralPath $typesHeader -Raw) -match 'typedef\s+struct\s+user\s*\{') {
-        throw 'Android struct user collision remains in include/types.h'
-    }
-
-    # Android i686 NDK exposes CPUID helpers in cpuid.h, but upstream cpu_features.c does not include it explicitly.
-    $cpuFeaturesSource = Join-Path $SourceDir 'src\cpu_features.c'
-    $cpuFeaturesText = Get-Content -LiteralPath $cpuFeaturesSource -Raw
-    if ($cpuFeaturesText -notmatch '#include\s+<cpuid\.h>') {
-        $cpuFeaturesInclude = @'
-#include "cpu_features.h"
-
-#if defined (__x86_64__) || defined (_M_X64) || defined (__i386__) || defined (_M_IX86)
-#include <cpuid.h>
-#endif
-'@
-        $cpuFeaturesText = $cpuFeaturesText.Replace('#include "cpu_features.h"', $cpuFeaturesInclude)
-        [IO.File]::WriteAllText($cpuFeaturesSource, $cpuFeaturesText, $utf8NoBom)
-    }
-
-    # Android cannot execute a copy from writable app data. The app runs the packaged
-    # executable from nativeLibraryDir and points Hashcat at its extracted runtime tree.
-    $mainSource = Join-Path $SourceDir 'src\main.c'
-    $mainText = Get-Content -LiteralPath $mainSource -Raw
-    if ($mainText -notmatch 'HASHCAT_SHARED_FOLDER') {
-        $sharedFolderPattern = '(?ms)^  #if defined \(SHARED_FOLDER\)\r?\n  shared_folder = SHARED_FOLDER;\r?\n  #endif'
-        $androidSharedFolderBlock = @'
-  #if defined (SHARED_FOLDER)
-  shared_folder = SHARED_FOLDER;
-  #endif
-
-  #if defined (__ANDROID__)
-  const char *android_shared_folder = getenv ("HASHCAT_SHARED_FOLDER");
-
-  if (android_shared_folder != NULL)
-  {
-    if (android_shared_folder[0] != 0) shared_folder = android_shared_folder;
-  }
-  #endif
-'@
-        $patchedMainText = [regex]::Replace($mainText, $sharedFolderPattern, $androidSharedFolderBlock, 1)
-        if ($patchedMainText -eq $mainText) {
-            throw 'Unable to locate shared_folder initialization in src/main.c'
-        }
-        [IO.File]::WriteAllText($mainSource, $patchedMainText, $utf8NoBom)
-    }
-
-    # Android runs the frontend from read-only nativeLibraryDir while shared runtime and mutable
-    # state live under the application's files directory supplied through HASHCAT_SHARED_FOLDER.
-    $folderSource = Join-Path $SourceDir 'src\folder.c'
-    $folderText = Get-Content -LiteralPath $folderSource -Raw
-    if ($folderText -notmatch 'HASHCAT_ANDROID_SHARED_ROOT') {
-        $folderPattern = '(?m)^  if \(strcmp \(install_dir, resolved_install_folder\) == 0\)$'
-        $androidFolderBlock = @'
-  #if defined (__ANDROID__)
-  /* HASHCAT_ANDROID_SHARED_ROOT */
-  if ((shared_folder != NULL) && (shared_folder[0] != 0))
-  {
-    profile_dir = hcstrdup (shared_folder);
-    cache_dir   = hcstrdup (shared_folder);
-    session_dir = hcstrdup (shared_folder);
-    shared_dir  = hcstrdup (shared_folder);
-  }
-  else
-  #endif
-  if (strcmp (install_dir, resolved_install_folder) == 0)
-'@
-        $patchedFolderText = [regex]::Replace($folderText, $folderPattern, $androidFolderBlock, 1)
-        if ($patchedFolderText -eq $folderText) {
-            throw 'Unable to locate Android folder configuration insertion point in src/folder.c'
-        }
-        [IO.File]::WriteAllText($folderSource, $patchedFolderText, $utf8NoBom)
-    }
-
-    # Android does not use the desktop versioned-library directory scan.
-    $dynloaderSource = Join-Path $SourceDir 'src\dynloader.c'
-    $dynloaderText = Get-Content -LiteralPath $dynloaderSource -Raw
-    if ($dynloaderText -notmatch '#if !defined \(__ANDROID__\)\r?\nstatic bool hc_dynlib_ver_parse') {
-        $dynloaderText = $dynloaderText.Replace(
-            'static bool hc_dynlib_ver_parse (const char *name, const char *stem, int *ver)',
-            ('#if !defined (__ANDROID__)' + [Environment]::NewLine + 'static bool hc_dynlib_ver_parse (const char *name, const char *stem, int *ver)')
-        )
-        $dynloaderText = [regex]::Replace(
-            $dynloaderText,
-            '(?m)^#if !defined \(__ANDROID__\)\r?\n(?=static void hc_dynlib_best)',
-            '',
-            1
-        )
-        if ($dynloaderText -notmatch '#if !defined \(__ANDROID__\)\r?\nstatic bool hc_dynlib_ver_parse') {
-            throw 'Unable to isolate desktop dynamic-loader helpers in src/dynloader.c'
-        }
-        [IO.File]::WriteAllText($dynloaderSource, $dynloaderText, $utf8NoBom)
-    }
-
-    # -fno-plt is not used by Android NDK targets and Clang reports it for ARMv7 compilation units.
-    $makefileSource = Join-Path $SourceDir 'src\Makefile'
-    $makefileText = Get-Content -LiteralPath $makefileSource -Raw
-    if ($makefileText -notmatch 'ifneq \(\$\(UNAME\),Android\)\r?\nCFLAGS\s+\+= -fno-plt') {
-        $fnoPltPattern = '(?m)^ifeq \(\$\(and \$\(filter MSYS2,\$\(UNAME\)\),\$\(filter 1,\$\(CC_NATIVE_CLANG\)\)\),\)\r?\nCFLAGS\s+\+= -fno-plt\r?\nendif$'
-        $androidFnoPltBlock = @'
-ifeq ($(and $(filter MSYS2,$(UNAME)),$(filter 1,$(CC_NATIVE_CLANG))),)
-ifneq ($(UNAME),Android)
-CFLAGS                  += -fno-plt
-endif
-endif
-'@
-        $patchedMakefileText = [regex]::Replace($makefileText, $fnoPltPattern, $androidFnoPltBlock, 1)
-        if ($patchedMakefileText -eq $makefileText) {
-            throw 'Unable to locate -fno-plt configuration in src/Makefile'
-        }
-        [IO.File]::WriteAllText($makefileSource, $patchedMakefileText, $utf8NoBom)
-    }
-
-    # Host CPU tuning describes the build machine and is not part of Android cross-target ABI selection.
-    $makefileText = Get-Content -LiteralPath $makefileSource -Raw
-    if ($makefileText -notmatch 'ifneq \(\$\(UNAME\),Android\)\r?\nCFLAGS\s+\+= \$\(CFLAGS_HOST_ONLY\)') {
-        $hostFlagsPattern = '(?m)^CFLAGS\s+\+= \$\(CFLAGS_HOST_ONLY\)$'
-        $androidHostFlagsBlock = @'
-ifneq ($(UNAME),Android)
-CFLAGS                  += $(CFLAGS_HOST_ONLY)
-endif
-'@
-        $patchedMakefileText = [regex]::Replace($makefileText, $hostFlagsPattern, $androidHostFlagsBlock, 1)
-        if ($patchedMakefileText -eq $makefileText) {
-            throw 'Unable to isolate host-only CPU flags from Android targets in src/Makefile'
-        }
-        [IO.File]::WriteAllText($makefileSource, $patchedMakefileText, $utf8NoBom)
-    }
-
-    # GCC-compatible Android ARM targets do not implement the x86 fastcall calling convention.
-    $scryptPortableSource = Join-Path $SourceDir 'deps\scrypt-jane-master\code\scrypt-jane-portable.h'
-    $scryptPortableText = Get-Content -LiteralPath $scryptPortableSource -Raw
-    if ($scryptPortableText -notmatch 'defined\(__ANDROID__\).*defined\(__i386__\)') {
-        $fastcallPattern = '(?m)^\t#undef FASTCALL\r?\n\t#if \(COMPILER_GCC >= 30400\)\r?\n\t\t#define FASTCALL __attribute__\(\(fastcall\)\)\r?\n\t#else\r?\n\t\t#define FASTCALL\r?\n\t#endif$'
-        $androidFastcallBlock = @'
-	#undef FASTCALL
-	#if defined(__ANDROID__) && !defined(__i386__) && !defined(__x86_64__)
-		#define FASTCALL
-	#elif (COMPILER_GCC >= 30400)
-		#define FASTCALL __attribute__((fastcall))
-	#else
-		#define FASTCALL
-	#endif
-'@
-        $patchedScryptPortableText = [regex]::Replace($scryptPortableText, $fastcallPattern, $androidFastcallBlock, 1)
-        if ($patchedScryptPortableText -eq $scryptPortableText) {
-            throw 'Unable to locate FASTCALL configuration in scrypt-jane-portable.h'
-        }
-        [IO.File]::WriteAllText($scryptPortableSource, $patchedScryptPortableText, $utf8NoBom)
-    }
-
-    # bypass_delay is stored as u32 while the elapsed timer uses time_t.
-    $monitorSource = Join-Path $SourceDir 'src\monitor.c'
-    $monitorText = Get-Content -LiteralPath $monitorSource -Raw
-    $monitorText = $monitorText.Replace(
-        'if ((status_ctx->timer_bypass_cur - status_ctx->timer_bypass_start) >= user_options->bypass_delay)',
-        'if ((status_ctx->timer_bypass_cur - status_ctx->timer_bypass_start) >= (time_t) user_options->bypass_delay)'
-    )
-    [IO.File]::WriteAllText($monitorSource, $monitorText, $utf8NoBom)
-
     # hashcat's Rust bridge rules can build host .dll/.so plugins, but they do not currently cross-build
     # Rust sub-plugins for Android ABIs. Keep Android artifacts native/NDK-only instead of mixing host Rust output.
     $makeVars += @(
+        'MAINTAINER_MODE=1',
         'PYTHON_MP_SKIP_SO=true',
         'PYTHON_SP_SKIP_SO=true',
         'RUST_CARGO=__hashcat_android_cross_cargo_disabled__',
@@ -514,13 +400,12 @@ endif
     $makeCommand = @(
         'set -e',
         "cd $sourceForMsys",
-        'mkdir -p obj modules bridges feeds bridges/subs',
+        'mkdir -p obj modules bridges bridges/subs',
         "export PATH=${ndkBinForMsys}:`$PATH",
         "export TMPDIR=$tempForMsys",
         "export TMP=$tempForMsys",
         "export TEMP=$tempForMsys",
-        "make -j $MakeJobs hashcat UNAME=Android PRODUCTION=1 VERSION_TAG=$VersionTag CC=$cc CXX=$cxx AR=llvm-ar $($makeVars -join ' ')",
-        "make -j $MakeJobs modules bridges feeds UNAME=Android PRODUCTION=1 VERSION_TAG=$VersionTag CC=$cc CXX=$cxx AR=llvm-ar $($makeVars -join ' ')"
+        "make -j $MakeJobs hashcat modules bridges UNAME=Android PRODUCTION=1 VERSION_TAG=$VersionTag CC=$cc CXX=$cxx AR=llvm-ar $($makeVars -join ' ')"
     ) -join '; '
 
     $skipNoticeRegex = 'Skipping (freethreaded|regular) plugin (72000|73000|74000)'
@@ -552,7 +437,11 @@ endif
     if (-not (Test-Path $frontend)) { throw "hashcat frontend was not produced: $frontend" }
     Copy-Item -Force -Path $frontend -Destination (Join-Path $buildAbiDir 'hashcat')
 
-    foreach ($name in @('modules', 'bridges', 'feeds')) {
+    $libcxx = Join-Path $ResolvedAndroidNdk "toolchains\llvm\prebuilt\windows-x86_64\sysroot\usr\lib\$($Config.RuntimeTriple)\libc++_shared.so"
+    if (-not (Test-Path -LiteralPath $libcxx)) { throw "Android libc++ runtime is missing: $libcxx" }
+    Copy-Item -Force -LiteralPath $libcxx -Destination (Join-Path $buildAbiDir 'libc++_shared.so')
+
+    foreach ($name in @('modules', 'bridges')) {
         $src = Join-Path $SourceDir $name
         $dst = Join-Path $buildAbiDir $name
         if (-not (Test-Path $src)) { throw "Required native output directory is missing: $src" }
@@ -572,7 +461,7 @@ endif
         }
     }
 
-    foreach ($name in @('OpenCL', 'rules', 'tunings', 'pcfg')) {
+    foreach ($name in @('OpenCL', 'rules', 'tunings')) {
         $src = Join-Path $SourceDir $name
         $dst = Join-Path $buildAbiDir $name
         if (-not (Test-Path $src)) { throw "Required runtime asset directory is missing: $src" }
@@ -599,7 +488,6 @@ endif
         Modules = (Get-ChildItem (Join-Path $buildAbiDir 'modules') -Filter '*.so' -File | Measure-Object).Count
         Bridges = (Get-ChildItem (Join-Path $buildAbiDir 'bridges') -Filter '*.so' -File | Measure-Object).Count
         BridgeSubs = (Get-ChildItem (Join-Path $buildAbiDir 'bridges\subs') -Filter '*.so' -File -ErrorAction SilentlyContinue | Measure-Object).Count
-        Feeds = (Get-ChildItem (Join-Path $buildAbiDir 'feeds') -Filter '*.so' -File | Measure-Object).Count
         OpenCL = (Get-ChildItem (Join-Path $buildAbiDir 'OpenCL') -Recurse -File | Measure-Object).Count
     } | Format-List
 }
@@ -617,6 +505,8 @@ try {
     if (-not $lockTaken) {
         throw 'Another HASHCAT build/update/clean process is already running. Close/stop the other run and try again.'
     }
+
+    Prepare-SourceRevision $SourceRef
 
     if ($AndroidTargets.Count -gt 0) {
         $ResolvedAndroidNdk = Resolve-AndroidNdk $AndroidNdk
@@ -665,6 +555,17 @@ try {
     }
 
     if ($DesktopTargets.Count -gt 0) {
+        if ($AndroidTargets.Count -gt 0) {
+            Reset-AndroidSourceOutputs $SourceDir
+
+            if ($patchApplied) {
+                Write-Output 'Restoring upstream source before desktop builds.'
+                git -C $SourceDir checkout -- src/Makefile src/affinity.c src/main.c src/folder.c src/monitor.c include/types.h src/cpu_features.c src/bridges/bridge_argon2id_reference.c deps/scrypt-jane-master/code/scrypt-jane-portable.h
+                if ($LASTEXITCODE -ne 0) { throw 'Unable to restore upstream source before desktop builds.' }
+                $patchApplied = $false
+            }
+        }
+
         Invoke-DesktopTargets $DesktopTargets
     }
 }
@@ -672,20 +573,20 @@ finally {
     if (Test-Path $SourceDir) {
         if ($patchApplied) {
             Write-Output 'Reverting temporary wrapper Android patch.'
-            git -C $SourceDir checkout -- src/Makefile src/dynloader.c src/main.c src/folder.c src/monitor.c include/types.h src/cpu_features.c deps/scrypt-jane-master/code/scrypt-jane-portable.h modules feeds bridges obj 2>$null
+            git -C $SourceDir checkout -- src/Makefile src/affinity.c src/main.c src/folder.c src/monitor.c include/types.h src/cpu_features.c src/bridges/bridge_argon2id_reference.c deps/scrypt-jane-master/code/scrypt-jane-portable.h 2>$null
         }
         $restoreErrorActionPreference = $ErrorActionPreference
         try {
             $ErrorActionPreference = 'Continue'
-            git -C $SourceDir clean -fdx -- .tmp obj modules bridges feeds 2>$null | Out-Null
+            git -C $SourceDir clean -fdx 2>$null | Out-Null
             if ($LASTEXITCODE -ne 0) {
                 Start-Sleep -Milliseconds 500
-                git -C $SourceDir clean -fdx -- .tmp obj modules bridges feeds 2>$null | Out-Null
+                git -C $SourceDir clean -fdx 2>$null | Out-Null
                 if ($LASTEXITCODE -ne 0) {
                     Write-Warning 'Generated Android build artifacts could not be completely removed.'
                 }
             }
-            git -C $SourceDir checkout -- src/main.c src/folder.c src/monitor.c include/types.h src/cpu_features.c deps/scrypt-jane-master/code/scrypt-jane-portable.h obj modules bridges feeds 2>$null
+            git -C $SourceDir checkout -- src/Makefile src/affinity.c src/main.c src/folder.c src/monitor.c include/types.h src/cpu_features.c src/bridges/bridge_argon2id_reference.c deps/scrypt-jane-master/code/scrypt-jane-portable.h 2>$null
             if ($LASTEXITCODE -ne 0) {
                 Write-Warning 'Generated Android source changes could not be completely restored.'
             }

@@ -6,6 +6,7 @@ param(
     [string]$WslDistro = '',
     [string]$MakeJobs = '8',
     [string]$VersionTag = 'v7.1.2',
+    [string]$SourceRef = 'v7.1.2',
     [switch]$Clean,
     [switch]$Package
 )
@@ -15,6 +16,41 @@ $utf8NoBom = [System.Text.UTF8Encoding]::new($false)
 [Console]::InputEncoding = $utf8NoBom
 [Console]::OutputEncoding = $utf8NoBom
 $OutputEncoding = $utf8NoBom
+
+<#
+.SYNOPSIS
+Prepares the exact upstream source revision used by desktop builds.
+
+.DESCRIPTION
+Requires source HEAD to resolve to SourceRef, refuses tracked source changes and removes untracked or ignored outputs before desktop artifacts are produced.
+#>
+function Prepare-SourceRevision([string]$SourceDir, [string]$ExpectedRef)
+{
+    $head = (& git -C $SourceDir rev-parse HEAD).Trim()
+    $expected = (& git -C $SourceDir rev-parse "$ExpectedRef^{commit}" 2>$null)
+
+    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($expected))
+    {
+        throw "Required upstream source ref is not available: $ExpectedRef. Run scripts\UPDATE.ps1."
+    }
+
+    if ($head -ne $expected.Trim())
+    {
+        throw "source HEAD $head does not match required SourceRef $($expected.Trim()). Run scripts\UPDATE.ps1 before building."
+    }
+
+    $trackedChanges = (& git -C $SourceDir status --porcelain --untracked-files=no)
+    if ($trackedChanges)
+    {
+        throw 'source contains tracked local changes. Release builds require the pinned upstream checkout.'
+    }
+
+    & git -C $SourceDir clean -fdx | Out-Null
+    if ($LASTEXITCODE -ne 0)
+    {
+        throw 'Unable to remove generated, untracked or ignored files from source.'
+    }
+}
 
 <#
 .SYNOPSIS
@@ -614,6 +650,16 @@ function Build-WindowsX64([string]$SourceDir, [string]$BuildRoot)
         Copy-BuildFile $SourceDir $destination 'hashcat.dll' $false
         Copy-BuildFilePattern $SourceDir $destination '*.dll'
         Copy-CommonRuntime $SourceDir $destination
+
+        foreach ($directoryName in @('modules', 'bridges', 'feeds'))
+        {
+            $nativeDirectory = Join-Path $destination $directoryName
+            if (Test-Path -LiteralPath $nativeDirectory)
+            {
+                Get-ChildItem -LiteralPath $nativeDirectory -Recurse -File -Filter '*.so' | Remove-Item -Force
+            }
+        }
+
         Copy-Msys2RuntimeDependencies $bash $root $SourceDir $destination
 
         return $destination
@@ -778,6 +824,8 @@ if (-not (Test-Path -LiteralPath (Join-Path $SourceDir 'src\Makefile')))
 {
     throw "hashcat Makefile is missing in source: $SourceDir"
 }
+
+Prepare-SourceRevision $SourceDir $SourceRef
 
 New-Item -ItemType Directory -Force -Path $BuildRoot | Out-Null
 

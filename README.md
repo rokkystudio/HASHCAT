@@ -2,7 +2,9 @@
 
 Эта папка — локальная оболочка для сборки hashcat из исходников.
 
-`source` хранит обычный upstream checkout hashcat. Корень этой папки хранит локальную сборочную обвязку, патчи и готовые артефакты. Поэтому `source` можно обновлять или заменять новой версией hashcat без потери локальных `BUILD / CLEAN / UPDATE`.
+`source` хранит обычный upstream checkout hashcat. Корень этой папки хранит локальную сборочную обвязку, патчи и готовые артефакты. Release-сборки используют только официальный upstream Hashcat без локальных изменений алгоритмов и требуют точное совпадение `source HEAD` с `SourceRef`.
+
+По умолчанию `SourceRef` зафиксирован на официальном upstream tag `v7.1.2`. `UPDATE.ps1` переводит `source` на commit этого tag, а сборочные скрипты проверяют совпадение `HEAD` с тем же ref перед сборкой. Параметр `VersionTag` (`v7.1.2`) задаёт version tag, передаваемый Makefile и используемый в именах release-архивов.
 
 ## Структура
 
@@ -101,10 +103,17 @@ HASHCAT\
 .\scripts\CLEAN.ps1
 ```
 
-Обновить upstream checkout в `source`:
+Подготовить `source` на зафиксированном upstream commit:
 
 ```powershell
 .\scripts\UPDATE.ps1
+```
+
+Для осознанной сборки другого официального upstream commit его можно передать явно:
+
+```powershell
+.\scripts\UPDATE.ps1 -SourceRef '<commit-or-tag>'
+.\scripts\BUILD.ps1 -SourceRef '<commit-or-tag>'
 ```
 
 Обновить и сразу собрать стандартные target'ы:
@@ -128,11 +137,9 @@ HASHCAT\
 build\arm64-v8a\hashcat
 build\arm64-v8a\modules\*.so
 build\arm64-v8a\bridges\*.so
-build\arm64-v8a\feeds\*.so
 build\arm64-v8a\OpenCL\*
 build\arm64-v8a\rules\*
 build\arm64-v8a\tunings\*
-build\arm64-v8a\pcfg\*
 build\arm64-v8a\hashcat.hcstat2
 ```
 
@@ -157,11 +164,9 @@ hashcat / hashcat.exe
 hashcat.dll или libhashcat.* если upstream Makefile производит shared core
 modules\*
 bridges\*
-feeds\*
 OpenCL\*
 rules\*
 tunings\*
-pcfg\*
 charsets\*
 masks\*
 docs\*
@@ -232,13 +237,13 @@ source\.tmp
 
 ## Что делает UPDATE
 
-`UPDATE.ps1` выполняет `git fetch` и `git pull --ff-only` внутри `source`.
+`UPDATE.ps1` получает указанный `SourceRef` из официального upstream remote, переводит `source` в detached HEAD на этом commit и проверяет, что checkout содержит обязательные runtime-ресурсы. При локальных изменениях source скрипт останавливается; `-ForceReset $true` явно разрешает очистить их.
 
-Скрипт не удаляет корневые `BUILD.ps1`, `BUILD-DESKTOP.ps1`, `CLEAN.ps1`, `UPDATE.ps1`, `patches`, `build`, `release` и `README.md`, потому что они не являются частью upstream hashcat.
+Скрипт не изменяет корневые `BUILD.ps1`, `BUILD-DESKTOP.ps1`, `CLEAN.ps1`, `UPDATE.ps1`, `patches`, `build`, `release` и `README.md`, потому что они не являются частью upstream hashcat.
 
 ## Важное правило
 
-Этот проект занимается только сборкой hashcat и складывает результат в свою папку `build`. Он не публикует файлы в другие проекты и не знает о проектах-потребителях. Любой внешний проект должен сам забирать готовые файлы из `build\<platform>` своим собственным импорт-скриптом.
+Этот проект собирает hashcat и создаёт платформенные ZIP в `release`. Проекты-потребители используют эти архивы как версионированный runtime payload; содержимое ZIP должно соответствовать закреплённому upstream tag.
 ## Build scripts
 
 All project scripts live in `scripts\`.
@@ -266,4 +271,4 @@ Target-specific wrappers:
 
 Windows packaging uses a temporary staging copy under `build\.package-staging` before creating the zip. This avoids PowerShell `Compress-Archive` races where files can disappear while the archive is being built.
 
-Only one HASHCAT build/update/clean process should run at a time. `BUILD.ps1` uses a project mutex to prevent concurrent builds from touching the same `source`, `build`, and `release` directories.
+Only one HASHCAT build/update/clean process can modify the workspace at a time. `BUILD.ps1`, `UPDATE.ps1`, and `CLEAN.ps1` use the same project mutex before touching `source`, `build`, or `release`.
