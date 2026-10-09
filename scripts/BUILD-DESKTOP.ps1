@@ -6,7 +6,7 @@ param(
     [string]$WslDistro = '',
     [string]$MakeJobs = '8',
     [string]$VersionTag = 'v7.1.2',
-    [string]$SourceRef = 'v7.1.2',
+    [string]$SourceRef = '',
     [switch]$Clean,
     [switch]$Package
 )
@@ -19,36 +19,38 @@ $OutputEncoding = $utf8NoBom
 
 <#
 .SYNOPSIS
-Prepares the exact upstream source revision used by desktop builds.
+Prepares the monorepo source tree used by desktop builds.
 
 .DESCRIPTION
-Requires source HEAD to resolve to SourceRef, refuses tracked source changes and removes untracked or ignored outputs before desktop artifacts are produced.
+`source` is a regular tracked directory inside this repository. Desktop builds use the current working tree. If SourceRef is provided explicitly, the root repository HEAD must resolve to that ref.
 #>
 function Prepare-SourceRevision([string]$SourceDir, [string]$ExpectedRef)
 {
-    $head = (& git -C $SourceDir rev-parse HEAD).Trim()
-    $expected = (& git -C $SourceDir rev-parse "$ExpectedRef^{commit}" 2>$null)
-
-    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($expected))
+    if (-not (Test-Path (Join-Path $SourceDir 'src\Makefile')))
     {
-        throw "Required upstream source ref is not available: $ExpectedRef. Run scripts\UPDATE.ps1."
+        throw "hashcat source tree is missing or incomplete: $SourceDir"
     }
 
-    if ($head -ne $expected.Trim())
+    if (-not [string]::IsNullOrWhiteSpace($ExpectedRef))
     {
-        throw "source HEAD $head does not match required SourceRef $($expected.Trim()). Run scripts\UPDATE.ps1 before building."
+        $head = (& git -C $RootDir rev-parse HEAD).Trim()
+        $expected = (& git -C $RootDir rev-parse "$ExpectedRef^{commit}" 2>$null)
+
+        if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($expected))
+        {
+            throw "Required repository ref is not available: $ExpectedRef."
+        }
+
+        if ($head -ne $expected.Trim())
+        {
+            throw "repository HEAD $head does not match required SourceRef $($expected.Trim())."
+        }
     }
 
-    $trackedChanges = (& git -C $SourceDir status --porcelain --untracked-files=no)
-    if ($trackedChanges)
-    {
-        throw 'source contains tracked local changes. Release builds require the pinned upstream checkout.'
-    }
-
-    & git -C $SourceDir clean -fdx | Out-Null
+    & git -C $RootDir clean -fdX -- source | Out-Null
     if ($LASTEXITCODE -ne 0)
     {
-        throw 'Unable to remove generated, untracked or ignored files from source.'
+        throw 'Unable to remove generated, ignored files from source.'
     }
 }
 
@@ -669,7 +671,7 @@ function Build-WindowsX64([string]$SourceDir, [string]$BuildRoot)
         if ($patchApplied)
         {
             Write-Host 'Reverting temporary Windows/MSYS2 patch.'
-            git -C $SourceDir checkout -- src/ext_nvml.c
+            git -C $RootDir checkout -- source/src/ext_nvml.c
         }
     }
 }

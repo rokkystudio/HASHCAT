@@ -101,7 +101,7 @@ if (Test-Path $SourceDir) {
     )) {
         if (Test-Path $p) { Remove-Item -Recurse -Force -Path $p }
     }
-    git -C $SourceDir checkout -- src/Makefile src/dynloader.c modules feeds bridges obj 2>$null
+    git -C $RootDir clean -fdX -- source 2>$null | Out-Null
 }
 
 if (Test-Path $BuildRootDir) { Remove-Item -Recurse -Force -Path $BuildRootDir }

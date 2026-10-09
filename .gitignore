@@ -1,9 +1,25 @@
-# upstream checkout and generated outputs
-/source/
+# generated wrapper outputs
 /build/
 /release/*/package/
 /release/**/*.zip
 /release/**/*.sha256
+
+# generated hashcat source build outputs
+/source/.tmp/
+/source/obj/
+/source/modules/
+/source/bridges/
+/source/hashcat
+/source/hashcat.exe
+/source/hashcat.bin
+/source/*.dll
+/source/*.so
+/source/*.dylib
+/source/*.a
+/source/*.o
+/source/*.lib
+/source/*.exp
+/source/*.pdb
 
 # IDE/local
 .idea/workspace.xml

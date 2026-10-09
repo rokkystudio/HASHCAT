@@ -10,7 +10,7 @@ param(
     [string]$AndroidNdk = '',
     [string]$AndroidApi = '26',
     [string]$VersionTag = 'v7.1.2',
-    [string]$SourceRef = 'v7.1.2',
+    [string]$SourceRef = '',
     [bool]$Package = $true,
     [switch]$Clean
 )
@@ -27,39 +27,32 @@ $SourceDir = Join-Path $RootDir 'source'
 $BuildRootDir = Join-Path $RootDir 'build'
 $ReleaseDir = Join-Path $RootDir 'release'
 $TempDir = Join-Path $SourceDir '.tmp'
-$PatchFile = Join-Path $RootDir 'patches\hashcat-android-ndk.patch'
 
 <#
 .SYNOPSIS
-Prepares the exact upstream source revision used by the build.
+Prepares the monorepo source tree used by the build.
 
 .DESCRIPTION
-Requires source HEAD to resolve to SourceRef, refuses tracked source changes and removes untracked or ignored source outputs before release artifacts are produced.
+`source` is a regular tracked directory inside this repository. Builds use the current working tree so source changes can be tested before they are committed. If SourceRef is provided explicitly, the root repository HEAD must resolve to that ref.
 #>
 function Prepare-SourceRevision([string]$ExpectedRef) {
-    if (-not (Test-Path (Join-Path $SourceDir '.git'))) {
-        throw "hashcat source checkout is missing: $SourceDir. Run scripts\UPDATE.ps1 first."
+    if (-not (Test-Path (Join-Path $SourceDir 'src\Makefile'))) {
+        throw "hashcat source tree is missing or incomplete: $SourceDir"
     }
 
-    $head = (& git -C $SourceDir rev-parse HEAD).Trim()
-    $expected = (& git -C $SourceDir rev-parse "$ExpectedRef^{commit}" 2>$null)
-    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($expected)) {
-        throw "Required upstream source ref is not available: $ExpectedRef. Run scripts\UPDATE.ps1."
+    if (-not [string]::IsNullOrWhiteSpace($ExpectedRef)) {
+        $head = (& git -C $RootDir rev-parse HEAD).Trim()
+        $expected = (& git -C $RootDir rev-parse "$ExpectedRef^{commit}" 2>$null)
+        if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($expected)) {
+            throw "Required repository ref is not available: $ExpectedRef."
+        }
+
+        if ($head -ne $expected.Trim()) {
+            throw "repository HEAD $head does not match required SourceRef $($expected.Trim())."
+        }
     }
 
-    if ($head -ne $expected.Trim()) {
-        throw "source HEAD $head does not match required SourceRef $($expected.Trim()). Run scripts\UPDATE.ps1 before building."
-    }
-
-    $trackedChanges = (& git -C $SourceDir status --porcelain --untracked-files=no)
-    if ($trackedChanges) {
-        throw 'source contains tracked local changes. Release builds require the pinned upstream checkout.'
-    }
-
-    & git -C $SourceDir clean -fdx | Out-Null
-    if ($LASTEXITCODE -ne 0) {
-        throw 'Unable to remove generated, untracked or ignored files from source.'
-    }
+    Reset-AndroidSourceOutputs $SourceDir
 }
 
 $AndroidTargetSpecs = [ordered]@{
@@ -99,23 +92,6 @@ function Convert-ToMsysPath([string]$Path) {
 
 function Add-UniqueTarget([System.Collections.Generic.List[string]]$List, [string]$Item) {
     if (-not $List.Contains($Item)) { [void]$List.Add($Item) }
-}
-
-function Invoke-GitApplyCheck([string]$PatchPath, [switch]$Reverse) {
-    $gitApplyErrorActionPreference = $ErrorActionPreference
-    try {
-        $ErrorActionPreference = 'Continue'
-        $arguments = @('apply')
-        if ($Reverse) { $arguments += '--reverse' }
-        $arguments += @('--check', '--ignore-space-change', '--ignore-whitespace', $PatchPath)
-
-        & git @arguments *> $null
-
-        return $LASTEXITCODE
-    }
-    finally {
-        $ErrorActionPreference = $gitApplyErrorActionPreference
-    }
 }
 
 function Convert-AndroidAbiToTarget([string]$Abi) {
@@ -349,13 +325,13 @@ function New-DirectoryPackage([string]$Directory, [string]$Platform) {
 
 <#
 .SYNOPSIS
-Removes generated Android outputs from the disposable upstream checkout.
+Removes generated Android outputs from the source tree.
 
 .DESCRIPTION
-Deletes every untracked and ignored file produced by prior builds while preserving tracked source files and temporary tracked Android patch changes.
+Deletes ignored files produced by prior builds under `source` while preserving tracked source changes.
 #>
 function Reset-AndroidSourceOutputs([string]$SourceDirectory) {
-    & git -C $SourceDirectory clean -fdx | Out-Null
+    & git -C $RootDir clean -fdX -- source | Out-Null
     if ($LASTEXITCODE -ne 0) {
         throw "Unable to clean generated Android source outputs: $SourceDirectory"
     }
@@ -363,7 +339,18 @@ function Reset-AndroidSourceOutputs([string]$SourceDirectory) {
 
 <#
 .SYNOPSIS
-Builds one Android ABI from the pinned upstream source plus the repository Android patch.
+Restores generated source outputs after a build.
+
+.DESCRIPTION
+Keeps tracked source changes intact and removes ignored build outputs from `source`.
+#>
+function Restore-SourceCheckout([string]$SourceDirectory) {
+    Reset-AndroidSourceOutputs $SourceDirectory
+}
+
+<#
+.SYNOPSIS
+Builds one Android ABI from the monorepo hashcat source tree.
 
 .DESCRIPTION
 Uses Android NDK Clang through MSYS2, builds the hashcat frontend and native modules/bridges, then copies ABI-specific binaries and shared runtime assets into build and release directories.
@@ -400,7 +387,7 @@ function Invoke-AndroidTarget([pscustomobject]$Config, [string]$ResolvedAndroidN
     $makeCommand = @(
         'set -e',
         "cd $sourceForMsys",
-        'mkdir -p obj modules bridges bridges/subs',
+        'mkdir -p obj obj/contrib/minizip modules bridges bridges/subs',
         "export PATH=${ndkBinForMsys}:`$PATH",
         "export TMPDIR=$tempForMsys",
         "export TMP=$tempForMsys",
@@ -498,7 +485,6 @@ $DesktopTargets = @($ExpandedTargets | Where-Object { -not $AndroidTargetSpecs.C
 
 $buildMutex = [System.Threading.Mutex]::new($false, 'Global\HASHCAT_WRAPPER_D_PROJECTS_HASHCAT_ANDROID_RUNTIME_V2')
 $lockTaken = $false
-$patchApplied = $false
 
 try {
     $lockTaken = $buildMutex.WaitOne(0)
@@ -524,30 +510,6 @@ try {
             if (-not (Test-Path $SourceDir)) { throw "hashcat source directory is missing: $SourceDir" }
             if (-not (Test-Path (Join-Path $SourceDir 'src\Makefile'))) { throw "hashcat Makefile is missing in source: $SourceDir" }
 
-            if (Test-Path $PatchFile) {
-                Push-Location $SourceDir
-                try {
-                    $applyCheckExitCode = Invoke-GitApplyCheck $PatchFile
-                    if ($applyCheckExitCode -eq 0) {
-                        Write-Output "Applying wrapper Android patch: $PatchFile"
-                        git apply $PatchFile
-                        if ($LASTEXITCODE -ne 0) { throw "git apply failed for: $PatchFile" }
-                        $patchApplied = $true
-                    }
-                    else {
-                        $reverseCheckExitCode = Invoke-GitApplyCheck $PatchFile -Reverse
-                        if ($reverseCheckExitCode -eq 0) {
-                            Write-Output 'Wrapper Android patch is already applied.'
-                            $patchApplied = $true
-                        }
-                        else {
-                            throw "Wrapper Android patch cannot be applied cleanly: $PatchFile"
-                        }
-                    }
-                }
-                finally { Pop-Location }
-            }
-
             foreach ($androidTarget in $AndroidTargets) {
                 Invoke-AndroidTarget $AndroidTargetSpecs[$androidTarget] $ResolvedAndroidNdk $ResolvedMsys2Bash
             }
@@ -558,12 +520,7 @@ try {
         if ($AndroidTargets.Count -gt 0) {
             Reset-AndroidSourceOutputs $SourceDir
 
-            if ($patchApplied) {
-                Write-Output 'Restoring upstream source before desktop builds.'
-                git -C $SourceDir checkout -- src/Makefile src/affinity.c src/main.c src/folder.c src/monitor.c include/types.h src/cpu_features.c src/bridges/bridge_argon2id_reference.c deps/scrypt-jane-master/code/scrypt-jane-portable.h
-                if ($LASTEXITCODE -ne 0) { throw 'Unable to restore upstream source before desktop builds.' }
-                $patchApplied = $false
-            }
+            Restore-SourceCheckout $SourceDir
         }
 
         Invoke-DesktopTargets $DesktopTargets
@@ -571,24 +528,16 @@ try {
 }
 finally {
     if (Test-Path $SourceDir) {
-        if ($patchApplied) {
-            Write-Output 'Reverting temporary wrapper Android patch.'
-            git -C $SourceDir checkout -- src/Makefile src/affinity.c src/main.c src/folder.c src/monitor.c include/types.h src/cpu_features.c src/bridges/bridge_argon2id_reference.c deps/scrypt-jane-master/code/scrypt-jane-portable.h 2>$null
-        }
         $restoreErrorActionPreference = $ErrorActionPreference
         try {
             $ErrorActionPreference = 'Continue'
-            git -C $SourceDir clean -fdx 2>$null | Out-Null
+            git -C $RootDir clean -fdX -- source 2>$null | Out-Null
             if ($LASTEXITCODE -ne 0) {
                 Start-Sleep -Milliseconds 500
-                git -C $SourceDir clean -fdx 2>$null | Out-Null
+                git -C $RootDir clean -fdX -- source 2>$null | Out-Null
                 if ($LASTEXITCODE -ne 0) {
-                    Write-Warning 'Generated Android build artifacts could not be completely removed.'
+                    Write-Warning 'Generated Android source build artifacts could not be completely removed.'
                 }
-            }
-            git -C $SourceDir checkout -- src/Makefile src/affinity.c src/main.c src/folder.c src/monitor.c include/types.h src/cpu_features.c src/bridges/bridge_argon2id_reference.c deps/scrypt-jane-master/code/scrypt-jane-portable.h 2>$null
-            if ($LASTEXITCODE -ne 0) {
-                Write-Warning 'Generated Android source changes could not be completely restored.'
             }
         }
         finally {
