@@ -134,6 +134,19 @@ u64 module_esalt_size (MAYBE_UNUSED const hashconfig_t *hashconfig, MAYBE_UNUSED
   return esalt_size;
 }
 
+char *module_jit_build_options (MAYBE_UNUSED const hashconfig_t *hashconfig, MAYBE_UNUSED const user_options_t *user_options, MAYBE_UNUSED const user_options_extra_t *user_options_extra, MAYBE_UNUSED const hashes_t *hashes, MAYBE_UNUSED const hc_device_param_t *device_param)
+{
+  if (device_param == NULL) return NULL;
+  if (device_param->is_opencl == false) return NULL;
+  if (device_param->device_name == NULL) return NULL;
+  if (strstr (device_param->device_name, "Adreno") == NULL) return NULL;
+
+  // Safety: do not disable WPA verification kernels based on esalt/digest
+  // indexing or benchmark assumptions. Retain only the diagnostic noinline
+  // setting until each auxiliary path is verified end-to-end.
+  return hcstrdup ("-D M22000_ADRENO_NOINLINE");
+}
+
 static bool is_hccapx (HCFILE *fp)
 {
   hccapx_t hccapx;
@@ -1380,7 +1393,7 @@ void module_init (module_ctx_t *module_ctx)
   module_ctx->module_hook23                   = MODULE_DEFAULT;
   module_ctx->module_hook_salt_size           = MODULE_DEFAULT;
   module_ctx->module_hook_size                = MODULE_DEFAULT;
-  module_ctx->module_jit_build_options        = MODULE_DEFAULT;
+  module_ctx->module_jit_build_options        = module_jit_build_options;
   module_ctx->module_jit_cache_disable        = MODULE_DEFAULT;
   module_ctx->module_kernel_accel_max         = MODULE_DEFAULT;
   module_ctx->module_kernel_accel_min         = MODULE_DEFAULT;

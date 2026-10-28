@@ -5,6 +5,12 @@
 
 #define NEW_SIMD_CODE
 
+#ifdef M22000_ADRENO_NOINLINE
+#define M22000_NOINLINE __attribute__ ((noinline))
+#else
+#define M22000_NOINLINE
+#endif
+
 #ifdef KERNEL_STATIC
 #include M2S(INCLUDE_PATH/inc_vendor.h)
 #include M2S(INCLUDE_PATH/inc_types.h)
@@ -109,7 +115,7 @@ DECLSPEC void make_kn (PRIVATE_AS u32 *k)
   k[3] ^= c * 0x87000000;
 }
 
-DECLSPEC void hmac_sha1_run_V (PRIVATE_AS u32x *w0, PRIVATE_AS u32x *w1, PRIVATE_AS u32x *w2, PRIVATE_AS u32x *w3, PRIVATE_AS const u32x *ipad, PRIVATE_AS const u32x *opad, PRIVATE_AS u32x *digest)
+DECLSPEC M22000_NOINLINE void hmac_sha1_run_V (PRIVATE_AS u32x *w0, PRIVATE_AS u32x *w1, PRIVATE_AS u32x *w2, PRIVATE_AS u32x *w3, PRIVATE_AS const u32x *ipad, PRIVATE_AS const u32x *opad, PRIVATE_AS u32x *digest)
 {
   digest[0] = ipad[0];
   digest[1] = ipad[1];
@@ -145,6 +151,67 @@ DECLSPEC void hmac_sha1_run_V (PRIVATE_AS u32x *w0, PRIVATE_AS u32x *w1, PRIVATE
   sha1_transform_vector (w0, w1, w2, w3, digest);
 }
 
+#ifndef M22000_SPLIT_AUX
+
+#ifdef M22000_ADRENO_NOINLINE
+DECLSPEC M22000_NOINLINE void m22000_init_block (PRIVATE_AS const sha1_hmac_ctx_t *base, const u32 block, PRIVATE_AS u32 *out)
+{
+  u32 w0[4] = { block, 0, 0, 0 };
+  u32 w1[4] = { 0, 0, 0, 0 };
+  u32 w2[4] = { 0, 0, 0, 0 };
+  u32 w3[4] = { 0, 0, 0, 0 };
+
+  sha1_hmac_ctx_t ctx = *base;
+
+  sha1_hmac_update_64 (&ctx, w0, w1, w2, w3, 4);
+  sha1_hmac_final (&ctx);
+
+  out[0] = ctx.opad.h[0];
+  out[1] = ctx.opad.h[1];
+  out[2] = ctx.opad.h[2];
+  out[3] = ctx.opad.h[3];
+  out[4] = ctx.opad.h[4];
+}
+
+KERNEL_FQ KERNEL_FA void m22000_init (KERN_ATTR_TMPS_ESALT (wpa_pbkdf2_tmp_t, wpa_t))
+{
+  const u64 gid = get_global_id (0);
+
+  if (gid >= GID_CNT) return;
+
+  sha1_hmac_ctx_t base;
+
+  sha1_hmac_init_global_swap (&base, pws[gid].i, pws[gid].pw_len);
+
+  tmps[gid].ipad[0] = base.ipad.h[0];
+  tmps[gid].ipad[1] = base.ipad.h[1];
+  tmps[gid].ipad[2] = base.ipad.h[2];
+  tmps[gid].ipad[3] = base.ipad.h[3];
+  tmps[gid].ipad[4] = base.ipad.h[4];
+
+  tmps[gid].opad[0] = base.opad.h[0];
+  tmps[gid].opad[1] = base.opad.h[1];
+  tmps[gid].opad[2] = base.opad.h[2];
+  tmps[gid].opad[3] = base.opad.h[3];
+  tmps[gid].opad[4] = base.opad.h[4];
+
+  sha1_hmac_update_global_swap (&base, esalt_bufs[DIGESTS_OFFSET_HOST].essid_buf, esalt_bufs[DIGESTS_OFFSET_HOST].essid_len);
+
+  u32 out1[5];
+  u32 out2[5];
+
+  m22000_init_block (&base, 1, out1);
+  m22000_init_block (&base, 2, out2);
+
+  for (u32 i = 0; i < 5; i++)
+  {
+    tmps[gid].dgst[i + 0] = out1[i];
+    tmps[gid].out [i + 0] = out1[i];
+    tmps[gid].dgst[i + 5] = out2[i];
+    tmps[gid].out [i + 5] = out2[i];
+  }
+}
+#else
 KERNEL_FQ KERNEL_FA void m22000_init (KERN_ATTR_TMPS_ESALT (wpa_pbkdf2_tmp_t, wpa_t))
 {
   /**
@@ -252,6 +319,8 @@ KERNEL_FQ KERNEL_FA void m22000_init (KERN_ATTR_TMPS_ESALT (wpa_pbkdf2_tmp_t, wp
   tmps[gid].out[8] = sha1_hmac_ctx2.opad.h[3];
   tmps[gid].out[9] = sha1_hmac_ctx2.opad.h[4];
 }
+#endif
+
 
 KERNEL_FQ KERNEL_FA void m22000_loop (KERN_ATTR_TMPS_ESALT (wpa_pbkdf2_tmp_t, wpa_t))
 {
@@ -400,6 +469,9 @@ KERNEL_FQ KERNEL_FA void m22000_comp (KERN_ATTR_TMPS_ESALT (wpa_pbkdf2_tmp_t, wp
 {
   // not in use here, special case...
 }
+
+#endif // M22000_SPLIT_AUX
+#ifndef M22000_SPLIT_BASE
 
 KERNEL_FQ KERNEL_FA void m22000_aux1 (KERN_ATTR_TMPS_ESALT (wpa_pbkdf2_tmp_t, wpa_t))
 {
@@ -1138,3 +1210,5 @@ KERNEL_FQ KERNEL_FA void m22000_aux4 (KERN_ATTR_TMPS_ESALT (wpa_pbkdf2_tmp_t, wp
 
   #endif
 }
+
+#endif // M22000_SPLIT_BASE

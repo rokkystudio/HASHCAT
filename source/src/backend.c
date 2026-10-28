@@ -13130,7 +13130,7 @@ static int backend_session_setup_opencl_kernel_types (hashcat_ctx_t *hashcat_ctx
     {
       snprintf (kernel_name, sizeof (kernel_name), "m%05u_aux1", kern_type);
 
-      if (hc_clCreateKernel (hashcat_ctx, device_param->opencl_program, kernel_name, &device_param->opencl_kernel_aux1) == -1)
+      if (hc_clCreateKernel (hashcat_ctx, ((kern_type == 22000) && (device_param->opencl_program_m22000_aux != NULL)) ? device_param->opencl_program_m22000_aux : device_param->opencl_program, kernel_name, &device_param->opencl_kernel_aux1) == -1)
       {
         event_log_warning (hashcat_ctx, "* Device #%u: Kernel %s create failed.", device_param->device_id + 1, kernel_name);
 
@@ -13154,7 +13154,7 @@ static int backend_session_setup_opencl_kernel_types (hashcat_ctx_t *hashcat_ctx
     {
       snprintf (kernel_name, sizeof (kernel_name), "m%05u_aux2", kern_type);
 
-      if (hc_clCreateKernel (hashcat_ctx, device_param->opencl_program, kernel_name, &device_param->opencl_kernel_aux2) == -1)
+      if (hc_clCreateKernel (hashcat_ctx, ((kern_type == 22000) && (device_param->opencl_program_m22000_aux != NULL)) ? device_param->opencl_program_m22000_aux : device_param->opencl_program, kernel_name, &device_param->opencl_kernel_aux2) == -1)
       {
         event_log_warning (hashcat_ctx, "* Device #%u: Kernel %s create failed.", device_param->device_id + 1, kernel_name);
 
@@ -13178,7 +13178,7 @@ static int backend_session_setup_opencl_kernel_types (hashcat_ctx_t *hashcat_ctx
     {
       snprintf (kernel_name, sizeof (kernel_name), "m%05u_aux3", kern_type);
 
-      if (hc_clCreateKernel (hashcat_ctx, device_param->opencl_program, kernel_name, &device_param->opencl_kernel_aux3) == -1)
+      if (hc_clCreateKernel (hashcat_ctx, ((kern_type == 22000) && (device_param->opencl_program_m22000_aux != NULL)) ? device_param->opencl_program_m22000_aux : device_param->opencl_program, kernel_name, &device_param->opencl_kernel_aux3) == -1)
       {
         event_log_warning (hashcat_ctx, "* Device #%u: Kernel %s create failed.", device_param->device_id + 1, kernel_name);
 
@@ -13202,7 +13202,7 @@ static int backend_session_setup_opencl_kernel_types (hashcat_ctx_t *hashcat_ctx
     {
       snprintf (kernel_name, sizeof (kernel_name), "m%05u_aux4", kern_type);
 
-      if (hc_clCreateKernel (hashcat_ctx, device_param->opencl_program, kernel_name, &device_param->opencl_kernel_aux4) == -1)
+      if (hc_clCreateKernel (hashcat_ctx, ((kern_type == 22000) && (device_param->opencl_program_m22000_aux != NULL)) ? device_param->opencl_program_m22000_aux : device_param->opencl_program, kernel_name, &device_param->opencl_kernel_aux4) == -1)
       {
         event_log_warning (hashcat_ctx, "* Device #%u: Kernel %s create failed.", device_param->device_id + 1, kernel_name);
 
@@ -14565,6 +14565,11 @@ int backend_session_begin (hashcat_ctx_t *hashcat_ctx)
 
       build_options_module_buf[build_options_module_len] = 0;
 
+      if ((hashconfig->kern_type == 22000) && (device_param->is_opencl == true) && (device_param->device_name != NULL) && (strstr (device_param->device_name, "Adreno") != NULL))
+      {
+        event_log_warning (hashcat_ctx, "M22000 Adreno JIT options: %s", build_options_module_buf);
+      }
+
       #if defined (DEBUG)
       if (user_options->quiet == false) event_log_warning (hashcat_ctx, "* Device #%u: build_options_module '%s'", device_id + 1, build_options_module_buf);
       #endif
@@ -14631,13 +14636,28 @@ int backend_session_begin (hashcat_ctx_t *hashcat_ctx)
       generate_cached_kernel_filename (user_options->slow_candidates, hashconfig->attack_exec, user_options_extra->attack_kern, kern_type, hashconfig->opti_type, folder_config->cache_dir, device_name_chksum, cached_file, device_param->is_metal);
 
       /**
+       * Adreno mode 22000: compile PBKDF2 and verification entrypoints in
+       * distinct OpenCL programs. Every verification kernel remains intact.
+       */
+      const bool m22000_split = (hashconfig->kern_type == 22000) && (device_param->is_opencl == true) && (device_param->device_name != NULL) && (strstr (device_param->device_name, "Adreno") != NULL);
+
+      if (m22000_split)
+      {
+        const size_t used = strlen (build_options_module_buf);
+
+        if ((used + sizeof (" -D M22000_SPLIT_BASE")) >= build_options_sz) return -1;
+
+        strcat (build_options_module_buf, " -D M22000_SPLIT_BASE");
+      }
+
+      /**
        * load kernel
        */
 
       #if defined (__APPLE__)
-      const bool rc_load_kernel = load_kernel (hashcat_ctx, device_param, "main_kernel", source_file, cached_file, build_options_module_buf, cache_disable, &device_param->opencl_program, &device_param->cuda_module, &device_param->hip_module, &device_param->metal_library);
+      const bool rc_load_kernel = load_kernel (hashcat_ctx, device_param, "main_kernel", source_file, cached_file, build_options_module_buf, (cache_disable || m22000_split), &device_param->opencl_program, &device_param->cuda_module, &device_param->hip_module, &device_param->metal_library);
       #else
-      const bool rc_load_kernel = load_kernel (hashcat_ctx, device_param, "main_kernel", source_file, cached_file, build_options_module_buf, cache_disable, &device_param->opencl_program, &device_param->cuda_module, &device_param->hip_module, NULL);
+      const bool rc_load_kernel = load_kernel (hashcat_ctx, device_param, "main_kernel", source_file, cached_file, build_options_module_buf, (cache_disable || m22000_split), &device_param->opencl_program, &device_param->cuda_module, &device_param->hip_module, NULL);
       #endif
 
       if (rc_load_kernel == false)
@@ -14648,6 +14668,46 @@ int backend_session_begin (hashcat_ctx_t *hashcat_ctx)
 
         device_param->skipped_warning = true;
         continue;
+      }
+
+      if (m22000_split)
+      {
+        const char *base_macro = " -D M22000_SPLIT_BASE";
+        char *base_pos = strstr (build_options_module_buf, base_macro);
+
+        if (base_pos == NULL)
+        {
+          hc_clReleaseProgramPtr (hashcat_ctx, &device_param->opencl_program);
+          hcfree (build_options_module_buf);
+
+          return -1;
+        }
+
+        strcpy (base_pos, " -D M22000_SPLIT_AUX");
+
+        char aux_cached_file[320] = { 0 };
+
+        snprintf (aux_cached_file, sizeof (aux_cached_file), "%s.aux22000", cached_file);
+
+        #if defined (__APPLE__)
+        const bool rc_aux = load_kernel (hashcat_ctx, device_param, "m22000_aux_program", source_file, aux_cached_file, build_options_module_buf, true, &device_param->opencl_program_m22000_aux, &device_param->cuda_module, &device_param->hip_module, &device_param->metal_library);
+        #else
+        const bool rc_aux = load_kernel (hashcat_ctx, device_param, "m22000_aux_program", source_file, aux_cached_file, build_options_module_buf, true, &device_param->opencl_program_m22000_aux, &device_param->cuda_module, &device_param->hip_module, NULL);
+        #endif
+
+        if (rc_aux == false)
+        {
+          event_log_error (hashcat_ctx, "* Device #%u: Split WPA verification kernel build failed.", device_param->device_id + 1);
+          backend_kernel_build_warnings++;
+          device_param->skipped_warning = true;
+
+          // Release both partial programs before skipping this device.
+          hc_clReleaseProgramPtr (hashcat_ctx, &device_param->opencl_program_m22000_aux);
+          hc_clReleaseProgramPtr (hashcat_ctx, &device_param->opencl_program);
+          hcfree (build_options_module_buf);
+
+          continue;
+        }
       }
 
       hcfree (build_options_module_buf);
@@ -17286,6 +17346,7 @@ void backend_session_destroy (hashcat_ctx_t *hashcat_ctx)
       hc_clReleaseKernelPtr     (hashcat_ctx, &device_param->opencl_kernel_aux4);
 
       hc_clReleaseProgramPtr    (hashcat_ctx, &device_param->opencl_program);
+      hc_clReleaseProgramPtr    (hashcat_ctx, &device_param->opencl_program_m22000_aux);
       hc_clReleaseProgramPtr    (hashcat_ctx, &device_param->opencl_program_mp);
       hc_clReleaseProgramPtr    (hashcat_ctx, &device_param->opencl_program_amp);
       hc_clReleaseProgramPtr    (hashcat_ctx, &device_param->opencl_program_shared);
