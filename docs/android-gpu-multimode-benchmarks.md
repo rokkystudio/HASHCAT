@@ -15,7 +15,7 @@ All numbers below come from preserved `build/diagnostic-multimode/` logs, except
 | 1000 | NTLM | **3005.6 MH/s**, default | **136.3 MH/s**, `-w 1` | Both completed: RedMagic on-device+ADB exit 0, Pixel on-device+ADB exit 0; profiles differ |
 | 1400 | SHA-256 | **128.3 MH/s**, default | **40.5914 MH/s**, `-w 1` | Both finished; profiles differ |
 | 1800 | SHA-512crypt | **910 H/s**, default | Not established | RedMagic `ISOLATED_BENCHMARK_EXIT:0`; no finished Pixel result |
-| 22000 | WPA-PBKDF2-PMKID+EAPOL | **761 H/s**, previous isolated test | **No speed**, original and split Mali builds | Original log emitted `mmap failed: Out of memory`; separate split-program trial also emitted it and returned 134. Neither is a working GPU result |
+| 22000 | WPA-PBKDF2-PMKID+EAPOL | **755 H/s** on rebuilt Adreno-only baseline; **761 H/s** in earlier isolated test | **No speed**, original and split Mali builds | Original log emitted `mmap failed: Out of memory`; separate split-program trial also emitted it and returned 134. Neither is a working GPU result |
 
 ## Pixel reliability and GPU compilation issues
 
@@ -40,3 +40,9 @@ The recompiled frontend SHA-256 is `49c1619f608b1ab8e9e15deef90ac5269adf21425fb6
 ### Additional RedMagic NTLM verification (2026-10-30)
 
 The serial-specific app-private isolated runner was re-tested with mode `1000` after resolving its earlier staging conflict. Device log `build/diagnostic-multimode/NX709S-m01000-device.log` shows **3005.6 MH/s**, `ISOLATED_BENCHMARK_EXIT:0 mode=1000 workload=0`; host ADB also returned 0 and saved `.exit`=0. Isolated app cache and temporary staging were removed; rechecked the stock mode-22000 module/source SHA-256 values and found both unchanged. This measurement supersedes the previously inconclusive RedMagic NTLM attempt.
+
+### Rebuilt Adreno-only WPA benchmark confirmed (2026-10-30)
+
+After source rollback and a successful Android ARM64 rebuild, tested mode `22000` on RedMagic NX709S again using isolated app-private staging. `build/diagnostic-multimode/NX709S-m22000-device.log` reported **755 H/s**, `ISOLATED_BENCHMARK_EXIT:0 mode=22000 workload=0`; the host recorded **`DEVICE_EXIT:0`, `ADB_EXIT:0`, `HASHCAT_BENCHMARK_SUCCESS:True`** and the device exit-marker file contains `0`. After exit the temporary app-private stage was absent, and stock `module_22000.so` and `m22000-pure.cl` SHA-256 values were unchanged. The 755 and prior 761 H/s measurements are small single benchmark samples; no statistical performance conclusion follows. This remains a **benchmark-only** success, not proof of correct EAPOL/PMKID password verification.
+
+For the unresolved Pixel Mali driver crash, consider controlled isolated compile-only experiments that vary optimization (for example a supported OpenCL optimization-disable flag) and record the Mali compiler build log/crash stack. Only integrate a change after the actual kernel runs correctly on independent WPA-PBKDF2/PMKID/EAPOL test vectors; do not infer correctness from successful kernel creation or a benchmark alone.

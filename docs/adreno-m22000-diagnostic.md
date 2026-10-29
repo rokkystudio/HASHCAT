@@ -240,3 +240,7 @@ After the successful isolated run, verified **again** that the stock module and 
 ## Multi-device benchmarks and Mali compiler crash (2026-10-30)
 
 See `docs/android-gpu-multimode-benchmarks.md` for the measured RedMagic/Pixel mode 0, 100, 1000, 1400, 1800 and 22000 results, workload-profile qualifications, and exact log names. Pixel 9 Pro XL Mali-G715 successfully benchmarked MD5, SHA-1, NTLM and SHA-256, but *both* an original and an experimentally split 22000 translation unit failed with `mmap failed: Out of memory`; the split trial returned 134. An Android crash-stack for the original test entered Mali `clcc::run_early_inliner` / LLVM `InlineFunction` via `clCompileProgram`, so this is a compile-time issue, not proven physical GPU memory exhaustion. Mali-specific split/noinline source changes were reverted, and the Adreno-only baseline rebuilt successfully. No new successful GPU WPA correctness test or release.
+
+## Rebuilt baseline WPA benchmark retested (2026-10-30)
+
+On RedMagic NX709S, the locally rebuilt Adreno-only baseline compiled and executed the split-mode `-b -m 22000` benchmark with **755 H/s**, and both the on-device exit marker and host ADB exit were **0**. Isolated app-private stage removed; original 22000 module/source hashes remained unchanged. Exact detailed log: ignored `build/diagnostic-multimode/NX709S-m22000-device.log`. This confirms benchmark stability after the failed experimental Pixel-Mali split was reverted, not end-to-end PMKID/EAPOL verification.
