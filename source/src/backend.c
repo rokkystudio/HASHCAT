@@ -9913,7 +9913,13 @@ static bool load_kernel (hashcat_ctx_t *hashcat_ctx, hc_device_param_t *device_p
 
       if (strncmp (device_param->device_name, "Apple M", 7) == 0)
       {
-        if (hc_clCreateProgramWithSource (hashcat_ctx, device_param->opencl_context, 1, (const char **) kernel_sources, NULL, opencl_program) == -1) return false;
+        if (hc_clCreateProgramWithSource (hashcat_ctx, device_param->opencl_context, 1, (const char **) kernel_sources, NULL, opencl_program) == -1)
+        {
+          hc_clReleaseProgramPtr (hashcat_ctx, opencl_program);
+          hcfree (kernel_sources[0]);
+
+          return false;
+        }
 
         CL_rc = hc_clBuildProgram (hashcat_ctx, *opencl_program, 1, &device_param->opencl_device, build_options_buf, NULL, NULL);
 
@@ -9921,7 +9927,13 @@ static bool load_kernel (hashcat_ctx_t *hashcat_ctx, hc_device_param_t *device_p
       }
       else
       {
-        if (hc_clCreateProgramWithSource (hashcat_ctx, device_param->opencl_context, 1, (const char **) kernel_sources, NULL, &p1) == -1) return false;
+        if (hc_clCreateProgramWithSource (hashcat_ctx, device_param->opencl_context, 1, (const char **) kernel_sources, NULL, &p1) == -1)
+        {
+          hc_clReleaseProgramPtr (hashcat_ctx, &p1);
+          hcfree (kernel_sources[0]);
+
+          return false;
+        }
 
         CL_rc = hc_clCompileProgram (hashcat_ctx, p1, 1, &device_param->opencl_device, build_options_buf, 0, NULL, NULL, NULL, NULL);
 
@@ -9951,6 +9963,10 @@ static bool load_kernel (hashcat_ctx_t *hashcat_ctx, hc_device_param_t *device_p
         {
           hcfree (build_log);
 
+          if (p1 != NULL) hc_clReleaseProgramPtr (hashcat_ctx, &p1);
+          else if (strncmp (device_param->device_name, "Apple M", 7) == 0) hc_clReleaseProgramPtr (hashcat_ctx, opencl_program);
+          hcfree (kernel_sources[0]);
+
           return false;
         }
 
@@ -9961,7 +9977,14 @@ static bool load_kernel (hashcat_ctx_t *hashcat_ctx, hc_device_param_t *device_p
         hcfree (build_log);
       }
 
-      if (CL_rc == -1) return false;
+      if (CL_rc == -1)
+      {
+        if (p1 != NULL) hc_clReleaseProgramPtr (hashcat_ctx, &p1);
+        else if (strncmp (device_param->device_name, "Apple M", 7) == 0) hc_clReleaseProgramPtr (hashcat_ctx, opencl_program);
+        hcfree (kernel_sources[0]);
+
+        return false;
+      }
 
       // workaround opencl issue with Apple Silicon
 
@@ -9973,7 +9996,13 @@ static bool load_kernel (hashcat_ctx_t *hashcat_ctx, hc_device_param_t *device_p
 
         cl_program fin;
 
-        if (hc_clLinkProgram (hashcat_ctx, device_param->opencl_context, 1, &device_param->opencl_device, NULL, 1, t2, NULL, NULL, &fin) == -1) return false;
+        if (hc_clLinkProgram (hashcat_ctx, device_param->opencl_context, 1, &device_param->opencl_device, NULL, 1, t2, NULL, NULL, &fin) == -1)
+        {
+          hc_clReleaseProgramPtr (hashcat_ctx, &p1);
+          hcfree (kernel_sources[0]);
+
+          return false;
+        }
 
         // it seems errors caused by clLinkProgram() do not go into CL_PROGRAM_BUILD
         // I couldn't find any information on the web explaining how else to retrieve the error messages from the linker
@@ -14645,7 +14674,12 @@ int backend_session_begin (hashcat_ctx_t *hashcat_ctx)
       {
         const size_t used = strlen (build_options_module_buf);
 
-        if ((used + sizeof (" -D M22000_SPLIT_BASE")) >= build_options_sz) return -1;
+        if ((used + sizeof (" -D M22000_SPLIT_BASE")) >= build_options_sz)
+        {
+          hcfree (build_options_module_buf);
+
+          return -1;
+        }
 
         strcat (build_options_module_buf, " -D M22000_SPLIT_BASE");
       }
@@ -14667,6 +14701,11 @@ int backend_session_begin (hashcat_ctx_t *hashcat_ctx)
         backend_kernel_build_warnings++;
 
         device_param->skipped_warning = true;
+
+        if (m22000_split) hc_clReleaseProgramPtr (hashcat_ctx, &device_param->opencl_program);
+
+        hcfree (build_options_module_buf);
+
         continue;
       }
 
