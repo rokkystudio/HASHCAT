@@ -6,3 +6,5 @@
 *.md text
 *.xml text
 *.txt text
+# Recovery and diagnostic Android shell scripts must remain LF on Windows.
+tools/*.sh text eol=lf

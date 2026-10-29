@@ -16,6 +16,12 @@ if ($LASTEXITCODE -ne 0 -or (($state -join '') -notmatch '^device\s*$')) {
     throw "RedMagic $serial is not connected to ADB. Reconnect it with USB debugging enabled before retrying."
 }
 
+# A serial match alone is not enough to risk modifying app storage.
+$model = & adb -s $serial shell getprop ro.product.model 2>$null
+if ($LASTEXITCODE -ne 0 -or (($model -join '').Trim() -ne 'NX709S')) {
+    throw "Target $serial did not identify as RedMagic NX709S; no app files changed."
+}
+
 & adb -s $serial push $localScript $remoteScript 2>$null | Out-Null
 if ($LASTEXITCODE -ne 0) {
     throw 'Could not upload restore script; no app files have been modified by this attempt.'
