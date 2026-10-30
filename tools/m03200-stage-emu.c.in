@@ -1,0 +1,209 @@
+/*
+ * Compute deterministic bcrypt stage references from the hashcat Blowfish
+ * helper implementation using one CPU candidate and one decoded salt.
+ *
+ * tools/test-m03200-stage-emu.py inserts the unchanged helper implementation
+ * from source/OpenCL/inc_cipher_blowfish.cl into this template.
+ * No OpenCL driver or GPU kernel is used.
+ */
+
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+typedef uint8_t u8;
+typedef uint32_t u32;
+typedef uint64_t u64;
+typedef u8 u8a;
+typedef u32 u32a;
+
+#define CONSTANT_VK static const
+#define LOCAL_AS
+#define PRIVATE_AS
+#define DECLSPEC static
+
+static inline u32 unpack_v8a_from_v32_S (const u32 value) { return (value >>  0) & 0xff; }
+static inline u32 unpack_v8b_from_v32_S (const u32 value) { return (value >>  8) & 0xff; }
+static inline u32 unpack_v8c_from_v32_S (const u32 value) { return (value >> 16) & 0xff; }
+static inline u32 unpack_v8d_from_v32_S (const u32 value) { return (value >> 24) & 0xff; }
+static inline u32 hc_swap32_S (const u32 value)
+{
+  return ((value & 0xff000000u) >> 24)
+       | ((value & 0x00ff0000u) >>  8)
+       | ((value & 0x0000ff00u) <<  8)
+       | ((value & 0x000000ffu) << 24);
+}
+
+@@BLOWFISH_SOURCE@@
+
+/**
+ * Print one stage's complete intermediate Blowfish state as big-endian words.
+ * The output includes all 18 P-array words and all 1024 S-box words.
+ */
+static void print_stage (const char *stage, const u32 *P, const u32 *S0, const u32 *S1, const u32 *S2, const u32 *S3)
+{
+  const u32 *buffers[] = { P, S0, S1, S2, S3 };
+  const char *labels[] = { "P", "S0", "S1", "S2", "S3" };
+  const size_t lengths[] = { 18, 256, 256, 256, 256 };
+
+  for (size_t row = 0; row < 5; row++)
+  {
+    printf ("%s_%s=", stage, labels[row]);
+
+    for (size_t i = 0; i < lengths[row]; i++)
+    {
+      printf ("%08x", buffers[row][i]);
+    }
+
+    puts ("");
+  }
+}
+
+/**
+ * Parse exactly 16 bytes of binary bcrypt salt supplied as 32 hex digits.
+ */
+static void parse_salt (const char *encoded, u32 *words)
+{
+  if (strlen (encoded) != 32)
+  {
+    fprintf (stderr, "expected 32 hex digits for bcrypt salt\n");
+    exit (2);
+  }
+
+  u8 decoded[16];
+
+  for (size_t i = 0; i < 16; i++)
+  {
+    unsigned int value = 0;
+
+    if (sscanf (encoded + (i * 2), "%2x", &value) != 1)
+    {
+      fprintf (stderr, "invalid hexadecimal salt\n");
+      exit (3);
+    }
+
+    decoded[i] = (u8) value;
+  }
+
+  memcpy (words, decoded, sizeof (decoded));
+
+  for (size_t i = 0; i < 4; i++)
+  {
+    words[i] = hc_swap32_S (words[i]);
+  }
+}
+
+/**
+ * Execute the source-equivalent bcrypt init, expand-key loop, and six final
+ * ciphertext words for a synthetic candidate and a decoded bcrypt salt.
+ */
+int main (int argc, char **argv)
+{
+  if (argc != 4)
+  {
+    fprintf (stderr, "usage: bcrypt-stage-emu <candidate> <salt-hex> <cost>\n");
+
+    return 2;
+  }
+
+  const char *password = argv[1];
+  const size_t password_length = strlen (password);
+  const int cost = atoi (argv[3]);
+
+  if (password_length < 1 || password_length > 71 || cost < 4 || cost > 10)
+  {
+    fprintf (stderr, "candidate length or cost is out of diagnostic bounds\n");
+
+    return 3;
+  }
+
+  u32 W[18] = { 0 };
+  u32 E[18] = { 0 };
+  u32 salt[4] = { 0 };
+  u32 P[18] = { 0 };
+  u32 S0[256] = { 0 };
+  u32 S1[256] = { 0 };
+  u32 S2[256] = { 0 };
+  u32 S3[256] = { 0 };
+
+  memcpy (W, password, password_length);
+  parse_salt (argv[2], salt);
+  expand_key (E, W, (int) password_length);
+
+  for (u32 i = 0; i < 18; i++)
+  {
+    E[i] = hc_swap32_S (E[i]);
+  }
+
+  printf ("EXPANDED_KEY=");
+
+  for (u32 i = 0; i < 18; i++)
+  {
+    printf ("%08x", E[i]);
+  }
+
+  puts ("");
+
+  blowfish_set_key_salt (E, 18, salt, P, S0, S1, S2, S3);
+
+  print_stage ("INIT", P, S0, S1, S2, S3);
+
+  const u32 iterations = (u32) 1 << cost;
+
+  for (u32 iteration = 0; iteration < iterations; iteration++)
+  {
+    for (u32 i = 0; i < 18; i++)
+    {
+      P[i] ^= E[i];
+    }
+
+    blowfish_encrypt (P, S0, S1, S2, S3);
+
+    for (u32 i = 0; i < 18; i++)
+    {
+      P[i] ^= salt[i % 4];
+    }
+
+    blowfish_encrypt (P, S0, S1, S2, S3);
+
+    if (iteration == 0)
+    {
+      print_stage ("LOOP1", P, S0, S1, S2, S3);
+    }
+  }
+
+  print_stage ("LOOP_FINAL", P, S0, S1, S2, S3);
+
+  u32 results[6] =
+  {
+    0x4f727068u, 0x65616e42u,
+    0x65686f6cu, 0x64657253u,
+    0x63727944u, 0x6f756274u
+  };
+
+  for (u32 pair = 0; pair < 3; pair++)
+  {
+    u32 L0 = results[pair * 2 + 0];
+    u32 R0 = results[pair * 2 + 1];
+
+    for (u32 i = 0; i < 64; i++)
+    {
+      BF_ENCRYPT (L0, R0);
+    }
+
+    results[pair * 2 + 0] = L0;
+    results[pair * 2 + 1] = R0;
+  }
+
+  printf ("COMP_R=");
+
+  for (u32 i = 0; i < 6; i++)
+  {
+    printf ("%08x", results[i]);
+  }
+
+  puts ("");
+
+  return 0;
+}
