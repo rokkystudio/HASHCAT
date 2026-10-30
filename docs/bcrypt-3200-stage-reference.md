@@ -135,3 +135,17 @@ Run the complete comparison regression:
     python -B tools/test-m03200-stock-comp-cpu.py
 
 This further confirms the CPU correctness of hashcat's complete mode-3200 path, including final comparison and result marking, under both native optimization settings. It does not establish that Qualcomm's OpenCL compilation produces the same machine behavior. The RedMagic stock GPU self-test still has archived exit code 245, and no complete GPU stage readback exists. Keep the normal self-test enabled and require a positive real GPU result before declaring bcrypt 3200 supported on Adreno.
+
+## Native GCC undefined-behavior trap regression
+
+The CPU-only script tools/test-m03200-ub-trap-cpu.py compiles the unchanged stock mode-3200 init/loop source, the isolated diagnostic probe source, and the unmodified stock comparison path as three separate native executables. Each uses GCC -O1 -fsanitize=undefined -fsanitize-undefined-trap-on-error, which inserts direct process traps instead of requiring the libubsan runtime library.
+
+Before executing bcrypt, the test compiles a deliberately signed-overflowing standalone program using the same sanitizer flags. Its nonzero process exit demonstrates that the selected toolchain can detect and stop on a basic undefined operation; this is a control for the test environment, not a real issue in bcrypt.
+
+The positive and negative synthetic candidates hashcat and hashcat2 are then executed. All 1060 32-bit words in each of the three 4240-byte states are compared with the independent CPU reference, and the stock/probe native buffers must match exactly. The six output ciphertext words are checked, followed by the original mode-3200 inc_comp_multi, check, find_hash, and mark_hash path against both expected digests. All four positive/negative comparisons are required to agree with the public reference.
+
+Run the regression with a native GCC that supports undefined-behavior trap instrumentation:
+
+    python -B tools/test-m03200-ub-trap-cpu.py
+
+The 2026-10-30 Windows MinGW GCC test passes: one deliberate overflow is trapped and neither candidate triggers a sanitizer trap in the instrumented native bcrypt calculations. This result does not prove freedom from undefined behavior for every input, does not detect GPU-only races or compiler miscompilation, and does not change the Adreno GPU status. The last archived RedMagic bcrypt self-test remains exit 245, with no verified intermediate device readback.
