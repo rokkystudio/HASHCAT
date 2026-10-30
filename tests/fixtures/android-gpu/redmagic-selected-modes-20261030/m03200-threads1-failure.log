@@ -1,0 +1,40 @@
+hashcat (v7.1.2) starting
+
+You have enabled --force to bypass dangerous warnings and errors!
+This can hide serious problems and should only be done when debugging.
+Do not report hashcat issues encountered when using --force.
+
+Initializing bridges. Please be patient...Initialized bridgesInitializing backend runtimes. Please be patient...Initialized backend runtimesInitializing backend devices. Please be patient...Initialized backend devicesOpenCL API (OpenCL 3.0 QUALCOMM build: commit #21eaafda81 changeid #I578ccc16f0 Date: 07/19/22 Tue Local Branch:  Remote Branch: ) - Platform #1 [QUALCOMM]
+===========================================================================================================================================================
+* Device #01: QUALCOMM Adreno(TM), 2761/5523 MB (512 MB allocatable), 4MCU
+
+Minimum password length supported by kernel: 0
+Maximum password length supported by kernel: 72
+Minimum salt length supported by kernel: 0
+Maximum salt length supported by kernel: 256
+
+Counting lines in /data/local/tmp/hc-redmagic-bcrypt-thread-input/m03200.hash. Please be patient...Counted lines in /data/local/tmp/hc-redmagic-bcrypt-thread-input/m03200.hashParsed Hashes: 1/1 (100.00%)Parsed Hashes: 1/1 (100.00%)Sorting hashes. Please be patient...Sorted hashesRemoving duplicate hashes. Please be patient...Removed duplicate hashesSorting salts. Please be patient...Sorted saltsGenerating bitmap tables...Generated bitmap tablesHashes: 1 digests; 1 unique digests, 1 unique salts
+Bitmaps: 16 bits, 65536 entries, 0x0000ffff mask, 262144 bytes, 5/13 rotates
+
+Optimizers applied:
+* Zero-Byte
+* Single-Hash
+* Single-Salt
+* Brute-Force
+
+Watchdog: Hardware monitoring interface not found on your system.
+Watchdog: Temperature abort trigger disabled.
+
+Initializing bridge salts. Please be patient...Initialized bridge saltsInitializing device kernels and memory. Please be patient...Initializing backend runtime for device #1. Please be patient...Initialized backend runtime for device #1Host memory allocated for this attack: 513 MB (4314 MB free)
+
+Initialized device kernels and memoryStarting self-test. Please be patient...* Device #1: ATTENTION! OpenCL kernel self-test failed.
+
+Your device driver installation is probably broken.
+See also: https://hashcat.net/faq/wrongdriver
+
+Aborting session due to kernel self-test failure.
+
+You can use --self-test-disable to override, but do not report related errors.
+
+Started: Fri Oct 30 18:07:27 2026
+Stopped: Fri Oct 30 18:08:07 2026

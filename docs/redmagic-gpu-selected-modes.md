@@ -21,6 +21,22 @@ The NetNTLMv2 Adreno failure is a program-link failure for a specific pure kerne
 
 The bcrypt result is a **self-test failure**, not a wrong-password result or successful recovery. No attempt was made to bypass the self-test. The module and kernel SHA-256 values match the Pixel case, which indicates that a change in these exact staged files does not explain the differing result. The cause within the Adreno kernel execution, driver, workgroup configuration, or local-memory use is not yet established.
 
+## bcrypt one-thread control and independent CPU reference
+
+A second, isolated RedMagic run selected the same `m03200.hash` input and explicitly requested `--kernel-threads 1` with `--force`, which hashcat requires for this work-group override. The built-in self-test stayed **enabled**. It reached `Starting self-test` and reported `OpenCL kernel self-test failed`, with process exit `245` and no recovered plaintext. The raw artifacts are `m03200-threads1-failure.log` and `m03200-threads1-failure.exit`; the corresponding deterministic runner is `tools/run-redmagic-bcrypt-thread-probe.sh`. This confirms that reducing the work-group to one thread does not, by itself, produce a correct GPU result. Work-group sizes two and four have not been verified by archived evidence.
+
+In `source/src/selftest.c`, `selftest_cleanup()` reads the 32-bit device result count using `clEnqueueReadBuffer`. The warning is emitted by `process_selftest()` when the returned `num_cracked` is zero. The log therefore identifies a missing self-test match after kernel execution, **not** an OpenCL compile/link failure. It does not identify whether the underlying fault lies in bcrypt computation, intermediate state, comparison, dispatch, or the driver.
+
+For OpenCL GPUs, `blowfish_module_jit_build_options()` selects `FIXED_LOCAL_SIZE` from `device_local_mem_size / 4096`, or from the explicitly requested `--kernel-threads` count when provided. The three Blowfish kernels allocate four local arrays of 256 `u32` entries **per work-item**, corresponding to 4096 bytes per work-item, before any implementation-specific overhead. The one-thread test uses a smaller local-memory footprint yet fails the same self-test. This alone cannot establish that local-memory behavior is correct.
+
+An independent Linux `libcrypt` / `crypt(3)` CPU calculation verified the archived `$2a$05$` bcrypt record: `hashcat` reproduced the exact record and `hashcat2` produced a different record. The reproducible Linux-only test is:
+
+```text
+python tools/test-bcrypt-libcrypt-linux.py
+```
+
+The test explicitly fails if Linux `libcrypt` or bcrypt `$2a$` support is unavailable. It does not silently skip its CPU controls on Windows. The platform-independent archived-GPU validator includes the one-thread device failure and does not claim a successful Adreno bcrypt result.
+
 ## Inputs, checks, and evidence
 
 The directory `tests/fixtures/android-gpu/redmagic-selected-modes-20261030/` contains all three exact input hashes, raw device logs, exit-code files, plaintext output for both successes, and `manifest.json` recording the tested module and OpenCL-file hashes. Failure cases intentionally have no recovered-plaintext file.
@@ -30,7 +46,7 @@ The directory `tests/fixtures/android-gpu/redmagic-selected-modes-20261030/` con
 - independent CPU calculations for the md5crypt and NetNTLMv2 references;
 - bcrypt test input matching `module_03200.c`'s public self-test hash and password;
 - correct `Cracked` status, GPU kernel feature, exact recovered `hashcat`, and process exit 0 for modes 500 optimized and 5600 optimized;
-- exact bcrypt self-test failure/exit 245 and NetNTLMv2 pure-kernel link failure/exit 251;
+- exact bcrypt self-test failure/exit 245 under default and one-thread work-group settings, and NetNTLMv2 pure-kernel link failure/exit 251;
 - verified Pixel success of pure bcrypt and NetNTLMv2 and matching staged module/OpenCL hashes between devices.
 
 On the host, run:

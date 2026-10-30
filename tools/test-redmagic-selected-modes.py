@@ -119,6 +119,26 @@ def verify_bcrypt_failure() -> None:
     print("PASS bcrypt hardware divergence documented: RedMagic self-test exit 245, Pixel exit 0")
 
 
+def verify_bcrypt_single_thread_failure() -> None:
+    """Validate the archived one-thread Adreno bcrypt self-test rejection."""
+    stem = "m03200-threads1-failure"
+    log = read(REDMAGIC / f"{stem}.log")
+    assert read(REDMAGIC / f"{stem}.exit").strip() == "245"
+    assert "Status...........: Cracked" not in log
+    for fragment in (
+        "Starting self-test.",
+        "* Device #1: ATTENTION! OpenCL kernel self-test failed.",
+        "Aborting session due to kernel self-test failure.",
+    ):
+        assert fragment in log, (stem, fragment)
+    assert not (REDMAGIC / f"{stem}.recovered").exists()
+
+    runner = read(ROOT / "tools" / "run-redmagic-bcrypt-thread-probe.sh")
+    assert 'KERNEL_ARGS="--force --kernel-threads $THREADS"' in runner
+    assert "--self-test-disable" not in runner
+    print("PASS RedMagic bcrypt one-thread self-test rejection: exit 245")
+
+
 def verify_netntlmv2_pure_failure() -> None:
     """Require Adreno OpenCL a3-pure link failure while Pixel recovered the same hash."""
     stem = "m05600-pure-failure"
@@ -139,10 +159,11 @@ def verify_netntlmv2_pure_failure() -> None:
 
 
 def main() -> None:
-    """Verify three cross-device vectors with two Adreno successes and two failures."""
+    """Verify cross-device vectors and the one-thread Adreno bcrypt control."""
     verify_references()
     verify_success(500, "optimized")
     verify_bcrypt_failure()
+    verify_bcrypt_single_thread_failure()
     verify_netntlmv2_pure_failure()
     verify_success(5600, "optimized")
     print("REDMAGIC THREE MODE CROSS-DEVICE EVIDENCE VERIFIED")
