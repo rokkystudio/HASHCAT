@@ -8,6 +8,9 @@ This check reads local evidence only; it never contacts Android or runs hashcat.
 
 from __future__ import annotations
 
+import hashlib
+import hmac
+import runpy
 from pathlib import Path
 
 
@@ -25,13 +28,33 @@ def read(path: Path) -> str:
 
 
 def verify_input() -> None:
-    """Require exactly one PMKID and the three individually verified EAPOL records."""
+    """Recompute the PMKID and three EAPOL MICs and compare the mixed input."""
     expected = [
         read(PMKID).strip(),
         read(EAPOL / "m22000-eapol-aux1.hash").strip(),
         read(EAPOL / "m22000-eapol-aux2.hash").strip(),
         read(EAPOL / "m22000-eapol-aux3.hash").strip(),
     ]
+    pmkid_fields = expected[0].split("*")
+    assert pmkid_fields[:2] == ["WPA", "01"]
+    pmk = hashlib.pbkdf2_hmac(
+        "sha1", b"hashcat!", bytes.fromhex(pmkid_fields[5]), 4096, 32
+    )
+    computed_pmkid = hmac.new(
+        pmk,
+        b"PMK Name" + bytes.fromhex(pmkid_fields[3]) + bytes.fromhex(pmkid_fields[4]),
+        hashlib.sha1,
+    ).digest()[:16].hex()
+    assert computed_pmkid == pmkid_fields[2]
+
+    generator = runpy.run_path(
+        str(Path(__file__).resolve().parent / "generate-m22000-eapol-vectors.py")
+    )
+    for keyver, record in enumerate(expected[1:], start=1):
+        generator["verify_record"](record, keyver)
+        independently_computed, _kck, _mic = generator["build_record"](keyver)
+        assert record == independently_computed
+
     actual = read(MIXED / "mixed.hash").splitlines()
     assert actual == expected, "Mixed batch differs from individually validated hashes"
     assert [record.split("*")[1] for record in actual] == ["01", "02", "02", "02"]
