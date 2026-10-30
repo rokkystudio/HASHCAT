@@ -1,0 +1,32 @@
+{
+  "device": "RedMagic NX709S",
+  "adb_serial": "91809037",
+  "gpu": "QUALCOMM Adreno(TM)",
+  "hash_mode": 3200,
+  "candidate": "hashcat",
+  "public_input_sha256": "6acc77110fb4f798b60f6189f6daddb3bb3d4579db2ff2edc9a15768f6a5dfa4",
+  "stock_kernel_sha256": "b4d6a2bf96a0c8326a4bcf930a7dbb6e51e2ae2fa6b1087b0c29e360cf8317c4",
+  "stock_module_sha256": "76418b1ab9cd0cf18873c386766988c5a7b3e001f8072477ba138790f91bb2fe",
+  "helper_source_sha256": "4d59f9fa11913de69fcaededa03a9cca8c82af843722913e63cd3f8d357b0f4f",
+  "standalone_probe_source_sha256": "4c4fe7a6085f3f82b6579ec6e3c28d9aa25a31255583f0cf887ebce433be3e01",
+  "staged_arm64_probe_binary_sha256": "5540770e2f4516fbf94df749667a988ada3f930d7483c4d92db0f7d104c35b5e",
+  "staged_runner_sha256": "cf6c4ae7356203b45a8d9eacb29d1aff6f6b664bb754f6566294fa76b64e3bdd",
+  "first_run": {
+    "exit_code": 2,
+    "status": "OpenCL library discovery failure before program build",
+    "opencl_program_build_attempted": false,
+    "gpu_kernels_executed": false,
+    "gpu_intermediate_snapshots_written": false,
+    "archived_log": "m03200-standalone-probe-loader-failure.log",
+    "archived_exit": "m03200-standalone-probe-loader-failure.exit"
+  },
+  "host_preflight": {
+    "android_arm64_gnu_c11_warnings": "none after selecting OpenCL 1.2 host API",
+    "hashcat_opencl_probe_syntax": [
+      "CL1.2",
+      "CL3.0"
+    ],
+    "opencl_syntax_warnings": "none with -Werror",
+    "real_gpu_execution_confirmed": false
+  }
+}

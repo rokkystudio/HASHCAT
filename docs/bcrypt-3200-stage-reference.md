@@ -35,15 +35,15 @@ The bcrypt_tmp_t structure in m03200-pure.cl has the following unsigned 32-bit f
 | S2 | 548 | 256 |
 | S3 | 804 | 256 |
 
-The CPU reference covers P and the four S-box arrays (1042 words). E is a separate 18-word expanded-key field that remains available for debugging password preprocessing. The source is the authority for offsets and field sizes; a future capture must confirm the compiled device buffer layout and gid before comparing.
+The CPU reference records the P-array and all four S-box arrays (1042 words), plus the SHA-256 digest of the 18-word expanded key E. The comparator derives all 18 expected E words exactly from the synthetic candidate and verifies the recorded CPU digest. A complete device stage therefore compares all 1060 words (4240 bytes). The source is the authority for field offsets and sizes.
 
 A diagnostic build can obtain snapshots through a read-only clEnqueueReadBuffer of the temporary buffer after the m03200_init dispatch, after the first iteration, and after the 32nd iteration. Since a normal self-test may submit several iterations together, obtaining loop1 requires a deliberately segmented 1 + 31 loop dispatch whose cumulative work equals the ordinary 32 iterations. Collect results only from the selected synthetic candidate. Keep hashcat's built-in self-test enabled and do not modify cryptographic comparison semantics.
 
-If the m03200_comp diagnostic writes its four result words to a separate observation buffer, the comparator can also validate these words. The ordinary compare kernel does not store them into bcrypt_tmp_t.
+The standalone probe records all six final ciphertext words in a separate 24-byte buffer. The comparator checks the first four words used by m03200_comp and all six if supplied. The ordinary compare kernel does not store these words into bcrypt_tmp_t.
 
 ## GPU dump format and strict comparison
 
-tools/compare-m03200-gpu-stages.py --trace DEVICE_READBACK.json requires device model, ADB serial, mode, cost, salt, all relevant source/input SHA-256 values and the candidate string. The readback_kind field is u32_numeric_hex. Each stages entry (init, loop1, loop_final) contains arrays named P, S0, S1, S2, S3 in the sizes above, with each word as eight lowercase hexadecimal digits. Optional comp_words contains four hexadecimal words from m03200_comp.
+tools/compare-m03200-gpu-stages.py --trace DEVICE_READBACK.json requires device model, ADB serial, mode, cost, salt, all relevant source/input SHA-256 values and the candidate string. The readback_kind field is u32_numeric_hex. Each stages entry (init, loop1, loop_final) contains arrays E, P, S0, S1, S2, S3 with exactly 1060 numeric words. Optional comp_words contains four comparison words; comp_words_full can also contain the complete six-word ciphertext. The comparator tests both when present.
 
 On little-endian Android, convert captured bytes to numeric uint32 values before formatting each word; do not hex-dump raw little-endian memory bytes as though they were big-endian numeric values. The script validates exact metadata and then compares arrays in execution order. The first divergence is reported as FIRST_DIVERGENCE <stage>.<array>[<index>] with expected and observed numeric words.
 
@@ -63,4 +63,27 @@ Compare an actual device trace only when one has been captured:
 
     python tools/compare-m03200-gpu-stages.py --trace DEVICE_READBACK.json
 
-No device readback is archived as part of this report. The RedMagic bcrypt mode 3200 self-test result remains failed (245); the noinline helper experiment has no device result. Application runtime and production binaries are outside the scope of these CPU-only diagnostics.
+No successful device readback is archived as part of this report. The RedMagic bcrypt mode 3200 self-test result remains failed (245); the noinline helper experiment has no device result. Application runtime and production binaries are outside the scope of the CPU reference and standalone diagnostics.
+
+
+## Standalone OpenCL probe status
+
+An experimental diagnostic has been authored in tools/m03200-stage-probe.cl, using the current inc_cipher_blowfish.cl arithmetic in three isolated kernels. The Android C host in tools/m03200-stage-probe-host.c builds the OpenCL source, dispatches one public known candidate, and requests exact 4240-byte readbacks after initialization, one expansion iteration and all 32 iterations. Its final ciphertext readback is 24 bytes. The runner tools/run-redmagic-bcrypt-stage-probe.sh uses a separate app-cache directory and never overwrites the normal hashcat runtime or disables any hashcat self-test. The standalone probe is not a replacement for the built-in hashcat self-test.
+
+Local Android NDK r29 ARM64 host compilation passed with strict C warnings enabled. The separate OpenCL source passed host Clang syntax validation for CL 1.2 and CL 3.0 using -Werror. These are host compilation results, not confirmation from the Qualcomm OpenCL compiler.
+
+The first launch on RedMagic NX709S terminated before clBuildProgram, with exit 2 and the recorded message OpenCL dlopen: dlopen failed: library "libOpenCL.so" not found. Although /vendor/lib64/libOpenCL.so is visible on the device, the app diagnostic process did not find it by library name in that execution environment. The attempted preparation of another device run was blocked by tool safety controls. No subsequent GPU run occurred, and no bcrypt stage bytes were collected. Evidence and exact staged-source hashes are retained in m03200-standalone-probe-loader-failure.log, its exit file, and m03200-standalone-probe-manifest.json. The executable and source were staged separately from the stock application files.
+
+## Binary readback contract
+
+If valid native readbacks become available, tools/convert-m03200-stage-readback.py accepts exactly three 4240-byte stage binaries and one 24-byte final ciphertext binary, plus a process log containing successful build and completion markers and a zero exit code. It converts little-endian uint32 memory into the numeric hexadecimal arrays required by tools/compare-m03200-gpu-stages.py. It refuses truncated input, nonzero execution status, and overwriting an existing trace. For an arithmetically incorrect GPU output, the output JSON is retained and the comparator identifies the first differing word rather than silently accepting the result. Device provenance must be independently established from the archived runtime evidence; JSON metadata alone cannot prove that a device executed the work.
+
+The binary parser and comparator each have CPU-only tests using deterministic synthetic buffers. The test does not write synthetic files to the archived GPU fixture directory and does not claim GPU execution.
+
+Additional CPU-only validation commands:
+
+    python tools/convert-m03200-stage-readback.py --self-test
+    python tools/compare-m03200-gpu-stages.py --self-test
+    python tools/test-m03200-stage-probe-evidence.py
+
+A real captured trace is only valid when original binary readbacks and log/exit artifacts exist. The standalone OpenCL build and GPU calculations remain unverified on Adreno, and bcrypt mode 3200 must not be reported as working until hashcat's unchanged built-in self-test and recovery succeed.
