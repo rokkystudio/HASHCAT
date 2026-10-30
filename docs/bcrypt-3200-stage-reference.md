@@ -156,7 +156,7 @@ tools/test-m03200-opencl-abi.py compiles the unchanged source/OpenCL/m03200-pure
 
 Each entrypoint declares exactly 25 arguments, in the same order and with the same OpenCL address spaces and type qualifiers as the original host binding map. Argument 3 is a constant-address-space pointer; the others are global pointers. The host sets all 25 arguments as cl_mem objects, binds the password, temporary, and hooks buffers before use, and substitutes the built-in self-test digest/salt buffers at indices 15, 17, and 18. The shared kernel_param_t input is argument 24.
 
-The regression also compiles the native host's original kernel_param_t declaration with GCC static assertions for its 72-byte total size and the precise offsets of all 13 fields. The SPIR64 IR must contain matching 32-bit and 64-bit field types. The shared bcrypt_tmp_t must contain two 18-word arrays and four 256-word S-box arrays, totalling 4240 bytes. Both host and OpenCL definitions use the same inc_types.h declaration.
+The regression compiles the original shared kernel_param_t, pw_t and salt_t declarations on the native Windows x86-64 host using GCC and for Android AArch64 API 28 using Android NDK Clang. The test requires the 72-byte kernel_param_t, 260-byte pw_t and 572-byte salt_t layouts and checks all 31 explicit field offsets. The generated SPIR64 IR must contain the same struct field types for all three, plus the stock bcrypt_tmp_t layout of two 18-word arrays and four 256-word S-box arrays (4240 bytes). Both host and OpenCL representations use the same inc_types.h declaration.
 
 Each of the three kernels declares four distinct S-box arrays in SPIR64 local address space 3. Every array has 256 unsigned 32-bit words per local work-item. The total statically declared S-box storage per workgroup and kernel is therefore:
 
@@ -169,8 +169,8 @@ The verification includes a negative control: relocating the first S-box declara
 
 Reproduce with an explicitly selected Clang supporting the SPIR64 target:
 
-    python -B tools/test-m03200-opencl-abi.py --clang D:\ANDROID\SDK\ndk\29.0.14206865\toolchains\llvm\prebuilt\windows-x86_64\bin\clang.exe
+    python -B tools/test-m03200-opencl-abi.py --clang D:\ANDROID\SDK\ndk\29.0.14206865\toolchains\llvm\prebuilt\windows-x86_64\bin\clang.exe --android-sysroot D:\ANDROID\SDK\ndk\29.0.14206865\toolchains\llvm\prebuilt\windows-x86_64\sysroot
 
-Results on the Windows host using Android NDK Clang 21.0.0: all four SPIR64 combinations passed, including all three kernel entrypoints, local arrays, the static host buffer map, and the negative address-space control.
+Results using native GCC and Android NDK Clang 21.0.0: both Windows x86-64 and Android ARM64 host structure checks passed, and all four SPIR64 combinations passed, including all three kernel entrypoints, local arrays, the static host buffer map, and the negative address-space control.
 
 The check does not query Qualcomm's actual available local memory, validate Adreno's code generation, measure dynamic driver allocations, or execute any OpenCL kernel. The archived RedMagic one-thread attempt already returned self-test exit 245; the 32 KiB eight-thread allocation alone cannot explain that separate one-thread failure. The first GPU divergence remains unidentified.

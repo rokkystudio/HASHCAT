@@ -6,8 +6,9 @@ SPIR64 OpenCL target and inspects the resulting LLVM IR. It checks all three
 entrypoints, the 25 memory-pointer kernel arguments, address spaces, type
 metadata, workgroup-size requirements and four local S-box arrays per stage.
 
-It also checks the host OpenCL argument bindings and self-test/restore
-assignments against the same declared kernel parameter order.
+It also checks host OpenCL argument bindings, self-test/restore assignments,
+and the original shared kernel_param_t, pw_t, and salt_t declarations using
+native C compilation on Windows and cross-compilation for Android ARM64.
 
 The regression uses no Android driver, OpenCL ICD, GPU, hashcat runtime,
 credential material or device execution. SPIR64 metadata is not evidence
@@ -183,69 +184,124 @@ def verify_host_bindings() -> None:
     print("PASS host OpenCL 25-argument bindings and self-test buffer switching")
 
 
-def verify_native_kernel_param_layout(cc: str, directory: Path) -> None:
-    """Compile host ABI assertions for all fields of kernel_param_t."""
-    fields = (
-        ("bitmap_mask", 0),
-        ("bitmap_shift1", 4),
-        ("bitmap_shift2", 8),
-        ("salt_pos_host", 12),
-        ("loop_pos", 16),
-        ("loop_cnt", 24),
-        ("il_cnt", 32),
-        ("digests_cnt", 40),
-        ("digests_offset_host", 44),
-        ("combs_mode", 48),
-        ("salt_repeat", 52),
-        ("pws_pos", 56),
-        ("gid_max", 64),
-    )
-    source = directory / "host-kernel-param-layout.c"
-    checks = "\n".join(
-        f"CHECK_FIELD ({field}, {offset});" for field, offset in fields
-    )
-    source.write_text(
-        '#include "common.h"\n'
-        '#include "types.h"\n'
-        '#include <stddef.h>\n'
-        '#define CHECK_FIELD(field, offset) '
-        '_Static_assert (offsetof (kernel_param_t, field) == (offset), '
-        '"kernel_param_t." #field)\n'
-        '_Static_assert (sizeof (kernel_param_t) == 72, '
-        '"kernel_param_t size");\n'
-        f"{checks}\n",
-        encoding="utf-8",
-    )
-    command = [
-        cc,
+def verify_native_host_layout(
+    cc: str, clang: Path, android_sysroot: Path, directory: Path,
+) -> None:
+    """Check original shared structures on Windows x86-64 and Android ARM64."""
+    fields = {
+        "kernel_param_t": (
+            72,
+            (
+                ("bitmap_mask", 0),
+                ("bitmap_shift1", 4),
+                ("bitmap_shift2", 8),
+                ("salt_pos_host", 12),
+                ("loop_pos", 16),
+                ("loop_cnt", 24),
+                ("il_cnt", 32),
+                ("digests_cnt", 40),
+                ("digests_offset_host", 44),
+                ("combs_mode", 48),
+                ("salt_repeat", 52),
+                ("pws_pos", 56),
+                ("gid_max", 64),
+            ),
+        ),
+        "pw_t": (
+            260,
+            (
+                ("i", 0),
+                ("pw_len", 256),
+            ),
+        ),
+        "salt_t": (
+            572,
+            (
+                ("salt_buf", 0),
+                ("salt_buf_pc", 256),
+                ("salt_len", 512),
+                ("salt_len_pc", 516),
+                ("salt_iter", 520),
+                ("salt_iter2", 524),
+                ("salt_dimy", 528),
+                ("salt_sign", 532),
+                ("salt_repeats", 540),
+                ("orig_pos", 544),
+                ("digests_cnt", 548),
+                ("digests_done", 552),
+                ("digests_offset", 556),
+                ("scrypt_N", 560),
+                ("scrypt_r", 564),
+                ("scrypt_p", 568),
+            ),
+        ),
+    }
+    source = directory / "native-host-layout.c"
+    lines = [
+        '#include "common.h"',
+        '#include "types.h"',
+        "#include <stddef.h>",
+        "#define CHECK_FIELD(type, field, offset) "
+        '_Static_assert (offsetof (type, field) == (offset), #type "." #field)',
+    ]
+
+    for name, (size, field_offsets) in fields.items():
+        lines.append(
+            f'_Static_assert (sizeof ({name}) == {size}, "{name} size");'
+        )
+
+        for field, offset in field_offsets:
+            lines.append(f"CHECK_FIELD ({name}, {field}, {offset});")
+
+    source.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+    includes = [
+        "-I" + str(ROOT / path)
+        for path in (
+            "source/include",
+            "source/OpenCL",
+            "source/deps/LZMA-SDK/C",
+            "source/deps/zlib",
+            "source/deps/zlib/contrib",
+            "source/deps/xxHash",
+            "source/deps/OpenCL-Headers",
+            "source/deps/unrar",
+        )
+    ]
+    common_args = [
         "-std=gnu11",
         "-fsyntax-only",
         "-Werror",
-        *[
-            "-I" + str(ROOT / path)
-            for path in (
-                "source/include",
-                "source/OpenCL",
-                "source/deps/LZMA-SDK/C",
-                "source/deps/zlib",
-                "source/deps/zlib/contrib",
-                "source/deps/xxHash",
-                "source/deps/OpenCL-Headers",
-                "source/deps/unrar",
-            )
-        ],
+        *includes,
         str(source),
     ]
-    process = subprocess.run(
-        command, cwd=ROOT, capture_output=True, text=True, timeout=75,
+    configurations = (
+        ("native host", [cc, *common_args]),
+        (
+            "Android AArch64 API 28",
+            [
+                str(clang),
+                "--target=aarch64-linux-android28",
+                f"--sysroot={android_sysroot}",
+                *common_args,
+            ],
+        ),
     )
-    assert process.returncode == 0, (
-        f"Host kernel_param_t layout differs from OpenCL ABI:\n"
-        f"{process.stderr[-5000:]}"
-    )
-    assert not process.stderr.strip(), process.stderr
 
-    print("PASS native host kernel_param_t: 72 bytes, 13 verified field offsets")
+    for platform, command in configurations:
+        process = subprocess.run(
+            command, cwd=ROOT, capture_output=True, text=True, timeout=75,
+        )
+        assert process.returncode == 0, (
+            f"{platform} host ABI differs from the stock OpenCL layout:\n"
+            f"{process.stderr[-5000:]}"
+        )
+        assert not process.stderr.strip(), process.stderr
+
+        print(
+            f"PASS {platform}: kernel_param_t 72 bytes, pw_t 260 bytes, "
+            f"salt_t 572 bytes, all 31 verified field offsets"
+        )
 
 
 def metadata(ir: str, number: int) -> str:
@@ -285,9 +341,17 @@ def verify_spir_ir(ir: str, local_size: int) -> None:
         "%struct.bcrypt_tmp = type { [18 x i32], [18 x i32], "
         "[256 x i32], [256 x i32], [256 x i32], [256 x i32] }"
     )
+    expected_pw = "%struct.pw = type { [64 x i32], i32 }"
+    expected_salt = (
+        "%struct.salt = type { [64 x i32], [64 x i32], "
+        "i32, i32, i32, i32, i32, [2 x i32], "
+        "i32, i32, i32, i32, i32, i32, i32, i32 }"
+    )
 
     assert expected_kernel_param in ir, "SPIR64 kernel_param_t layout differs"
     assert expected_bcrypt_tmp in ir, "SPIR64 bcrypt_tmp_t layout differs"
+    assert expected_pw in ir, "SPIR64 pw_t layout differs"
+    assert expected_salt in ir, "SPIR64 salt_t layout differs"
 
     expected_type_quals = tuple(
         "const" if index in (1, 2, 3, *range(6, 14), 15, 17, 18, 24) else ""
@@ -408,7 +472,7 @@ def compile_spir(
 
 
 def main() -> None:
-    """Check stock mode-3200 kernel ABI and local memory for four SPIR variants."""
+    """Verify SPIR64 kernels and original host layouts on two architectures."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--clang", type=Path, required=True,
@@ -416,12 +480,19 @@ def main() -> None:
     )
     parser.add_argument(
         "--cc", default="gcc",
-        help="Native C compiler for the shared kernel_param_t host ABI",
+        help="Native C compiler for the shared host ABI structures",
+    )
+    parser.add_argument(
+        "--android-sysroot", type=Path, required=True,
+        help="Explicit Android NDK sysroot directory for AArch64 compilation",
     )
     options = parser.parse_args()
 
     clang = options.clang.resolve(strict=True)
+    android_sysroot = options.android_sysroot.resolve(strict=True)
+
     assert clang.is_file()
+    assert android_sysroot.is_dir()
 
     verify_source_identity()
     verify_host_bindings()
@@ -429,7 +500,9 @@ def main() -> None:
     with tempfile.TemporaryDirectory(prefix="bcrypt-spir64-contract-") as tmp:
         directory = Path(tmp)
 
-        verify_native_kernel_param_layout(options.cc, directory)
+        verify_native_host_layout(
+            options.cc, clang, android_sysroot, directory,
+        )
 
         wrapper = directory / "bcrypt-source.cl"
 
@@ -459,7 +532,7 @@ def main() -> None:
 
                 print(f"PASS OpenCL {standard} SPIR64 ABI, group size {local_size}")
 
-    print("PASS 4 SPIR64 configurations and unchanged OpenCL host binding contract")
+    print("PASS four SPIR64 configurations and Windows/Android host ABI checks")
     print("NO GPU OR QUALCOMM DRIVER EXECUTION PERFORMED")
 
 
