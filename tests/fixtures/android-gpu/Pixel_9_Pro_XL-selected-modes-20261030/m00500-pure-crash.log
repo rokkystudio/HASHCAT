@@ -1,0 +1,67 @@
+10-30 16:49:15.472 25664 25664 F libc    : Fatal signal 6 (SIGABRT), code -1 (SI_QUEUE) in tid 25664 (hashcat), pid 25664 (hashcat)
+10-30 16:49:17.200 25690 25690 F DEBUG   : *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** ***
+10-30 16:49:17.200 25690 25690 F DEBUG   : Build fingerprint: 'google/komodo/komodo:16/CP1A.260505.005/15081906:user/release-keys'
+10-30 16:49:17.200 25690 25690 F DEBUG   : Kernel Release: '6.1.145-android14-11-gfa1d6308d1fe-ab14691759'
+10-30 16:49:17.200 25690 25690 F DEBUG   : Revision: 'MP1.0'
+10-30 16:49:17.200 25690 25690 F DEBUG   : ABI: 'arm64'
+10-30 16:49:17.200 25690 25690 F DEBUG   : Timestamp: 2026-10-30 16:49:16.726885358+0300
+10-30 16:49:17.200 25690 25690 F DEBUG   : Process uptime: 87s
+10-30 16:49:17.200 25690 25690 F DEBUG   : Executable: /data/local/tmp/hc-pixel-current-20261030/hashcat
+10-30 16:49:17.200 25690 25690 F DEBUG   : Cmdline: /data/local/tmp/hc-pixel-current-20261030/hashcat -m 500 -a 3 -w 1 --potfile-disable --logfile-disable --restore-disable --backend-ignore-cuda --backend-ignore-hip --outfile-format 2 -o /data/local/tmp/hc-pixel-selected-00500-20261030/logs/m00500.cracked /data/local/tmp/hc-pixel-selected-input/m00500.hash hashcat
+10-30 16:49:17.200 25690 25690 F DEBUG   : pid: 25664, tid: 25664, name: hashcat  >>> /data/local/tmp/hc-pixel-current-20261030/hashcat <<<
+10-30 16:49:17.200 25690 25690 F DEBUG   : uid: 2000
+10-30 16:49:17.200 25690 25690 F DEBUG   : tagged_addr_ctrl: 0000000000000001 (PR_TAGGED_ADDR_ENABLE)
+10-30 16:49:17.200 25690 25690 F DEBUG   : pac_enabled_keys: 000000000000000f (PR_PAC_APIAKEY, PR_PAC_APIBKEY, PR_PAC_APDAKEY, PR_PAC_APDBKEY)
+10-30 16:49:17.200 25690 25690 F DEBUG   : signal 6 (SIGABRT), code -1 (SI_QUEUE), fault addr --------
+10-30 16:49:17.200 25690 25690 F DEBUG   : Abort message: 'Scudo ERROR: internal map failure (error desc=Out of memory)'
+10-30 16:49:17.200 25690 25690 F DEBUG   :     x0  0000000000000000  x1  0000000000006440  x2  0000000000000006  x3  0000007ff1d21de0
+10-30 16:49:17.200 25690 25690 F DEBUG   :     x4  71746b6860651f6f  x5  71746b6860651f6f  x6  71746b6860651f6f  x7  7f7f7f7f7f7f7f7f
+10-30 16:49:17.200 25690 25690 F DEBUG   :     x8  00000000000000f0  x9  000001ff00000020  x10 0000000000000001  x11 000000776253cab0
+10-30 16:49:17.200 25690 25690 F DEBUG   :     x12 000000006ae4a05b  x13 000000007fffffff  x14 000000000c2598ee  x15 00002085cc3aa279
+10-30 16:49:17.200 25690 25690 F DEBUG   :     x16 00000077625a4130  x17 000000776258bfc0  x18 0000007767080000  x19 0000000000006440
+10-30 16:49:17.200 25690 25690 F DEBUG   :     x20 0000000000006440  x21 00000000ffffffff  x22 0000000000000005  x23 0000000000000000
+10-30 16:49:17.200 25690 25690 F DEBUG   :     x24 00000072440cd000  x25 0000007244087c00  x26 00000072440cc000  x27 00000077625a9248
+10-30 16:49:17.200 25690 25690 F DEBUG   :     x28 fffffffffffffff0  x29 0000007ff1d21e60
+10-30 16:49:17.200 25690 25690 F DEBUG   :     lr  000000776252495c  sp  0000007ff1d21de0  pc  0000007762524980  pst 0000000000001000
+10-30 16:49:17.200 25690 25690 F DEBUG   :     esr 0000000000000000  vg  0000000000000002
+10-30 16:49:17.200 25690 25690 F DEBUG   : 33 total frames
+10-30 16:49:17.200 25690 25690 F DEBUG   : backtrace:
+10-30 16:49:17.200 25690 25690 F DEBUG   :   NOTE: Function names and BuildId information is missing for some frames due
+10-30 16:49:17.200 25690 25690 F DEBUG   :   NOTE: to unreadable libraries. For unwinds of apps, only shared libraries
+10-30 16:49:17.200 25690 25690 F DEBUG   :   NOTE: found under the lib/ directory are readable.
+10-30 16:49:17.200 25690 25690 F DEBUG   :   NOTE: On this device, run setenforce 0 to make the libraries readable.
+10-30 16:49:17.200 25690 25690 F DEBUG   :   NOTE: Unreadable libraries:
+10-30 16:49:17.200 25690 25690 F DEBUG   :   NOTE:   /data/local/tmp/hc-pixel-current-20261030/hashcat
+10-30 16:49:17.200 25690 25690 F DEBUG   :       #00 pc 0000000000077980  /apex/com.android.runtime/lib64/bionic/libc.so (abort+160) (BuildId: a246e817808ed398a3423870bfeba4a6)
+10-30 16:49:17.200 25690 25690 F DEBUG   :       #01 pc 000000000005cebc  /apex/com.android.runtime/lib64/bionic/libc.so (scudo::die()+12) (BuildId: a246e817808ed398a3423870bfeba4a6)
+10-30 16:49:17.200 25690 25690 F DEBUG   :       #02 pc 000000000005dc00  /apex/com.android.runtime/lib64/bionic/libc.so (scudo::reportRawError(char const*)+32) (BuildId: a246e817808ed398a3423870bfeba4a6)
+10-30 16:49:17.200 25690 25690 F DEBUG   :       #03 pc 000000000005e3a0  /apex/com.android.runtime/lib64/bionic/libc.so (scudo::reportMapError(unsigned long)+176) (BuildId: a246e817808ed398a3423870bfeba4a6)
+10-30 16:49:17.200 25690 25690 F DEBUG   :       #04 pc 000000000005d7c4  /apex/com.android.runtime/lib64/bionic/libc.so (scudo::MemMapLinux::remapImpl(unsigned long, unsigned long, char const*, unsigned long)+212) (BuildId: a246e817808ed398a3423870bfeba4a6)
+10-30 16:49:17.200 25690 25690 F DEBUG   :       #05 pc 0000000000063364  /apex/com.android.runtime/lib64/bionic/libc.so (scudo::MapAllocator<scudo::SecondaryConfig<scudo::AndroidNormalConfig>>::allocate(scudo::Options const&, unsigned long, unsigned long, unsigned long*, scudo::FillContentsMode)+468) (BuildId: a246e817808ed398a3423870bfeba4a6)
+10-30 16:49:17.200 25690 25690 F DEBUG   :       #06 pc 000000000005f998  /apex/com.android.runtime/lib64/bionic/libc.so (scudo::Allocator<scudo::AndroidNormalConfig, &scudo_malloc_postinit>::allocate(unsigned long, scudo::Chunk::Origin, unsigned long, bool)+904) (BuildId: a246e817808ed398a3423870bfeba4a6)
+10-30 16:49:17.200 25690 25690 F DEBUG   :       #07 pc 000000000005fcd8  /apex/com.android.runtime/lib64/bionic/libc.so (scudo_malloc+40) (BuildId: a246e817808ed398a3423870bfeba4a6)
+10-30 16:49:17.200 25690 25690 F DEBUG   :       #08 pc 000000000005975c  /apex/com.android.runtime/lib64/bionic/libc.so (malloc+44) (BuildId: a246e817808ed398a3423870bfeba4a6)
+10-30 16:49:17.200 25690 25690 F DEBUG   :       #09 pc 0000000000926af4  /vendor/lib64/egl/libGLES_mali.so (llvm::SmallVectorBase<unsigned int>::grow_pod(void*, unsigned long, unsigned long)+132) (BuildId: 7881438741eeeb5f10dc4d10ccb2f1f88d94c26d)
+10-30 16:49:17.200 25690 25690 F DEBUG   :       #10 pc 0000000001fd6798  /vendor/lib64/egl/libGLES_mali.so (llvm::createValhallPreRAMachineScheduler(llvm::MachineSchedContext*)+1672) (BuildId: 7881438741eeeb5f10dc4d10ccb2f1f88d94c26d)
+10-30 16:49:17.200 25690 25690 F DEBUG   :       #11 pc 00000000027c1fe4  /vendor/lib64/egl/libGLES_mali.so ((anonymous namespace)::MachineSchedulerCluster::createMachineScheduler()+68) (BuildId: 7881438741eeeb5f10dc4d10ccb2f1f88d94c26d)
+10-30 16:49:17.200 25690 25690 F DEBUG   :       #12 pc 00000000027c16ec  /vendor/lib64/egl/libGLES_mali.so ((anonymous namespace)::MachineScheduler::runOnMachineFunction(llvm::MachineFunction&)+348) (BuildId: 7881438741eeeb5f10dc4d10ccb2f1f88d94c26d)
+10-30 16:49:17.200 25690 25690 F DEBUG   :       #13 pc 000000000278db24  /vendor/lib64/egl/libGLES_mali.so (llvm::MachineFunctionPass::runOnFunction(llvm::Function&)+276) (BuildId: 7881438741eeeb5f10dc4d10ccb2f1f88d94c26d)
+10-30 16:49:17.200 25690 25690 F DEBUG   :       #14 pc 0000000002413170  /vendor/lib64/egl/libGLES_mali.so ((anonymous namespace)::MaliFunctionPassManager::runOnModule(llvm::Module&)+544) (BuildId: 7881438741eeeb5f10dc4d10ccb2f1f88d94c26d)
+10-30 16:49:17.200 25690 25690 F DEBUG   :       #15 pc 00000000024124fc  /vendor/lib64/egl/libGLES_mali.so ((anonymous namespace)::MaliModulePassManager::runOnModule(llvm::Module&)+396) (BuildId: 7881438741eeeb5f10dc4d10ccb2f1f88d94c26d)
+10-30 16:49:17.200 25690 25690 F DEBUG   :       #16 pc 000000000240e2a0  /vendor/lib64/egl/libGLES_mali.so (llvm::Mali::StaticPassManager::TLPassManagerImpl::run(llvm::Module&)+272) (BuildId: 7881438741eeeb5f10dc4d10ccb2f1f88d94c26d)
+10-30 16:49:17.200 25690 25690 F DEBUG   :       #17 pc 0000000000aae24c  /vendor/lib64/egl/libGLES_mali.so (clcc::Kernel::build_kernel(llvm::Function*, llvm::Function const*, llvm::BumpPtrAllocatorImpl<llvm::MallocAllocator, 4096ul, 4096ul, 128ul>&)+10236) (BuildId: 7881438741eeeb5f10dc4d10ccb2f1f88d94c26d)
+10-30 16:49:17.200 25690 25690 F DEBUG   :       #18 pc 0000000000aaa698  /vendor/lib64/egl/libGLES_mali.so (clcc::Kernel::build_all_variants(llvm::Module*, llvm::StringRef)+408) (BuildId: 7881438741eeeb5f10dc4d10ccb2f1f88d94c26d)
+10-30 16:49:17.200 25690 25690 F DEBUG   :       #19 pc 0000000000aaf994  /vendor/lib64/egl/libGLES_mali.so (clcc::Kernel::build(llvm::Module*)+3540) (BuildId: 7881438741eeeb5f10dc4d10ccb2f1f88d94c26d)
+10-30 16:49:17.200 25690 25690 F DEBUG   :       #20 pc 0000000000ac2ac0  /vendor/lib64/egl/libGLES_mali.so (clcc::ProgramContext::build_all_kernels(llvm::Module*)+928) (BuildId: 7881438741eeeb5f10dc4d10ccb2f1f88d94c26d)
+10-30 16:49:17.200 25690 25690 F DEBUG   :       #21 pc 0000000000aa5904  /vendor/lib64/egl/libGLES_mali.so (clcc_link_program+164) (BuildId: 7881438741eeeb5f10dc4d10ccb2f1f88d94c26d)
+10-30 16:49:17.200 25690 25690 F DEBUG   :       #22 pc 0000000000a66674  /vendor/lib64/egl/libGLES_mali.so (mcl_gpu_program::link_program(char const*, unsigned int, mcl_device_program**, char const**, clcc_program_binary_type*)+276) (BuildId: 7881438741eeeb5f10dc4d10ccb2f1f88d94c26d)
+10-30 16:49:17.200 25690 25690 F DEBUG   :       #23 pc 0000000000a7a43c  /vendor/lib64/egl/libGLES_mali.so (mcl_program::build_compile_link_for_device(mcl_device const*, mcl_refcounted_string*, mcl_build_operation, mcl_build_data*)+364) (BuildId: 7881438741eeeb5f10dc4d10ccb2f1f88d94c26d)
+10-30 16:49:17.200 25690 25690 F DEBUG   :       #24 pc 0000000000a7b210  /vendor/lib64/egl/libGLES_mali.so (mcl_link_program(mcl_context*, mcl_device_array const&, char const*, unsigned int, _cl_program* const*, void (*)(_cl_program*, void*), void*, mali_error*)+1664) (BuildId: 7881438741eeeb5f10dc4d10ccb2f1f88d94c26d)
+10-30 16:49:17.200 25690 25690 F DEBUG   :       #25 pc 0000000000a5a994  /vendor/lib64/egl/libGLES_mali.so (clLinkProgram+356) (BuildId: 7881438741eeeb5f10dc4d10ccb2f1f88d94c26d)
+10-30 16:49:17.200 25690 25690 F DEBUG   :       #26 pc 0000000000058100  /data/local/tmp/hc-pixel-current-20261030/hashcat
+10-30 16:49:17.200 25690 25690 F DEBUG   :       #27 pc 0000000000051efc  /data/local/tmp/hc-pixel-current-20261030/hashcat
+10-30 16:49:17.200 25690 25690 F DEBUG   :       #28 pc 000000000004c110  /data/local/tmp/hc-pixel-current-20261030/hashcat
+10-30 16:49:17.200 25690 25690 F DEBUG   :       #29 pc 000000000003a620  /data/local/tmp/hc-pixel-current-20261030/hashcat
+10-30 16:49:17.200 25690 25690 F DEBUG   :       #30 pc 0000000000039d08  /data/local/tmp/hc-pixel-current-20261030/hashcat
+10-30 16:49:17.200 25690 25690 F DEBUG   :       #31 pc 0000000000036b54  /data/local/tmp/hc-pixel-current-20261030/hashcat
+10-30 16:49:17.200 25690 25690 F DEBUG   :       #32 pc 000000000006b25c  /apex/com.android.runtime/lib64/bionic/libc.so (__libc_init+124) (BuildId: a246e817808ed398a3423870bfeba4a6)
