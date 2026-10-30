@@ -87,3 +87,28 @@ Additional CPU-only validation commands:
     python tools/test-m03200-stage-probe-evidence.py
 
 A real captured trace is only valid when original binary readbacks and log/exit artifacts exist. The standalone OpenCL build and GPU calculations remain unverified on Adreno, and bcrypt mode 3200 must not be reported as working until hashcat's unchanged built-in self-test and recovery succeed.
+
+## Native CPU equivalence: stock OpenCL kernel versus standalone probe
+
+The native test executes the **actual source files** through hashcat's CPU emulation headers:
+
+- tools/m03200-stock-kernel-cpu.c includes source/OpenCL/m03200-pure.cl verbatim. It passes hashcat's pw_t, salt_t, and bcrypt_tmp_t structures to m03200_init and m03200_loop. The CPU harness adapts only the kernel argument list, the single work-item identity, and the loop-count parameter. The stock m03200_comp comparison body is excluded because it does not expose final ciphertext words without the full comparison runtime.
+- tools/m03200-stage-probe-cpu.c includes tools/m03200-stage-probe.cl verbatim. It executes bcrypt_stage_init, bcrypt_stage_loop with 1 then 31 rounds, and bcrypt_stage_comp. Both harnesses use the original source/OpenCL/inc_cipher_blowfish.cl helpers and native, functional atomic helpers for the CPU emulation environment.
+
+tools/test-m03200-stage-probe-cpu.py compiles both entrypoints using MinGW GCC with -O0 and -O2. It compares all three 4240-byte E/P/S-box snapshots byte-for-byte between the two independent entrypoints, and compares all 1060 32-bit words per checkpoint against the archived CPU reference for both known public candidates. All six final ciphertext words from the standalone probe also match the archived reference. The test exercises detection of a deliberately incorrect S-box word.
+
+Results on 2026-10-30:
+
+    PASS stock/probe OpenCL CPU -O0: hashcat
+    PASS stock/probe OpenCL CPU -O0: hashcat2
+    PASS stock/probe OpenCL CPU -O2: hashcat
+    PASS stock/probe OpenCL CPU -O2: hashcat2
+    PASS original m03200_init/loop, standalone init/loop/comp and CPU reference
+
+Run the same complete regression:
+
+    python tools/test-m03200-stage-probe-cpu.py
+
+This confirms that the independently staged diagnostic and the original mode-3200 code produce identical intermediate data under the native CPU representation. It does **not** identify the Adreno GPU failure, demonstrate an OpenCL driver build, or establish a successful hashcat recovery on RedMagic.
+
+SHA-256 source identity remains byte stable on both platforms: source/.gitattributes disables text line-ending rewriting for the original hashcat source tree, while the root .gitattributes explicitly retains LF for tools/m03200-stage-probe.cl and the public m03200.hash fixture.

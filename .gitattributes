@@ -8,6 +8,11 @@
 *.txt text
 # Recovery and diagnostic Android shell scripts must remain LF on Windows.
 tools/*.sh text eol=lf
+
+# The source tree keeps raw source bytes stable via source/.gitattributes.
+# Keep the remaining bcrypt probe and public vector LF-stable across Git checkouts.
+tools/m03200-stage-probe.cl text eol=lf
+tests/fixtures/android-gpu/redmagic-selected-modes-20261030/m03200.hash text eol=lf
 # Preserve raw Android console evidence, including progress carriage returns.
 # Console redraw padding is intentional, not source-code trailing whitespace.
 tests/fixtures/android-gpu/**/*.log -text whitespace=-blank-at-eol
