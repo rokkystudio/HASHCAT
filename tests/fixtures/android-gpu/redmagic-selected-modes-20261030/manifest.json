@@ -1,0 +1,43 @@
+{
+  "device": "RedMagic NX709S",
+  "gpu": "QUALCOMM Adreno(TM)",
+  "adb_serial": "91809037",
+  "candidate": "hashcat",
+  "frontend_sha256": "4ab04450ab7357f97e18f0e66497dd4776c4300fb7412e4b88eb8713a8ebbad9",
+  "artifacts": {
+    "m00500-optimized.cl": "82ef038e67753fd8eaeebb89e883cc41084810f8bac7388ed52e231e7989bc6a",
+    "m00500-pure.cl": "ccc1923a54df59ce1bf703226e18fc5bc90a6791a09f2a79c63de04336991ddf",
+    "m03200-pure.cl": "b4d6a2bf96a0c8326a4bcf930a7dbb6e51e2ae2fa6b1087b0c29e360cf8317c4",
+    "m05600_a0-optimized.cl": "863c7f91e2b58ec83c023add8a98b76af814eb64431fa755c68a2924120bb883",
+    "m05600_a0-pure.cl": "0b03e5d8f41cf70e04a3ada1f7ab10222c334a116d7dc7216c0ef4731ad47be8",
+    "m05600_a1-optimized.cl": "50ded14dd90e636063453d8f2bf15cc2a86614df71106b6909aa718287fdccfe",
+    "m05600_a1-pure.cl": "97c6bf17c0861a2f0be9a153a242324e6d97031c44ecc82cab7ca48de9e89374",
+    "m05600_a3-optimized.cl": "c5c5a9b3f99778b212e3762b038e8ef453b367df75844390d46a705b6e69f77f",
+    "m05600_a3-pure.cl": "cd3b5ff7fac97d11f4a48d96f9bd3173156bf13399e07eed1e5cc5aaaf5ba1a8",
+    "module_00500.so": "24232073a80b113eb51dd1ced6876062cec700e3d3459f8269db4c632d2f58a4",
+    "module_03200.so": "76418b1ab9cd0cf18873c386766988c5a7b3e001f8072477ba138790f91bb2fe",
+    "module_05600.so": "7a734d7e7d9ddb87e32d283887406f2e02942813482dfd01a5c788f6bbcf9cdb"
+  },
+  "modes": {
+    "500": {
+      "kernel": "optimized",
+      "status": "Cracked",
+      "device_exit": 0
+    },
+    "3200": {
+      "kernel": "pure",
+      "status": "OpenCL kernel self-test failed",
+      "device_exit": 245
+    },
+    "5600": {
+      "pure": {
+        "status": "clLinkProgram CL_OUT_OF_HOST_MEMORY",
+        "device_exit": 251
+      },
+      "optimized": {
+        "status": "Cracked",
+        "device_exit": 0
+      }
+    }
+  }
+}
