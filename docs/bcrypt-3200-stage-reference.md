@@ -112,3 +112,26 @@ Run the same complete regression:
 This confirms that the independently staged diagnostic and the original mode-3200 code produce identical intermediate data under the native CPU representation. It does **not** identify the Adreno GPU failure, demonstrate an OpenCL driver build, or establish a successful hashcat recovery on RedMagic.
 
 SHA-256 source identity remains byte stable on both platforms: source/.gitattributes disables text line-ending rewriting for the original hashcat source tree, while the root .gitattributes explicitly retains LF for tools/m03200-stage-probe.cl and the public m03200.hash fixture.
+
+## Stock bcrypt final comparison on native CPU
+
+A separate native CPU harness executes the stock m03200_comp code from source/OpenCL/m03200-pure.cl together with its original inc_comp_multi.cl, check, find_hash and mark_hash functions. The executable source is tools/m03200-stock-comp-cpu.c. Its input is the stock m03200_loop 4240-byte state produced by tools/m03200-stock-kernel-cpu.c, plus four expected numeric digest words from the public reference. It constructs the exact eight one-digest bitmap entries for hashcat's usual shifts 5 and 13, without replacing the comparison functions or disabling bitmap/digest conditions.
+
+tools/test-m03200-stock-comp-cpu.py compiles both native harnesses with GCC -O0 and -O2. For each optimization level, it compares both synthetic CPU-computed candidate states against both synthetic expected digests. The original kernel's result counter, duplicate reporting counter and recorded candidate coordinates are inspected. The same regression requires failure on truncated or oversized 4240-byte states and malformed hexadecimal digest arguments.
+
+Observed 2026-10-30 results:
+
+    -O0 hashcat  vs hashcat   = match
+    -O0 hashcat  vs hashcat2  = no match
+    -O0 hashcat2 vs hashcat   = no match
+    -O0 hashcat2 vs hashcat2  = match
+    -O2 hashcat  vs hashcat   = match
+    -O2 hashcat  vs hashcat2  = no match
+    -O2 hashcat2 vs hashcat   = no match
+    -O2 hashcat2 vs hashcat2  = match
+
+Run the complete comparison regression:
+
+    python -B tools/test-m03200-stock-comp-cpu.py
+
+This further confirms the CPU correctness of hashcat's complete mode-3200 path, including final comparison and result marking, under both native optimization settings. It does not establish that Qualcomm's OpenCL compilation produces the same machine behavior. The RedMagic stock GPU self-test still has archived exit code 245, and no complete GPU stage readback exists. Keep the normal self-test enabled and require a positive real GPU result before declaring bcrypt 3200 supported on Adreno.
