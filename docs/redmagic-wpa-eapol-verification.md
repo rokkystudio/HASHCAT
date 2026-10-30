@@ -46,6 +46,15 @@ and the expected code 1. This confirms that the split program
 dispatches all four verification paths within one mixed workload
 for these synthetic vectors.
 
+A subsequent **four-salt** trial used distinct synthetic SSIDs and MAC pairs
+for each PMKID/EAPOL key version in one GPU workload. Adreno recovered
+**4/4** digests across **4/4** unique salts with `hashcat!` (device exit 0),
+and exhausted **0/4** with `hashcat2` (expected device exit 1). Both logs,
+exit markers and the four recovered plaintexts are independently checked
+by `tools/test-redmagic-multisalt-wpa.py`. See
+`docs/redmagic-wpa-multisalt-diagnostic.md` for exact evidence and the ADB
+transport interruption during the positive run.
+
 The runs used isolated application-private staging. The normal
 `module_22000.so` and `m22000-pure.cl` were not replaced, and
 their verified stock SHA-256 values remained:
@@ -72,10 +81,11 @@ for AES-CMAC.
 
 ## Limits of this conclusion
 
-These are **controlled synthetic tests** with one SSID, one passphrase,
-fixed MAC/nonce ordering and a small EAPOL-Key frame. They do not cover
-every message-pair value, corrupted MIC, nonce correction, packet
-capture import, password length or device/driver version. In particular,
+These are **controlled synthetic tests** with one passphrase,
+fixed nonce ordering and small EAPOL-Key frames. The initial mixed batch
+used a single SSID; the follow-up covered four distinct SSIDs. Together,
+they still do not cover every message-pair value, corrupted MIC, nonce
+correction, packet capture import, password length or device/driver version. In particular,
 the Pixel 9 Pro XL Mali-G715 still fails to compile mode 22000 and
 heavy SHA-512 modes in the existing driver environment.
 
