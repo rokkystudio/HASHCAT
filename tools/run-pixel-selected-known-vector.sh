@@ -8,7 +8,7 @@ MODE=${1:-}
 KERNEL=${2:-pure}
 
 case "$MODE" in
-  500|3200|5600) PASSWORD=hashcat ;;
+  500|3200|5600|10900|11600|13000) PASSWORD=hashcat ;;
   *) echo 'REFUSED: unsupported selected mode'; exit 10 ;;
 esac
 

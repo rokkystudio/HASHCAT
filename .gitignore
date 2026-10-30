@@ -3,6 +3,7 @@
 /release/*/package/
 /release/**/*.zip
 /release/**/*.sha256
+/tools/opencl-smoke-arm64
 
 # generated hashcat source build outputs
 /source/.tmp/
