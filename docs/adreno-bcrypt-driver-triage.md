@@ -18,6 +18,38 @@
 
 The date embedded in the Qualcomm runtime build string is 2022-07-19; it is not necessarily the date of the installed OS image or of a particular device bug.
 
+## Device firmware and driver provenance (read-only audit, 2026-10-31)
+
+The connected NX709S identifies as the REDMAGIC **7S Pro**. Android reports `ro.product.model=NX709S`, `ro.product.name=NX709S-UN`, and `ro.product.locale=zh-CN`. The exact regional firmware channel is **not established** by those values alone.
+
+| On-device field | Observed value |
+| --- | --- |
+| System Android release | 13 |
+| System build incremental | eng.nubia.20241204.165456 |
+| Vendor Android release | 12 |
+| Vendor build incremental | eng.nubia.20241204.170923 |
+| System/vendor security patch | 2024-11-01 for both |
+| /vendor/lib64/libOpenCL.so SHA-256 | 10f08bc7b8df69587447c2b8514230341867f8aac127b277654d73333227b713 |
+| /vendor/lib64/libllvm-qcom.so SHA-256 | 3325d6d70c6142facfe0ae5977ac2918b1433f61fed76352b6650d69f5df3685 |
+| /vendor/lib64/libOpenCL.so size | 163216 bytes |
+| /vendor/lib64/libllvm-qcom.so size | 30529480 bytes |
+
+The system and vendor partitions identify Android 13 and Android 12 respectively. Android's vendor/system separation can preserve an older vendor Android release, so this **does not by itself demonstrate a broken partition pairing or a defective driver**. The recorded 2022 Qualcomm OpenCL compiler build string is older than both on-device 2024 build dates; it must not be presented as proof that a newer compatible GPU driver is available.
+
+Official REDMAGIC 7S Pro global support currently lists **V713 for Europe** and **V613 for North America, Asia and other regions**, with a page update dated **2025-01-21**:
+
+https://redmagic.gorgias.help/en-US/redmagic-7s-pro-2430580?isEmbedded=true
+
+The manufacturer also warns that a regional ROM must match the device and that converting Chinese-market handsets to a global ROM may require a full data wipe:
+
+https://help.redmagic.gg/hc/en-us/articles/360033542691-Global-ROMs-and-Updates
+
+**Safe next action:** Confirm the actual NX709S-UN software channel and any supported OTA update through the phone's Settings > System update or REDMAGIC customer support. Do not automatically flash the global V613/V713 packages on a device whose currently installed regional channel remains unknown. No update has been downloaded or installed in this investigation.
+
+Qualcomm's own OpenCL optimization guidance documents the on-device local-memory query and work-group size constraints. The original bcrypt kernel allocates 4 KiB of static S-box storage for one local work-item or 32 KiB for eight; no hardware allocation failure has been established from the archived logs. A failed self-test after successful kernel initialization is not a substitute for the actual per-kernel compiler/device memory statistics.
+
+https://docs.qualcomm.com/bundle/publicresource/80-NB295-11_REV_C_Qualcomm_Snapdragon_Mobile_Platform_Opencl_General_Programming_and_Optimization.pdf
+
 ## Distinct failure signatures
 
 1. **Stock kernel:** OpenCL kernel and memory initialization complete, but hashcat's built-in known-vector self-test reports no match. Archived exit code **245**. No intermediate GPU computation was recorded.

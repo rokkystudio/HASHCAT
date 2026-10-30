@@ -1,0 +1,47 @@
+{
+  "observation_date": "2026-10-31",
+  "observation_type": "read-only Android system properties, vendor ELF metadata, and SHA-256 hashes",
+  "device": {
+    "model": "NX709S",
+    "product_name": "NX709S-UN",
+    "manufacturer": "nubia",
+    "system_locale": "zh-CN",
+    "firmware_region": "unverified"
+  },
+  "system": {
+    "android_release": "13",
+    "build_incremental": "eng.nubia.20241204.165456",
+    "security_patch": "2024-11-01"
+  },
+  "vendor": {
+    "android_release": "12",
+    "build_incremental": "eng.nubia.20241204.170923",
+    "security_patch": "2024-11-01"
+  },
+  "opencl": {
+    "advertised_version": "OpenCL 3.0",
+    "platform": "QUALCOMM",
+    "reported_compiler_build_date": "2022-07-19",
+    "reported_commit": "21eaafda81",
+    "reported_changeid": "I578ccc16f0"
+  },
+  "libraries": {
+    "/vendor/lib64/libOpenCL.so": {
+      "size_bytes": 163216,
+      "sha256": "10f08bc7b8df69587447c2b8514230341867f8aac127b277654d73333227b713",
+      "elf_build_id": "4252b0a3fc7297cc93dfa7a31c208d1f"
+    },
+    "/vendor/lib64/libllvm-qcom.so": {
+      "size_bytes": 30529480,
+      "sha256": "3325d6d70c6142facfe0ae5977ac2918b1433f61fed76352b6650d69f5df3685",
+      "elf_build_id": "ef9dddff519158ff428e86aef013d6e9"
+    }
+  },
+  "runtime_verification": {
+    "archived_crash_compiler_elf_build_id": "ef9dddff519158ff428e86aef013d6e9",
+    "crash_archive": "m03200-cl-opt-disable-failure.crash.txt",
+    "selftest_exit_code": 245,
+    "optimizer_disabled_compiler_crash_exit_code": 139,
+    "gpu_execution_during_this_observation": false
+  }
+}
