@@ -1,0 +1,63 @@
+hashcat (v7.1.2) starting
+
+Initializing bridges. Please be patient...Initialized bridgesInitializing backend runtimes. Please be patient...Initialized backend runtimesInitializing backend devices. Please be patient...Initialized backend devicesOpenCL API (OpenCL 3.0 QUALCOMM build: commit #21eaafda81 changeid #I578ccc16f0 Date: 07/19/22 Tue Local Branch:  Remote Branch: ) - Platform #1 [QUALCOMM]
+===========================================================================================================================================================
+* Device #01: QUALCOMM Adreno(TM), 2761/5523 MB (512 MB allocatable), 4MCU
+
+Minimum password length supported by kernel: 8
+Maximum password length supported by kernel: 63
+Minimum salt length supported by kernel: 0
+Maximum salt length supported by kernel: 256
+
+Counting lines in /data/local/tmp/hc-known-22000-input/known.hash. Please be patient...Counted lines in /data/local/tmp/hc-known-22000-input/known.hashParsed Hashes: 1/1 (100.00%)Parsed Hashes: 1/1 (100.00%)Sorting hashes. Please be patient...Sorted hashesRemoving duplicate hashes. Please be patient...Removed duplicate hashesSorting salts. Please be patient...Sorted saltsGenerating bitmap tables...Generated bitmap tablesHashes: 1 digests; 1 unique digests, 1 unique salts
+Bitmaps: 16 bits, 65536 entries, 0x0000ffff mask, 262144 bytes, 5/13 rotates
+
+Optimizers applied:
+* Zero-Byte
+* Single-Hash
+* Single-Salt
+* Brute-Force
+* Slow-Hash-SIMD-LOOP
+
+Watchdog: Hardware monitoring interface not found on your system.
+Watchdog: Temperature abort trigger disabled.
+
+Initializing bridge salts. Please be patient...Initialized bridge saltsInitializing device kernels and memory. Please be patient...Initializing backend runtime for device #1. Please be patient...M22000 Adreno JIT options: -D KERNEL_STATIC -D INCLUDE_PATH=/data/user/0/fuck.system.hashcat/cache/hc-known-22000-aux2-wrong-20261030/OpenCL -D XM2S(x)=#x -D M2S(x)=XM2S(x) -D MAX_THREADS_PER_BLOCK=1024 -cl-std=CL3.0 -D LOCAL_MEM_TYPE=1 -D VENDOR_ID=2147483648 -D CUDA_ARCH=0 -D HAS_ADD=0 -D HAS_ADDC=0 -D HAS_SUB=0 -D HAS_SUBC=0 -D HAS_VADD=0 -D HAS_VADDC=0 -D HAS_VADD_CO=0 -D HAS_VADDC_CO=0 -D HAS_VSUB=0 -D HAS_VSUBB=0 -D HAS_VSUB_CO=0 -D HAS_VSUBB_CO=0 -D HAS_VPERM=0 -D HAS_VADD3=0 -D HAS_VBFE=0 -D HAS_BFE=0 -D HAS_LOP3=0 -D HAS_MOV64=0 -D HAS_PRMT=0 -D HAS_SHFW=0 -D VECT_SIZE=1 -D DEVICE_TYPE=4 -D DGST_R0=0 -D DGST_R1=1 -D DGST_R2=2 -D DGST_R3=3 -D DGST_ELEM=4 -D KERN_TYPE=22000 -D ATTACK_EXEC=10 -D ATTACK_KERN=3 -D ATTACK_MODE=3 -w  -D M22000_ADRENO_NOINLINE
+Initialized backend runtime for device #1Host memory allocated for this attack: 650 MB (4366 MB free)
+
+Initialized device kernels and memoryStarting self-test. Please be patient...Finished self-testStarting autotune. Please be patient...Finished autotune
+                                                          
+The wordlist or mask that you are using is too small.
+This means that hashcat cannot use the full parallel power of your device(s).
+Hashcat is expecting at least 2048 base words but only got 0.0% of that.
+Unless you supply more work, your cracking speed will drop.
+For tips on supplying more work, see: https://hashcat.net/faq/morework
+
+
+                                                          
+[s]tatus [p]ause [b]ypass [c]heckpoint [f]inish [q]uit => 
+                                                          
+Approaching final keyspace - workload adjusted.
+
+[s]tatus [p]ause [b]ypass [c]heckpoint [f]inish [q]uit => 
+                                                          
+Session..........: hashcat
+Status...........: Exhausted
+Hash.Mode........: 22000 (WPA-PBKDF2-PMKID+EAPOL)
+Hash.Target......: /data/local/tmp/hc-known-22000-input/known.hash
+Time.Started.....: Fri Oct 30 16:24:32 2026 (1 sec)
+Time.Estimated...: Fri Oct 30 16:24:33 2026 (0 secs)
+Kernel.Feature...: Pure Kernel (password length 8-63 bytes)
+Guess.Mask.......: hashcat2 [8]
+Guess.Queue......: 1/1 (100.00%)
+Speed.#01........:        1 H/s (0.06ms) @ Accel:4 Loops:2 Thr:128 Vec:1
+Recovered........: 0/1 (0.00%) Digests (total), 0/1 (0.00%) Digests (new)
+Progress.........: 1/1 (100.00%)
+Rejected.........: 0/1 (0.00%)
+Restore.Point....: 1/1 (100.00%)
+Restore.Sub.#01..: Salt:0 Amplifier:0-1 Iteration:0-1
+Candidate.Engine.: Device Generator
+Candidates.#01...: hashcat2 -> hashcat2
+
+Started: Fri Oct 30 16:22:07 2026
+Stopped: Fri Oct 30 16:24:34 2026

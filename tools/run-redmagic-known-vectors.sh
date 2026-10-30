@@ -2,18 +2,26 @@
 # Execute synthetic SHA-512, SHA-512crypt and PMKID vectors on RedMagic GPU.
 # Stage test binaries and OpenCL sources under a private cache directory.
 # Read all stock runtime assets without replacing the application files.
-# Save the hashcat log and exit marker outside the temporary runtime.
-# For mode 22000, an optional mismatch case checks that a wrong password
-# exhausts the candidate space without reporting any recovered hashes.
+# Save hashcat logs, exit markers and successful recovered words outside
+# the temporary runtime, including when the ADB connection drops.
+# For mode 22000, explicit mismatch and AUX wrong-passphrase cases require
+# the wrong candidate to exhaust the search without a recovered hash.
 set -eu
 MODE=${1:-}
 CASE=${2:-match}
+NEGATIVE=0
 case "$MODE" in 1700|1800) PASSWORD=hashcat ;; 22000) PASSWORD='hashcat!' ;; *) echo 'REFUSED: unsupported known-vector mode'; exit 10 ;; esac
 case "$CASE" in
-  match) ;;
-  mismatch)
+  match|aux1|aux2|aux3)
+    if [ "$CASE" != match ] && [ "$MODE" != 22000 ]; then
+      echo 'REFUSED: AUX case requires WPA mode 22000'
+      exit 19
+    fi
+    ;;
+  mismatch|aux1-wrong|aux2-wrong|aux3-wrong)
     [ "$MODE" = 22000 ] || { echo 'REFUSED: mismatch test requires mode 22000'; exit 19; }
     PASSWORD=hashcat2
+    NEGATIVE=1
     ;;
   *) echo 'REFUSED: unsupported validation case'; exit 20 ;;
 esac
@@ -24,9 +32,13 @@ MODE5=$(printf '%05d' "$MODE")
 STAGE="$APP/cache/hc-known-$MODE5-$CASE-20261030"
 LOG="$APP/cache/hc-known-$MODE5-$CASE-20261030.log"
 EXIT="$APP/cache/hc-known-$MODE5-$CASE-20261030.exit"
+RECOVERED="$APP/cache/hc-known-$MODE5-$CASE-20261030.recovered"
 INPUT="/data/local/tmp/hc-known-$MODE5-input"
 if pidof hashcat >/dev/null 2>&1; then echo 'REFUSED: hashcat already running'; exit 12; fi
-if [ -e "$STAGE" ] || [ -e "$LOG" ] || [ -e "$EXIT" ]; then echo 'REFUSED: previous stage/log present'; exit 13; fi
+if [ -e "$STAGE" ] || [ -e "$LOG" ] || [ -e "$EXIT" ] || [ -e "$RECOVERED" ]; then
+  echo 'REFUSED: previous stage/log/result exists'
+  exit 13
+fi
 if [ -e "$APP/cache/module_22000.safe.bak" ] || [ -e "$APP/cache/m22000-pure.safe.bak" ]; then echo 'REFUSED: pending app restoration'; exit 14; fi
 for f in "$INPUT/hashcat" "$INPUT/module_$MODE5.so" "$INPUT/known.hash"; do [ -s "$f" ] || { echo "REFUSED: missing $f"; exit 15; }; done
 mkdir -p "$STAGE/modules" "$STAGE/OpenCL" "$STAGE/_cache" "$STAGE/_data" "$STAGE/kernels" "$STAGE/hashcat.outfiles"
@@ -67,23 +79,23 @@ export XDG_DATA_HOME="$STAGE/_data"
 # Important: a literal mask named "hashcat" must NOT be read as the executable
 # file in the current directory. Execute by absolute path from an empty cwd.
 cd "$STAGE/_cache" || exit 18
-printf 'REDMAGIC_KNOWN_STAGE_READY mode=%s sources=%s
-' "$MODE" "$count"
+printf 'REDMAGIC_KNOWN_STAGE_READY mode=%s case=%s sources=%s\n' "$MODE" "$CASE" "$count"
 set +e
 timeout 240 "$STAGE/hashcat" -m "$MODE" -a 3 -w 1 --potfile-disable --logfile-disable --restore-disable --backend-ignore-cuda --backend-ignore-hip --outfile-format 2 -o "$STAGE/cracked.txt" "$INPUT/known.hash" "$PASSWORD" > "$LOG" 2>&1
 result=$?
 set -e
-printf '%s
-' "$result" > "$EXIT"
-if [ "$CASE" = mismatch ]; then
+printf '%s\n' "$result" > "$EXIT"
+if [ "$NEGATIVE" -eq 1 ]; then
   if [ "$result" -eq 1 ] && [ ! -s "$STAGE/cracked.txt" ] && grep -Fq 'Status...........: Exhausted' "$LOG" && grep -Fq 'Recovered........: 0/1 (0.00%)' "$LOG"; then
     echo "KNOWN_VECTOR_NEGATIVE_PASS mode=$MODE exit=$result"
     exit 0
   fi
 else
   if [ "$result" -eq 0 ] && [ -s "$STAGE/cracked.txt" ] && grep -Fxq "$PASSWORD" "$STAGE/cracked.txt"; then
-    echo "KNOWN_VECTOR_PASS mode=$MODE exit=$result"
-    cat "$STAGE/cracked.txt"
+    cp "$STAGE/cracked.txt" "$RECOVERED"
+    cmp -s "$STAGE/cracked.txt" "$RECOVERED"
+    echo "KNOWN_VECTOR_PASS mode=$MODE case=$CASE exit=$result"
+    cat "$RECOVERED"
     exit 0
   fi
 fi

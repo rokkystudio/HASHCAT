@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import hashlib
 import hmac
+import runpy
 from pathlib import Path
 
 from Crypto.Hash import MD4
@@ -106,11 +107,60 @@ def verify_redmagic() -> None:
     print("PASS RedMagic mode 22000 PMKID negative: wrong candidate exhausts with 0/1")
 
 
+def verify_redmagic_eapol() -> None:
+    """Verify EAPOL AUX1–AUX3 GPU matches and independently computed MICs.
+
+    The fixture generator uses only standard Python HMAC/PBKDF2 and
+    PyCryptodome AES-CMAC. No GPU code participates in record generation.
+    The AUX2 host runner log is archived as proof of the reported password;
+    AUX1 and AUX3 additionally save an on-device recovered-word marker.
+    """
+    generator_path = Path(__file__).resolve().parent / "generate-m22000-eapol-vectors.py"
+    generator = runpy.run_path(str(generator_path))
+    root = ROOT / "redmagic-eapol-vectors"
+    password = "hashcat!"
+
+    for keyver, suffix in ((1, "aux1"), (2, "aux2"), (3, "aux3")):
+        prefix = f"m22000-eapol-{suffix}"
+        record = text_from(root / f"{prefix}.hash").strip()
+        expected_record, kck, mic = generator["build_record"](keyver)
+        generator["verify_record"](record, keyver)
+        assert record == expected_record, suffix
+        assert len(kck) == 16 and len(mic) == 16, suffix
+        assert record.split("*")[2] == mic.hex(), suffix
+        assert text_from(root / f"{prefix}-device.exit").strip() == "0", suffix
+        verify_crack_log(text_from(root / f"{prefix}-device.log"), 22000, password)
+
+        if keyver == 2:
+            runner_output = text_from(root / f"{prefix}-runner.stdout.log").splitlines()
+            assert "KNOWN_VECTOR_PASS mode=22000 exit=0" in runner_output
+            assert "REDMAGIC_EAPOL_AUX2_ADB_EXIT:0" in runner_output
+            assert password in runner_output
+        else:
+            assert text_from(root / f"{prefix}-recovered.txt").strip() == password, suffix
+
+        print(f"PASS RedMagic WPA EAPOL keyver {keyver} ({suffix}): independently computed MIC and GPU recovered 1/1")
+
+        negative_log = text_from(root / f"{prefix}-negative-device.log")
+        assert text_from(root / f"{prefix}-negative-device.exit").strip() == "1", suffix
+        for expected in (
+            "Status...........: Exhausted",
+            "Recovered........: 0/1 (0.00%)",
+            "Candidate.Engine.: Device Generator",
+            "Guess.Mask.......: hashcat2 [8]",
+        ):
+            if expected not in negative_log:
+                raise AssertionError(f"Mode 22000 {suffix} negative control: missing {expected!r}")
+        assert "Status...........: Cracked" not in negative_log, suffix
+        print(f"PASS RedMagic WPA EAPOL keyver {keyver} ({suffix}) negative: wrong candidate rejected 0/1")
+
+
 def main() -> None:
-    """Validate every saved GPU known-vector test and report their outcomes."""
+    """Validate archived positive and negative synthetic GPU cracking cases."""
     verify_pixel()
     verify_redmagic()
-    print("ALL EIGHT GPU KNOWN-VECTOR CASES VERIFIED: seven matches and one rejected PMKID (EAPOL not covered)")
+    verify_redmagic_eapol()
+    print("ALL FOURTEEN GPU KNOWN-VECTOR CASES VERIFIED: ten matches and four rejected candidates")
 
 
 if __name__ == "__main__":

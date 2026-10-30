@@ -1,0 +1,7 @@
+REDMAGIC_KNOWN_STAGE_READY mode=22000 case=match sources=1
+MIXED_WPA_MATCH_PASS mode=22000 case=match exit=0
+hashcat!
+hashcat!
+hashcat!
+hashcat!
+REDMAGIC_MIXED4_HOST_EXIT:0
