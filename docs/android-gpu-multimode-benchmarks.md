@@ -14,7 +14,8 @@ All numbers below come from preserved `build/diagnostic-multimode/` logs, except
 | 100 | SHA-1 | **199.8 MH/s**, default | **92.731 MH/s**, `-w 1` | Both finished; profiles differ |
 | 1000 | NTLM | **3005.6 MH/s**, default | **136.3 MH/s**, `-w 1` | Both completed: RedMagic on-device+ADB exit 0, Pixel on-device+ADB exit 0; profiles differ |
 | 1400 | SHA-256 | **128.3 MH/s**, default | **40.5914 MH/s**, `-w 1` | Both finished; profiles differ |
-| 1800 | SHA-512crypt | **910 H/s**, default | Not established | RedMagic `ISOLATED_BENCHMARK_EXIT:0`; no finished Pixel result |
+| 1700 | Raw SHA-512 | **8696.9 kH/s**, default | **No speed**, `-w 1` compiler SIGABRT / exit 134 | Pixel `-cl-opt-disable` and correctly targeted pure-helper `noinline` trials also failed with exit 134 |
+| 1800 | SHA-512crypt | **910 H/s**, default | **No speed**, `-w 1` exit 134 | RedMagic benchmark passed and subsequently recovered the OpenSSL-reference `$6$` hash; Pixel compiler crash |
 | 22000 | WPA-PBKDF2-PMKID+EAPOL | **755 H/s** on rebuilt Adreno-only baseline; **761 H/s** in earlier isolated test | **No speed**, original and split Mali builds | Original log emitted `mmap failed: Out of memory`; separate split-program trial also emitted it and returned 134. Neither is a working GPU result |
 
 ## Pixel reliability and GPU compilation issues
@@ -46,3 +47,32 @@ The serial-specific app-private isolated runner was re-tested with mode `1000` a
 After source rollback and a successful Android ARM64 rebuild, tested mode `22000` on RedMagic NX709S again using isolated app-private staging. `build/diagnostic-multimode/NX709S-m22000-device.log` reported **755 H/s**, `ISOLATED_BENCHMARK_EXIT:0 mode=22000 workload=0`; the host recorded **`DEVICE_EXIT:0`, `ADB_EXIT:0`, `HASHCAT_BENCHMARK_SUCCESS:True`** and the device exit-marker file contains `0`. After exit the temporary app-private stage was absent, and stock `module_22000.so` and `m22000-pure.cl` SHA-256 values were unchanged. The 755 and prior 761 H/s measurements are small single benchmark samples; no statistical performance conclusion follows. This remains a **benchmark-only** success, not proof of correct EAPOL/PMKID password verification.
 
 For the unresolved Pixel Mali driver crash, consider controlled isolated compile-only experiments that vary optimization (for example a supported OpenCL optimization-disable flag) and record the Mali compiler build log/crash stack. Only integrate a change after the actual kernel runs correctly on independent WPA-PBKDF2/PMKID/EAPOL test vectors; do not infer correctness from successful kernel creation or a benchmark alone.
+
+## GPU known-vector verification across both phones (2026-10-30)
+
+Unlike `-b` speed tests, these are **actual hashcat GPU candidate checks** against independently generated synthetic hashes. Hashcat ran using a bounded `-a 3` candidate and a shell-controlled temporary runtime, with no application installation on Pixel and no replacement of app files on RedMagic. The committed raw evidence is in `tests/fixtures/android-gpu/`; re-check with `python tools/test-android-gpu-known-vectors.py` (requires PyCryptodome for the independently computed NTLM/MD4 digest). The archived files contain only deliberately synthetic passwords/hashes and GPU status logs, not captured Wi-Fi traffic.
+
+On **Pixel 9 Pro XL, Mali-G715**, one explicitly constructed candidate `benchdemo2026` matched each independently computed digest:
+
+- Mode `0`, MD5: `ab9ce53a8dece3a0440197f719263ac5`.
+- Mode `100`, SHA-1: `5c8bc3c3244442a3c5fbaf2ec021656ea2678b61`.
+- Mode `1000`, NTLM/MD4(UTF-16LE): `82d20ab2cac864cf5c32eed420d32340`.
+- Mode `1400`, SHA-256: `546a49cc74208a398ff9229f7935234cd052e9471cfaa45dd490700cd1848e06`.
+
+All four produced `Status: Cracked`, `Recovered: 1/1`, `Candidate.Engine: Device Generator`, the exact `digest:benchdemo2026` recovered record, and on-device exit marker `0`. Both the recovered lines and the detailed logs were copied to the PC **before** the temporary device test tree was removed. This confirms correct positive matches for these *specific synthetic vectors* and pure GPU kernel path, not comprehensive algorithm correctness across all lengths/attack modes.
+
+On **RedMagic NX709S, Adreno**, additional positive known-vector tests found:
+
+- Mode `1700`, raw SHA-512: `hashcat` recovered against Python `hashlib.sha512(b'hashcat')`; log shows `Cracked`, `Recovered 1/1`, `Device Generator`. The on-device exit `0` was observed at execution time, but an `*.exit` marker was **not archived** for this case.
+- Mode `1800`, SHA-512crypt: `hashcat` recovered against OpenSSL reference `$6$72820166$U4DVzpcYxgw7MVVDGGvB2/H5lRistD5.Ah4upwENR5UtffLR4X4SxSzfREv8z6wVl0jRFX40/KnYVvK4829kD1`. Saved exit marker `0`, full recovered output and `Cracked` log were independently checked. A runtime-path warning about `hashcat.outfiles` appeared, but the output, exit and digest all matched.
+- Mode `22000`, **PMKID (`WPA*01`)**: the module's synthetic `hashcat!` / `hashcat-essid` record was independently checked with Python PBKDF2-HMAC-SHA1 (4096 rounds, 32-byte PMK) and HMAC-SHA1 over `PMK Name || AP_MAC || STA_MAC`. The recomputed PMKID was `4d4fe7aac3a2cecab195321ceb99a7d0`. The Adreno GPU recovered `hashcat!`; the exact canonical `PMKID:AP:STA:SSID:password` output matched, and the **device exit marker was 0**. The host's original ADB shell returned `255` after a transport disconnect while GPU compilation was underway; the on-device process continued and completed successfully, so the 255 is not a kernel failure.
+
+The last two RedMagic tests left temporary application-private staging after the earlier ADB interruption; their logs and recovered outputs were archived, then their **exact temporary directories, input files and markers** were removed after checking no hashcat process was running. The stock mode-22000 files still have SHA-256 `abff75bd2ad3dc4c4818419b500bf07e19340a28e4c506f024c11cc43bf0aaf0` (module) and `8ab35e16fa2055ba36939507ccac0bbcd5e52d9205d3d635417921f12582b428` (OpenCL source).
+
+Pixel Mali diagnostics: small OpenCL smoke kernels compiled successfully with default options, `-cl-std=CL1.2` and `-cl-std=CL3.0`. Both raw SHA-512 (`1700`, `-w 1`) and SHA-512crypt (`1800`, `-w 1`) failed with exit `134`; the raw SHA-512 run emitted `mmap failed: Out of memory`. A module-only `-cl-opt-disable` experiment also returned 134. Annotating the *optimized* SHA-512 kernel was not a valid noinline test under `-w 1` (that profile uses pure kernels). A later isolated test annotating the actual `sha512_transform` helper in the **pure** kernel still returned exit 134 with Mali native crash stack in `llvm::InlineFunction` / `clcc::run_early_inliner`. Thus no SHA-512 or WPA 22000 GPU success on Pixel is established.
+
+### PMKID negative control on RedMagic (2026-10-30)
+
+Re-ran the **same** independently constructed `WPA*01` PMKID with one deliberately incorrect but valid-length candidate `hashcat2` instead of the actual `hashcat!`. The Adreno computation completed with `Status: Exhausted`, `Recovered: 0/1 (0.00%)`, `Guess.Mask: hashcat2 [8]`, `Candidate.Engine: Device Generator` and **device exit `1`** (expected for an exhausted candidate). The on-device runner additionally required the recovered-output file to be empty. It printed `KNOWN_VECTOR_NEGATIVE_PASS mode=22000 exit=1`, and the **host ADB exit was `0`**. The log and marker are committed as `m22000-pmkid-negative-device.log` and `.exit`. The runner stage was removed automatically; the exact temporary inputs and on-device log/marker were cleared after archiving. Stock module and OpenCL source SHA-256 values remained unchanged.
+
+**Remaining verification:** WPA mode `22000` **EAPOL (`WPA*02`)** paths and their auxiliary verification kernels are not established by one positive + one negative PMKID test. Other hash modes do not yet have saved wrong-password controls or multiple-candidate selection tests. No claim of full mode-22000 correctness, comprehensive GPU compatibility or release readiness follows from these **seven positive synthetic tests and one negative PMKID control**.

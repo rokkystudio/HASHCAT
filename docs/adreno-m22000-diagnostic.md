@@ -244,3 +244,17 @@ See `docs/android-gpu-multimode-benchmarks.md` for the measured RedMagic/Pixel m
 ## Rebuilt baseline WPA benchmark retested (2026-10-30)
 
 On RedMagic NX709S, the locally rebuilt Adreno-only baseline compiled and executed the split-mode `-b -m 22000` benchmark with **755 H/s**, and both the on-device exit marker and host ADB exit were **0**. Isolated app-private stage removed; original 22000 module/source hashes remained unchanged. Exact detailed log: ignored `build/diagnostic-multimode/NX709S-m22000-device.log`. This confirms benchmark stability after the failed experimental Pixel-Mali split was reverted, not end-to-end PMKID/EAPOL verification.
+
+## Confirmed positive PMKID GPU known-vector test (2026-10-30)
+
+The previously unresolved **correctness** gate was partly advanced beyond `-b`: RedMagic NX709S (`91809037`) ran a synthetic `WPA*01` PMKID hash in an isolated app-private runtime using the real compiled mode-22000 module and split OpenCL source. The known passphrase `hashcat!` and SSID `hashcat-essid` are the source module's public self-test input; independent Python `hashlib.pbkdf2_hmac` and HMAC-SHA1 verification yielded PMKID `4d4fe7aac3a2cecab195321ceb99a7d0`. Hashcat's GPU output was the precise canonical `4d4fe7aac3a2cecab195321ceb99a7d0:fc690c158264:f4747f87f9f4:hashcat-essid:hashcat!`, `Status: Cracked`, `Recovered: 1/1`, with saved **device exit 0**.
+
+The host's ADB shell reported transport exit 255 while compilation was underway; hashcat kept running on-device and completed. Subsequently archived the complete log, device exit and recovered line before removing the exact temporary app stages and test inputs. SHA-256 of the stock WPA module and OpenCL source matched their originals after cleanup. A reproducible offline check and original synthetic evidence are committed under `tools/test-android-gpu-known-vectors.py` and `tests/fixtures/android-gpu/`.
+
+**Scope:** this confirms the device's end-to-end recovery against **one known PMKID vector**, not the `WPA*02` EAPOL MIC checks (AUX1, AUX2, AUX3) or all mode-22000 hash variants. No EAPOL synthetic vector was run, and no release binary was published.
+
+### Wrong-passphrase PMKID control (2026-10-30)
+
+Re-tested the identical synthetic PMKID on RedMagic with candidate `hashcat2`, deliberately different from the true 8-character passphrase `hashcat!`. The on-device job returned **1** with `Status: Exhausted`, `Recovered: 0/1`, `Guess.Mask: hashcat2 [8]`, and no reported cracked line; the wrapper treated this expected rejection as `KNOWN_VECTOR_NEGATIVE_PASS` and the host ADB call returned **0**. The exact negative-case log and device exit marker are committed under `tests/fixtures/android-gpu/redmagic-known-vectors/`, checked by the same offline verifier. Temporary test stages and inputs were removed, and the original module/source SHA-256 hashes again matched.
+
+This strengthens the correctness evidence for **PMKID candidate acceptance and rejection only**. It does not establish EAPOL (`WPA*02`) AUX1–3 or other WPA verification subtypes.

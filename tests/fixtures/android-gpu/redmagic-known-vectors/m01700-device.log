@@ -1,0 +1,72 @@
+hashcat (v7.1.2) starting
+
+Initializing bridges. Please be patient...Initialized bridgesInitializing backend runtimes. Please be patient...Initialized backend runtimesInitializing backend devices. Please be patient...Initialized backend devicesOpenCL API (OpenCL 3.0 QUALCOMM build: commit #21eaafda81 changeid #I578ccc16f0 Date: 07/19/22 Tue Local Branch:  Remote Branch: ) - Platform #1 [QUALCOMM]
+===========================================================================================================================================================
+* Device #01: QUALCOMM Adreno(TM), 2761/5523 MB (512 MB allocatable), 4MCU
+
+Minimum password length supported by kernel: 0
+Maximum password length supported by kernel: 256
+
+Counting lines in /data/local/tmp/hc-known-01700-input/known.hash. Please be patient...Counted lines in /data/local/tmp/hc-known-01700-input/known.hashParsed Hashes: 1/1 (100.00%)Parsed Hashes: 1/1 (100.00%)Sorting hashes. Please be patient...Sorted hashesRemoving duplicate hashes. Please be patient...Removed duplicate hashesSorting salts. Please be patient...Sorted saltsGenerating bitmap tables...Generated bitmap tablesHashes: 1 digests; 1 unique digests, 1 unique salts
+Bitmaps: 16 bits, 65536 entries, 0x0000ffff mask, 262144 bytes, 5/13 rotates
+
+Optimizers applied:
+* Zero-Byte
+* Early-Skip
+* Not-Salted
+* Not-Iterated
+* Single-Hash
+* Single-Salt
+* Brute-Force
+* Raw-Hash
+* Uses-64-Bit
+
+ATTENTION! Pure (unoptimized) backend kernels selected.
+Pure kernels can crack longer passwords, but drastically reduce performance.
+If you want to switch to optimized kernels, append -O to your commandline.
+See the above message to find out about the exact limits.
+
+Watchdog: Hardware monitoring interface not found on your system.
+Watchdog: Temperature abort trigger disabled.
+
+Initializing bridge salts. Please be patient...Initialized bridge saltsInitializing device kernels and memory. Please be patient...Initializing backend runtime for device #1. Please be patient...Initialized backend runtime for device #1Host memory allocated for this attack: 650 MB (4062 MB free)
+
+Initialized device kernels and memoryStarting self-test. Please be patient...Finished self-testStarting autotune. Please be patient...Finished autotune
+                                                          
+The wordlist or mask that you are using is too small.
+This means that hashcat cannot use the full parallel power of your device(s).
+Hashcat is expecting at least 6144 base words but only got 0.0% of that.
+Unless you supply more work, your cracking speed will drop.
+For tips on supplying more work, see: https://hashcat.net/faq/morework
+
+
+                                                          
+[s]tatus [p]ause [b]ypass [c]heckpoint [f]inish [q]uit => 
+                                                          
+Approaching final keyspace - workload adjusted.
+
+[s]tatus [p]ause [b]ypass [c]heckpoint [f]inish [q]uit => 
+                                                          
+
+Session..........: hashcat
+Status...........: Cracked
+Hash.Mode........: 1700 (SHA2-512)
+Hash.Target......: 82a9dda829eb7f8ffe9fbe49e45d47d2dad9664fbb7adf72492...e5082f
+Time.Started.....: Fri Oct 30 01:39:52 2026 (0 secs)
+Time.Estimated...: Fri Oct 30 01:39:52 2026 (0 secs)
+Kernel.Feature...: Pure Kernel (password length 0-256 bytes)
+Guess.Mask.......: hashcat [7]
+Guess.Queue......: 1/1 (100.00%)
+Speed.#01........:      685 H/s (0.05ms) @ Accel:6 Loops:1 Thr:256 Vec:1
+Recovered........: 1/1 (100.00%) Digests (total), 1/1 (100.00%) Digests (new)
+Progress.........: 1/1 (100.00%)
+Rejected.........: 0/1 (0.00%)
+Restore.Point....: 0/1 (0.00%)
+Restore.Sub.#01..: Salt:0 Amplifier:0-1 Iteration:0-1
+Candidate.Engine.: Device Generator
+Candidates.#01...: hashcat -> hashcat
+
+/data/user/0/fuck.system.hashcat/cache/hc-known-01700-20261030/hashcat.outfiles: Not a directory
+
+Started: Fri Oct 30 01:39:52 2026
+Stopped: Fri Oct 30 01:39:53 2026
