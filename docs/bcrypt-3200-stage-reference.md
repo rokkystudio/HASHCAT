@@ -174,3 +174,26 @@ Reproduce with an explicitly selected Clang supporting the SPIR64 target:
 Results using native GCC and Android NDK Clang 21.0.0: both Windows x86-64 and Android ARM64 host structure checks passed, and all four SPIR64 combinations passed, including all three kernel entrypoints, local arrays, the static host buffer map, and the negative address-space control.
 
 The check does not query Qualcomm's actual available local memory, validate Adreno's code generation, measure dynamic driver allocations, or execute any OpenCL kernel. The archived RedMagic one-thread attempt already returned self-test exit 245; the 32 KiB eight-thread allocation alone cannot explain that separate one-thread failure. The first GPU divergence remains unidentified.
+
+## Android ARM64 bcrypt 3200 rebuild (2026-10-31)
+
+A fresh native bcrypt module was compiled from the tracked source/src/modules/module_03200.c and the existing Android ARM64 static archive source/obj/combined.NATIVE.a. The Android NDK r29 Clang command uses the project Makefile's native module flags (-O2, Android API 26 target, MODULE_INTERFACE_VERSION_CURRENT=700, shared AArch64 ELF output). Its output was written to the isolated, ignored build directory:
+
+    build/diagnostic-multimode/bcrypt-rebuild-20261031/module_03200.so
+
+The rebuilt module is an ELF64 little-endian AArch64 shared library with the expected exported module_init, module_st_hash, module_st_pass, and module_attack_exec symbols and standard Android shared-library dependencies. Its size is 237592 bytes and its SHA-256 is:
+
+    76418b1ab9cd0cf18873c386766988c5a7b3e001f8072477ba138790f91bb2fe
+
+The freshly built bytes are identical to build/arm64-v8a/modules/module_03200.so and to the previously archived RedMagic module. Consequently, rebuilding the unchanged native C module is reproducible but does not supply a new GPU implementation or demonstrate an Adreno self-test fix.
+
+The unchanged source/OpenCL/m03200-pure.cl was also compiled offline with Android NDK Clang 21 using -target spir64, -emit-llvm -c, -O2, and -Werror. The two independent source configurations generated the following LLVM bitcode:
+
+| OpenCL C standard | FIXED_LOCAL_SIZE | Output file in isolated build directory | SHA-256 |
+| --- | --- | --- | --- |
+| CL1.2 | 1 | m03200-pure-CL1.2-local1-O2.bc | c0a3daa51e2586f6d1ef56ba3825955ad5f6b67b60e7d3a0118a94d9a9b85527 |
+| CL3.0 | 8 | m03200-pure-CL3.0-local8-O2.bc | ef204bb479d11d7bdf5e9a732222fb3f400aacadfa75042bc336f1f0522caf05 |
+
+Both compiler processes exited successfully without diagnostics. The OpenCL source SHA-256 remains b4d6a2bf96a0c8326a4bcf930a7dbb6e51e2ae2fa6b1087b0c29e360cf8317c4. The source wrapper in the same build directory uses the original include files and standard compile definitions; it does not modify the production kernel.
+
+SPIR64 LLVM bitcode is **not a compiled Qualcomm Adreno GPU binary** and cannot replace the on-device Qualcomm OpenCL JIT output without a compatible driver compilation path. No device GPU execution, password recovery, self-test bypass, or application installation was performed as part of this rebuild. The last archived real RedMagic bcrypt self-test still returned exit code 245. A new source-level fix would have to demonstrate changed device behavior, rather than merely produce another identical C module binary.
