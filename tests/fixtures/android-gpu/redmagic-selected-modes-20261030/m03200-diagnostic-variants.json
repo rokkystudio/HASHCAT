@@ -1,0 +1,26 @@
+{
+  "device": "RedMagic NX709S",
+  "gpu": "QUALCOMM Adreno(TM)",
+  "adb_serial": "91809037",
+  "hash_mode": 3200,
+  "input_sha256": "6acc77110fb4f798b60f6189f6daddb3bb3d4579db2ff2edc9a15768f6a5dfa4",
+  "frontend_sha256": "4ab04450ab7357f97e18f0e66497dd4776c4300fb7412e4b88eb8713a8ebbad9",
+  "stock_kernel_sha256": "b4d6a2bf96a0c8326a4bcf930a7dbb6e51e2ae2fa6b1087b0c29e360cf8317c4",
+  "stock_module_sha256": "76418b1ab9cd0cf18873c386766988c5a7b3e001f8072477ba138790f91bb2fe",
+  "variants": {
+    "cl_opt_disable": {
+      "exit_code": 139,
+      "jit_options": "-D FIXED_LOCAL_SIZE=8 -cl-opt-disable",
+      "module_sha256": "19e786f0b804b4719cdd558de4e06fecdc744ee9d24132d35bbfad413fbe9be7",
+      "outcome": "SIGSEGV in Qualcomm LLVM compiler before self-test"
+    },
+    "global_sboxes": {
+      "exit_code": 245,
+      "kernel_sha256": "89c2073e9f2b3136cb2daa900daab9ad88a43e091823ff85271fc6088bd65c07",
+      "helper_source_sha256": "44051bd7b7d45940c59cda92119015b5ddbf1b294f08927297623bb8ed149676",
+      "helper_header_sha256": "5ec8b0d6cbb23455beac2bfd248e7267e4763e674e7f5d536089bb77d57b3c59",
+      "module_sha256": "76418b1ab9cd0cf18873c386766988c5a7b3e001f8072477ba138790f91bb2fe",
+      "outcome": "Device self-test failed after successful OpenCL kernel initialization"
+    }
+  }
+}
