@@ -1,0 +1,67 @@
+hashcat (v7.1.2) starting
+
+Initializing bridges. Please be patient...Initialized bridgesInitializing backend runtimes. Please be patient...Initialized backend runtimesInitializing backend devices. Please be patient...Initialized backend devicesOpenCL API (OpenCL 3.0 v1.r54p2-00eac0.7001668a7a05889fc53765c682b36a3f) - Platform #1 [ARM]
+============================================================================================
+* Device #01: Mali-G715 r0p0, 7678/15356 MB (3839 MB allocatable), 7MCU
+
+Minimum password length supported by kernel: 0
+Maximum password length supported by kernel: 256
+
+Counting lines in /data/local/tmp/hc-pixel-multi-input/m01000.hash. Please be patient...Counted lines in /data/local/tmp/hc-pixel-multi-input/m01000.hashParsed Hashes: 1/1 (100.00%)Parsed Hashes: 1/1 (100.00%)Sorting hashes. Please be patient...Sorted hashesRemoving duplicate hashes. Please be patient...Removed duplicate hashesSorting salts. Please be patient...Sorted saltsGenerating bitmap tables...Generated bitmap tablesHashes: 1 digests; 1 unique digests, 1 unique salts
+Bitmaps: 16 bits, 65536 entries, 0x0000ffff mask, 262144 bytes, 5/13 rotates
+Rules: 1
+
+Optimizers applied:
+* Zero-Byte
+* Early-Skip
+* Not-Salted
+* Not-Iterated
+* Single-Hash
+* Single-Salt
+* Raw-Hash
+
+ATTENTION! Pure (unoptimized) backend kernels selected.
+Pure kernels can crack longer passwords, but drastically reduce performance.
+If you want to switch to optimized kernels, append -O to your commandline.
+See the above message to find out about the exact limits.
+
+Watchdog: Hardware monitoring interface not found on your system.
+Watchdog: Temperature abort trigger disabled.
+
+Initializing bridge salts. Please be patient...Initialized bridge saltsInitializing device kernels and memory. Please be patient...Initializing backend runtime for device #1. Please be patient...Initialized backend runtime for device #1Host memory allocated for this attack: 634 MB (9254 MB free)
+
+Initialized device kernels and memoryStarting self-test. Please be patient...Finished self-testDictionary cache hit:
+* Filename..: /data/local/tmp/hc-pixel-multi-input/candidates.txt
+* Passwords.: 3
+* Bytes.....: 42
+* Keyspace..: 3
+
+Starting autotune. Please be patient...Finished autotune                                                          The wordlist or mask that you are using is too small.
+This means that hashcat cannot use the full parallel power of your device(s).
+Hashcat is expecting at least 13888 base words but only got 0.0% of that.
+Unless you supply more work, your cracking speed will drop.
+For tips on supplying more work, see: https://hashcat.net/faq/morework
+
+                                                          [s]tatus [p]ause [b]ypass [c]heckpoint [f]inish [q]uit =>                                                           Approaching final keyspace - workload adjusted.
+
+[s]tatus [p]ause [b]ypass [c]heckpoint [f]inish [q]uit =>                                                           
+Session..........: hashcat
+Status...........: Cracked
+Hash.Mode........: 1000 (NTLM)
+Hash.Target......: 82d20ab2cac864cf5c32eed420d32340
+Time.Started.....: Fri Oct 30 16:26:10 2026 (0 secs)
+Time.Estimated...: Fri Oct 30 16:26:10 2026 (0 secs)
+Kernel.Feature...: Pure Kernel (password length 0-256 bytes)
+Guess.Base.......: File (/data/local/tmp/hc-pixel-multi-input/candidates.txt)
+Guess.Queue......: 1/1 (100.00%)
+Speed.#01........:      399 H/s (0.13ms) @ Accel:31 Loops:1 Thr:64 Vec:1
+Recovered........: 1/1 (100.00%) Digests (total), 1/1 (100.00%) Digests (new)
+Progress.........: 3/3 (100.00%)
+Rejected.........: 0/3 (0.00%)
+Restore.Point....: 0/3 (0.00%)
+Restore.Sub.#01..: Salt:0 Amplifier:0-1 Iteration:0-1
+Candidate.Engine.: Device Generator
+Candidates.#01...: benchdemo2027 -> benchdemo2025
+
+Started: Fri Oct 30 16:25:29 2026
+Stopped: Fri Oct 30 16:26:11 2026
