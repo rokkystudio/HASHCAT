@@ -149,3 +149,28 @@ Run the regression with a native GCC that supports undefined-behavior trap instr
     python -B tools/test-m03200-ub-trap-cpu.py
 
 The 2026-10-30 Windows MinGW GCC test passes: one deliberate overflow is trapped and neither candidate triggers a sanitizer trap in the instrumented native bcrypt calculations. This result does not prove freedom from undefined behavior for every input, does not detect GPU-only races or compiler miscompilation, and does not change the Adreno GPU status. The last archived RedMagic bcrypt self-test remains exit 245, with no verified intermediate device readback.
+
+## SPIR64 kernel interface and local S-box allocation
+
+tools/test-m03200-opencl-abi.py compiles the unchanged source/OpenCL/m03200-pure.cl with Clang's SPIR64 target for OpenCL 1.2 and 3.0, using FIXED_LOCAL_SIZE=1 and FIXED_LOCAL_SIZE=8. It verifies the emitted LLVM IR for the real m03200_init, m03200_loop, and m03200_comp entrypoints and checks the OpenCL argument bindings in source/src/backend.c and the self-test buffer substitutions in source/src/selftest.c.
+
+Each entrypoint declares exactly 25 arguments, in the same order and with the same OpenCL address spaces and type qualifiers as the original host binding map. Argument 3 is a constant-address-space pointer; the others are global pointers. The host sets all 25 arguments as cl_mem objects, binds the password, temporary, and hooks buffers before use, and substitutes the built-in self-test digest/salt buffers at indices 15, 17, and 18. The shared kernel_param_t input is argument 24.
+
+The regression also compiles the native host's original kernel_param_t declaration with GCC static assertions for its 72-byte total size and the precise offsets of all 13 fields. The SPIR64 IR must contain matching 32-bit and 64-bit field types. The shared bcrypt_tmp_t must contain two 18-word arrays and four 256-word S-box arrays, totalling 4240 bytes. Both host and OpenCL definitions use the same inc_types.h declaration.
+
+Each of the three kernels declares four distinct S-box arrays in SPIR64 local address space 3. Every array has 256 unsigned 32-bit words per local work-item. The total statically declared S-box storage per workgroup and kernel is therefore:
+
+| FIXED_LOCAL_SIZE | Four S-box arrays per kernel | Required workgroup size in LLVM metadata |
+| --- | --- | --- |
+| 1 | 4096 bytes (4 KiB) | (1, 1, 1) |
+| 8 | 32768 bytes (32 KiB) | (8, 1, 1) |
+
+The verification includes a negative control: relocating the first S-box declaration to global address space 1 must be rejected by the IR checker. The production source checks use the same archived SHA-256 hashes as the earlier stage tests.
+
+Reproduce with an explicitly selected Clang supporting the SPIR64 target:
+
+    python -B tools/test-m03200-opencl-abi.py --clang D:\ANDROID\SDK\ndk\29.0.14206865\toolchains\llvm\prebuilt\windows-x86_64\bin\clang.exe
+
+Results on the Windows host using Android NDK Clang 21.0.0: all four SPIR64 combinations passed, including all three kernel entrypoints, local arrays, the static host buffer map, and the negative address-space control.
+
+The check does not query Qualcomm's actual available local memory, validate Adreno's code generation, measure dynamic driver allocations, or execute any OpenCL kernel. The archived RedMagic one-thread attempt already returned self-test exit 245; the 32 KiB eight-thread allocation alone cannot explain that separate one-thread failure. The first GPU divergence remains unidentified.
