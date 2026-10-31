@@ -171,6 +171,32 @@ def verify_success(
         f"MULTIGRAPH_ACCEPT stages={stages} sets={sets} "
         f"buffers={buffers} bytes=8192",
     )
+    port_ready = (
+        f"JOB_PORT_READY sets={sets} stages={stages} "
+        f"upload={upload} uniform={uniform} "
+        "input_bytes=8192 uniform_bytes=16"
+    )
+    port_invalid = (
+        f"JOB_PORT_INVALID_CONTROLS sets={sets} stages={stages} "
+        f"rejected={5 + int(stages > 1)} submissions=0"
+    )
+    port_close = (
+        f"JOB_PORT_CLOSE completed=4 stages={stages} failed=0"
+    )
+
+    exact_line(lines, port_ready)
+    exact_line(lines, port_invalid)
+    exact_line(lines, port_close)
+    assert lines.index(port_ready) < lines.index(port_invalid)
+    assert lines.index(port_invalid) < lines.index(
+        "MULTI_SUBMIT completed=1 reused=0 result=0"
+    )
+    assert lines.index(port_close) < lines.index(
+        f"MULTI_DESTROY acquisitions={acquisitions} buffers={buffers} "
+        f"memories={buffers} maps={mapped_count} layouts={sets} "
+        f"sets={sets} shaders={stages} pipelines={stages} "
+        "submissions=4 idle_result=0"
+    )
     exact_line(
         lines,
         f"MULTI_DESTROY acquisitions={acquisitions} buffers={buffers} "
@@ -197,6 +223,8 @@ def verify_success(
     assert len(descriptors) == binding_count
     assert len(syncs) == 4 * (stages + 2)
     assert len(passes) == 4 * stages
+    assert sum(row.startswith("JOB_PORT_SUBMIT ") for row in lines) == 4
+    assert not any(row.startswith("JOB_PORT_EXECUTION_FAILED ") for row in lines)
 
     for index, (requirement, planned) in enumerate(zip(requirements, plan)):
         assert int(requirement.group(1)) == index
@@ -299,6 +327,12 @@ def verify_success(
     for submission in range(4):
         exact_line(
             lines,
+            f"JOB_PORT_SUBMIT completed={submission + 1} stages={stages} "
+            "input_bytes=8192 uniform_bytes=16 output_bytes=8192 "
+            f"reused={int(submission != 0)}",
+        )
+        exact_line(
+            lines,
             f"MULTI_SUBMIT completed={submission + 1} "
             f"reused={int(submission != 0)} result=0",
         )
@@ -357,6 +391,7 @@ def verify_incompatible(lines: list[str], sets: int, stages: int) -> None:
     assert not any(row.startswith("MULTI_SUBMIT ") for row in lines)
     assert not any(row.startswith("MULTIGRAPH_DISPATCH ") for row in lines)
     assert not any(row.startswith("MULTI_READY ") for row in lines)
+    assert not any(row.startswith("JOB_PORT_READY ") for row in lines)
 
 
 def acquisition_ledger(sets: int, stages: int, point: int) -> dict[str, int]:
@@ -458,6 +493,7 @@ def verify_faults(
         assert not any(row.startswith("MULTI_SUBMIT ") for row in section)
         assert not any(row.startswith("MULTIGRAPH_PASS ") for row in section)
         assert not any(row.startswith("MULTIGRAPH_DISPATCH ") for row in section)
+        assert not any(row.startswith("JOB_PORT_READY ") for row in section)
 
     assert item["set_stage_points"] == {"1:1": 23, "2:3": 39}
 
@@ -528,6 +564,18 @@ def verify_mutations(
         (
             "MULTI_SYNC index=8 operation=flush coherent=1 driver_call=0",
             "MULTI_SYNC index=8 operation=flush coherent=1 driver_call=1",
+        ),
+        (
+            "JOB_PORT_INVALID_CONTROLS sets=2 stages=3 rejected=6 submissions=0",
+            "JOB_PORT_INVALID_CONTROLS sets=2 stages=3 rejected=5 submissions=0",
+        ),
+        (
+            "JOB_PORT_SUBMIT completed=4 stages=3 input_bytes=8192 uniform_bytes=16 output_bytes=8192 reused=1",
+            "JOB_PORT_SUBMIT completed=4 stages=3 input_bytes=8192 uniform_bytes=16 output_bytes=8192 reused=0",
+        ),
+        (
+            "JOB_PORT_CLOSE completed=4 stages=3 failed=0",
+            "JOB_PORT_CLOSE completed=4 stages=3 failed=1",
         ),
     )
 
@@ -641,6 +689,7 @@ def main() -> None:
     success_count = 0
     incompatible_count = 0
     verified_words = 0
+    invalid_job_count = 0
 
     for item in manifest["device_runs"]:
         path = ARCHIVE / item["file"]
@@ -663,6 +712,7 @@ def main() -> None:
             )
             success_count += 1
             verified_words += 4 * 2048 * item["stages"]
+            invalid_job_count += 5 + int(item["stages"] > 1)
         else:
             assert item["device"].startswith("redmagic")
             assert item["mode"] == "noncoherent10"
@@ -700,6 +750,7 @@ def main() -> None:
     assert success_count == 120, success_count
     assert incompatible_count == 24, incompatible_count
     assert verified_words == 1966080, verified_words
+    assert invalid_job_count == 680, invalid_job_count
     assert fault_count == 186, fault_count
     assert len(manifest["invalid_runs"]) == 3
     assert len(manifest["fault_runs"]) == 3
@@ -717,14 +768,15 @@ def main() -> None:
     verify_abi_heap_properties(manifest)
     verify_mutations(manifest, oracle)
 
-    print("PASS 19 canonical source identities")
+    print("PASS 21 canonical source identities")
+    print("PASS 680 invalid host GPU job calls rejected before submission")
     print("PASS 12 independent Python CPU stage/submission references")
     print("PASS 120 real GPU runs and 480 fence-separated submissions")
     print("PASS 1,966,080 real GPU stage words independently checked")
     print("PASS 12 actual Pixel noncoherent multi-stage GPU runs")
     print("PASS 24 explicit RedMagic noncoherent memory incompatibilities")
     print("PASS 186 Vulkan post-acquisition partial cleanup trials")
-    print("PASS 30 malformed CLI controls and seven corrupted evidence rejections")
+    print("PASS 30 malformed CLI controls and ten corrupted evidence rejections")
 
 
 if __name__ == "__main__":

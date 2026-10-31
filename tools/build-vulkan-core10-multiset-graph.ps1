@@ -94,6 +94,7 @@ $sources = @(
     (Join-Path $PSScriptRoot 'vulkan-core10-descriptor-policy.c'),
     (Join-Path $PSScriptRoot 'vulkan-core10-multiset.c'),
     (Join-Path $PSScriptRoot 'vulkan-core10-multiset-graph.c'),
+    (Join-Path $PSScriptRoot 'vulkan-core10-job-port.c'),
     (Join-Path $PSScriptRoot 'vulkan-core10-multiset-graph-diagnostic.c')
 )
 

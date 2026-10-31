@@ -37,24 +37,31 @@ MULTI_READY acquisitions=23 buffers=5 sets=1 bindings=3 storage=2 uniform=1 stag
 MULTIGRAPH_ACCEPT stages=1 sets=1 buffers=5 bytes=8192
 MULTIGRAPH_DISPATCH stage=0 pipeline=0 input=0 output=1 groups=64,1,1
 MULTIGRAPH_READBACK stage=0 gpu=1 host=3
+JOB_PORT_READY sets=1 stages=1 upload=2 uniform=4 input_bytes=8192 uniform_bytes=16
+JOB_PORT_INVALID_CONTROLS sets=1 stages=1 rejected=5 submissions=0
 MULTI_SYNC index=2 operation=flush coherent=1 driver_call=0 atom=1 result=0
 MULTI_SYNC index=4 operation=flush coherent=1 driver_call=0 atom=1 result=0
 MULTI_SUBMIT completed=1 reused=0 result=0
 MULTI_SYNC index=3 operation=invalidate coherent=1 driver_call=0 atom=1 result=0
+JOB_PORT_SUBMIT completed=1 stages=1 input_bytes=8192 uniform_bytes=16 output_bytes=8192 reused=0
 MULTIGRAPH_PASS sets=1 stages=1 submission=0 stage=0 words=2048 fnv=da420145579e3ab0
 MULTI_SYNC index=2 operation=flush coherent=1 driver_call=0 atom=1 result=0
 MULTI_SYNC index=4 operation=flush coherent=1 driver_call=0 atom=1 result=0
 MULTI_SUBMIT completed=2 reused=1 result=0
 MULTI_SYNC index=3 operation=invalidate coherent=1 driver_call=0 atom=1 result=0
+JOB_PORT_SUBMIT completed=2 stages=1 input_bytes=8192 uniform_bytes=16 output_bytes=8192 reused=1
 MULTIGRAPH_PASS sets=1 stages=1 submission=1 stage=0 words=2048 fnv=3dc96f338cbbffac
 MULTI_SYNC index=2 operation=flush coherent=1 driver_call=0 atom=1 result=0
 MULTI_SYNC index=4 operation=flush coherent=1 driver_call=0 atom=1 result=0
 MULTI_SUBMIT completed=3 reused=1 result=0
 MULTI_SYNC index=3 operation=invalidate coherent=1 driver_call=0 atom=1 result=0
+JOB_PORT_SUBMIT completed=3 stages=1 input_bytes=8192 uniform_bytes=16 output_bytes=8192 reused=1
 MULTIGRAPH_PASS sets=1 stages=1 submission=2 stage=0 words=2048 fnv=fc6cfc42aeaff265
 MULTI_SYNC index=2 operation=flush coherent=1 driver_call=0 atom=1 result=0
 MULTI_SYNC index=4 operation=flush coherent=1 driver_call=0 atom=1 result=0
 MULTI_SUBMIT completed=4 reused=1 result=0
 MULTI_SYNC index=3 operation=invalidate coherent=1 driver_call=0 atom=1 result=0
+JOB_PORT_SUBMIT completed=4 stages=1 input_bytes=8192 uniform_bytes=16 output_bytes=8192 reused=1
 MULTIGRAPH_PASS sets=1 stages=1 submission=3 stage=0 words=2048 fnv=00ba58c7ff9a53e2
+JOB_PORT_CLOSE completed=4 stages=1 failed=0
 MULTI_DESTROY acquisitions=23 buffers=5 memories=5 maps=3 layouts=1 sets=1 shaders=1 pipelines=1 submissions=4 idle_result=0

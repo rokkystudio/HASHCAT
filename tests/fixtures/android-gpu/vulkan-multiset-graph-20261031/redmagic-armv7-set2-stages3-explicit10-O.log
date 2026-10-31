@@ -57,40 +57,47 @@ MULTIGRAPH_DISPATCH stage=2 pipeline=2 input=2 output=3 groups=64,1,1
 MULTIGRAPH_READBACK stage=0 gpu=1 host=5
 MULTIGRAPH_READBACK stage=1 gpu=2 host=6
 MULTIGRAPH_READBACK stage=2 gpu=3 host=7
+JOB_PORT_READY sets=2 stages=3 upload=4 uniform=8 input_bytes=8192 uniform_bytes=16
+JOB_PORT_INVALID_CONTROLS sets=2 stages=3 rejected=6 submissions=0
 MULTI_SYNC index=4 operation=flush coherent=1 driver_call=0 atom=1 result=0
 MULTI_SYNC index=8 operation=flush coherent=1 driver_call=0 atom=1 result=0
 MULTI_SUBMIT completed=1 reused=0 result=0
 MULTI_SYNC index=5 operation=invalidate coherent=1 driver_call=0 atom=1 result=0
-MULTIGRAPH_PASS sets=2 stages=3 submission=0 stage=0 words=2048 fnv=da420145579e3ab0
 MULTI_SYNC index=6 operation=invalidate coherent=1 driver_call=0 atom=1 result=0
-MULTIGRAPH_PASS sets=2 stages=3 submission=0 stage=1 words=2048 fnv=2e11a9b4e2906b5d
 MULTI_SYNC index=7 operation=invalidate coherent=1 driver_call=0 atom=1 result=0
+JOB_PORT_SUBMIT completed=1 stages=3 input_bytes=8192 uniform_bytes=16 output_bytes=8192 reused=0
+MULTIGRAPH_PASS sets=2 stages=3 submission=0 stage=0 words=2048 fnv=da420145579e3ab0
+MULTIGRAPH_PASS sets=2 stages=3 submission=0 stage=1 words=2048 fnv=2e11a9b4e2906b5d
 MULTIGRAPH_PASS sets=2 stages=3 submission=0 stage=2 words=2048 fnv=78fd6584d78a2c98
 MULTI_SYNC index=4 operation=flush coherent=1 driver_call=0 atom=1 result=0
 MULTI_SYNC index=8 operation=flush coherent=1 driver_call=0 atom=1 result=0
 MULTI_SUBMIT completed=2 reused=1 result=0
 MULTI_SYNC index=5 operation=invalidate coherent=1 driver_call=0 atom=1 result=0
-MULTIGRAPH_PASS sets=2 stages=3 submission=1 stage=0 words=2048 fnv=3dc96f338cbbffac
 MULTI_SYNC index=6 operation=invalidate coherent=1 driver_call=0 atom=1 result=0
-MULTIGRAPH_PASS sets=2 stages=3 submission=1 stage=1 words=2048 fnv=55af4d53d195f1b5
 MULTI_SYNC index=7 operation=invalidate coherent=1 driver_call=0 atom=1 result=0
+JOB_PORT_SUBMIT completed=2 stages=3 input_bytes=8192 uniform_bytes=16 output_bytes=8192 reused=1
+MULTIGRAPH_PASS sets=2 stages=3 submission=1 stage=0 words=2048 fnv=3dc96f338cbbffac
+MULTIGRAPH_PASS sets=2 stages=3 submission=1 stage=1 words=2048 fnv=55af4d53d195f1b5
 MULTIGRAPH_PASS sets=2 stages=3 submission=1 stage=2 words=2048 fnv=e35d96f4d5d34829
 MULTI_SYNC index=4 operation=flush coherent=1 driver_call=0 atom=1 result=0
 MULTI_SYNC index=8 operation=flush coherent=1 driver_call=0 atom=1 result=0
 MULTI_SUBMIT completed=3 reused=1 result=0
 MULTI_SYNC index=5 operation=invalidate coherent=1 driver_call=0 atom=1 result=0
-MULTIGRAPH_PASS sets=2 stages=3 submission=2 stage=0 words=2048 fnv=fc6cfc42aeaff265
 MULTI_SYNC index=6 operation=invalidate coherent=1 driver_call=0 atom=1 result=0
-MULTIGRAPH_PASS sets=2 stages=3 submission=2 stage=1 words=2048 fnv=1d55deed24fd7c1f
 MULTI_SYNC index=7 operation=invalidate coherent=1 driver_call=0 atom=1 result=0
+JOB_PORT_SUBMIT completed=3 stages=3 input_bytes=8192 uniform_bytes=16 output_bytes=8192 reused=1
+MULTIGRAPH_PASS sets=2 stages=3 submission=2 stage=0 words=2048 fnv=fc6cfc42aeaff265
+MULTIGRAPH_PASS sets=2 stages=3 submission=2 stage=1 words=2048 fnv=1d55deed24fd7c1f
 MULTIGRAPH_PASS sets=2 stages=3 submission=2 stage=2 words=2048 fnv=7c575a1d46ede826
 MULTI_SYNC index=4 operation=flush coherent=1 driver_call=0 atom=1 result=0
 MULTI_SYNC index=8 operation=flush coherent=1 driver_call=0 atom=1 result=0
 MULTI_SUBMIT completed=4 reused=1 result=0
 MULTI_SYNC index=5 operation=invalidate coherent=1 driver_call=0 atom=1 result=0
-MULTIGRAPH_PASS sets=2 stages=3 submission=3 stage=0 words=2048 fnv=00ba58c7ff9a53e2
 MULTI_SYNC index=6 operation=invalidate coherent=1 driver_call=0 atom=1 result=0
-MULTIGRAPH_PASS sets=2 stages=3 submission=3 stage=1 words=2048 fnv=ebe62698c3a64353
 MULTI_SYNC index=7 operation=invalidate coherent=1 driver_call=0 atom=1 result=0
+JOB_PORT_SUBMIT completed=4 stages=3 input_bytes=8192 uniform_bytes=16 output_bytes=8192 reused=1
+MULTIGRAPH_PASS sets=2 stages=3 submission=3 stage=0 words=2048 fnv=00ba58c7ff9a53e2
+MULTIGRAPH_PASS sets=2 stages=3 submission=3 stage=1 words=2048 fnv=ebe62698c3a64353
 MULTIGRAPH_PASS sets=2 stages=3 submission=3 stage=2 words=2048 fnv=007be5e7346adf5a
+JOB_PORT_CLOSE completed=4 stages=3 failed=0
 MULTI_DESTROY acquisitions=39 buffers=9 memories=9 maps=5 layouts=2 sets=2 shaders=3 pipelines=3 submissions=4 idle_result=0

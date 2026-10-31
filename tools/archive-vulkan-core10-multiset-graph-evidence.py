@@ -3,7 +3,8 @@
 
 Copies LF-only logs recorded on RedMagic ARM64, RedMagic ARMv7 and Pixel
 ARM64 without editing their bytes.
-Stores independently identifiable source and build SHA-256 digests, explicit
+Stores independently identifiable source, job-port and build SHA-256 digests,
+explicit
 device/ABI coverage and exact run/negative-case metadata. Does not execute
 Android, Vulkan or shader build operations.
 """
@@ -41,6 +42,8 @@ SOURCES = (
     "tools/vulkan-core10-multiset.h",
     "tools/vulkan-core10-multiset-graph.c",
     "tools/vulkan-core10-multiset-graph.h",
+    "tools/vulkan-core10-job-port.c",
+    "tools/vulkan-core10-job-port.h",
     "tools/vulkan-core10-multiset-graph-diagnostic.c",
     "tools/vulkan-multiset-graph.comp",
     "tools/build-vulkan-core10-multiset-graph.ps1",
@@ -176,7 +179,8 @@ def main() -> None:
         "date": "2026-10-31",
         "scope": (
             "Public noncryptographic Vulkan 1.0 multi-stage Compute "
-            "with one or two mixed storage/uniform descriptor sets"
+            "with mixed storage/uniform descriptor sets and a synchronous "
+            "caller-owned GPU job port"
         ),
         "api_default": "1.0",
         "minimum_android_api": 24,
@@ -206,6 +210,7 @@ def main() -> None:
             "Pixel ARM64 executed all three stages using real HOST_VISIBLE noncoherent memory and driver cache flush/invalidate calls.",
             "Neither a Vulkan 1.0-only GPU nor an Android 7.0 device was available.",
             "Only public integer shaders are executed, without hashcat GPU integration.",
+            "The job port accepts public CPU arrays, not production kernel scheduling or password/hash inputs.",
             "The shared pipeline layout serves all stages; stage-specific descriptor layouts and concurrent queues are not implemented.",
             "The new graph recorder validates declared usage against supplied original specifications, not SPIR-V reflection.",
             "The runtime is sequential with one queue, command buffer, fence and no device-loss recovery.",

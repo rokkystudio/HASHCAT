@@ -12,6 +12,7 @@
 #include "vulkan-auto-config.h"
 #include "vulkan-core10-multiset.h"
 #include "vulkan-core10-multiset-graph.h"
+#include "vulkan-core10-job-port.h"
 #include "vulkan-core11-policy.h"
 
 #include <inttypes.h>
@@ -270,8 +271,9 @@ static int verify_stage (
  * with dedicated per-stage readback. All CPU-visible transfers and uniform
  * storage use coherent or Vulkan-flushed noncoherent HOST_VISIBLE memory.
  *
- * The graph is recorded once and submitted four times after updating both
- * input data and uniform parameters; all stage outputs are CPU-verified.
+ * The graph is recorded once by the reusable job port. Each caller-owned
+ * input, uniform block and per-stage output crosses that port on every
+ * sequential submission; every output word is CPU-verified.
  */
 static int execute_device (
   const vulkan_auto_device_t *selected,
@@ -426,9 +428,19 @@ static int execute_device (
   }
 
   int status = 1;
+  vulkan_core10_job_port_t port = { 0 };
+  uint32_t input[MULTIGRAPH_WORDS] = { 0 };
+  uint32_t uniform[MULTIGRAPH_UNIFORM_BYTES / sizeof (uint32_t)] = { 0 };
+  uint32_t output[MULTIGRAPH_MAX_STAGES][MULTIGRAPH_WORDS] = { { 0 } };
+  void *readback[MULTIGRAPH_MAX_STAGES] = { 0 };
 
-  result = vulkan_core10_multiset_graph_record (
-    &runtime, buffers, buffer_count, &graph, stdout
+  for (uint32_t stage = 0u; stage < stage_count; stage++)
+  {
+    readback[stage] = output[stage];
+  }
+
+  result = vulkan_core10_job_port_open (
+    &port, &runtime, buffers, buffer_count, &graph, stdout
   );
 
   if (result != VK_SUCCESS)
@@ -440,50 +452,103 @@ static int execute_device (
     goto cleanup;
   }
 
-  uint32_t *upload = (uint32_t *) runtime.buffers[upload_index].mapped;
-  uint32_t *uniforms = (uint32_t *) runtime.buffers[uniform_index].mapped;
+  const uint32_t invalid_before = runtime.completed_submissions;
+  const VkResult reject_input = vulkan_core10_job_port_submit (
+    &port, input, MULTIGRAPH_BYTES - sizeof (uint32_t),
+    uniform, MULTIGRAPH_UNIFORM_BYTES,
+    readback, stage_count, MULTIGRAPH_BYTES
+  );
+  const VkResult reject_uniform = vulkan_core10_job_port_submit (
+    &port, input, MULTIGRAPH_BYTES,
+    uniform, MULTIGRAPH_UNIFORM_BYTES - sizeof (uint32_t),
+    readback, stage_count, MULTIGRAPH_BYTES
+  );
+  const VkResult reject_count = vulkan_core10_job_port_submit (
+    &port, input, MULTIGRAPH_BYTES,
+    uniform, MULTIGRAPH_UNIFORM_BYTES,
+    readback, stage_count - 1u, MULTIGRAPH_BYTES
+  );
+  const VkResult reject_null = vulkan_core10_job_port_submit (
+    &port, input, MULTIGRAPH_BYTES,
+    uniform, MULTIGRAPH_UNIFORM_BYTES,
+    NULL, stage_count, MULTIGRAPH_BYTES
+  );
+  const VkResult reject_reopen = vulkan_core10_job_port_open (
+    &port, &runtime, buffers, buffer_count, &graph, stdout
+  );
+
+  if (reject_input != VK_ERROR_INITIALIZATION_FAILED
+   || reject_uniform != VK_ERROR_INITIALIZATION_FAILED
+   || reject_count != VK_ERROR_INITIALIZATION_FAILED
+   || reject_null != VK_ERROR_INITIALIZATION_FAILED
+   || reject_reopen != VK_ERROR_INITIALIZATION_FAILED
+   || runtime.completed_submissions != invalid_before
+   || port.jobs_completed != 0u)
+  {
+    fprintf (
+      stderr, "JOB_PORT_INVALID_CONTROLS_FAILED stages=%" PRIu32 "\n",
+      stage_count
+    );
+
+    goto cleanup;
+  }
+
+  uint32_t rejected = 5u;
+
+  if (stage_count > 1u)
+  {
+    readback[1] = readback[0];
+
+    const VkResult reject_alias = vulkan_core10_job_port_submit (
+      &port, input, MULTIGRAPH_BYTES,
+      uniform, MULTIGRAPH_UNIFORM_BYTES,
+      readback, stage_count, MULTIGRAPH_BYTES
+    );
+
+    readback[1] = output[1];
+
+    if (reject_alias != VK_ERROR_INITIALIZATION_FAILED
+     || runtime.completed_submissions != invalid_before
+     || port.jobs_completed != 0u)
+    {
+      fprintf (
+        stderr, "JOB_PORT_OUTPUT_ALIAS_ACCEPTED stages=%" PRIu32 "\n",
+        stage_count
+      );
+
+      goto cleanup;
+    }
+
+    rejected++;
+  }
+
+  fprintf (
+    stdout,
+    "JOB_PORT_INVALID_CONTROLS sets=%" PRIu32
+    " stages=%" PRIu32 " rejected=%" PRIu32
+    " submissions=0\n",
+    set_count, stage_count, rejected
+  );
 
   for (uint32_t submission = 0u; submission < submissions; submission++)
   {
     for (uint32_t index = 0u; index < MULTIGRAPH_WORDS; index++)
     {
-      upload[index] = public_word (index, submission);
+      input[index] = public_word (index, submission);
     }
 
-    public_parameters (submission, uniforms);
+    public_parameters (submission, uniform);
 
-    result = vulkan_core10_multiset_sync (
-      &runtime, upload_index, VK_FALSE
+    result = vulkan_core10_job_port_submit (
+      &port, input, MULTIGRAPH_BYTES,
+      uniform, MULTIGRAPH_UNIFORM_BYTES,
+      readback, stage_count, MULTIGRAPH_BYTES
     );
 
     if (result != VK_SUCCESS)
     {
       fprintf (
-        stderr, "MULTIGRAPH_UPLOAD_SYNC_FAILED result=%d\n", result
-      );
-
-      goto cleanup;
-    }
-
-    result = vulkan_core10_multiset_sync (
-      &runtime, uniform_index, VK_FALSE
-    );
-
-    if (result != VK_SUCCESS)
-    {
-      fprintf (
-        stderr, "MULTIGRAPH_UNIFORM_SYNC_FAILED result=%d\n", result
-      );
-
-      goto cleanup;
-    }
-
-    result = vulkan_core10_multiset_submit_and_wait (&runtime);
-
-    if (result != VK_SUCCESS)
-    {
-      fprintf (
-        stderr, "MULTIGRAPH_SUBMIT_FAILED result=%d\n", result
+        stderr, "JOB_PORT_SUBMIT_FAILED result=%d\n", result
       );
 
       goto cleanup;
@@ -491,24 +556,8 @@ static int execute_device (
 
     for (uint32_t stage = 0u; stage < stage_count; stage++)
     {
-      result = vulkan_core10_multiset_sync (
-        &runtime, readbacks[stage], VK_TRUE
-      );
-
-      if (result != VK_SUCCESS)
-      {
-        fprintf (
-          stderr,
-          "MULTIGRAPH_READBACK_SYNC_FAILED stage=%" PRIu32
-          " result=%d\n", stage, result
-        );
-
-        goto cleanup;
-      }
-
       if (verify_stage (
-        (const uint32_t *) runtime.buffers[readbacks[stage]].mapped,
-        set_count, stage_count, submission, stage
+        output[stage], set_count, stage_count, submission, stage
       ) != 0)
       {
         goto cleanup;
@@ -519,6 +568,19 @@ static int execute_device (
   status = 0;
 
 cleanup:
+  {
+    const VkResult close_result = vulkan_core10_job_port_close (&port);
+
+    if (close_result != VK_SUCCESS)
+    {
+      fprintf (
+        stderr, "JOB_PORT_CLOSE_FAILED result=%d\n", close_result
+      );
+
+      status = 1;
+    }
+  }
+
   result = vulkan_core10_multiset_destroy (&runtime);
 
   if (result != VK_SUCCESS)

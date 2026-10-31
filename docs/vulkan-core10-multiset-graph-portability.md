@@ -26,7 +26,8 @@ mode-3200 failure is a separate issue.
 | File | Responsibilities |
 | --- | --- |
 | `tools/vulkan-core10-multiset-graph.h` / `.c` | Validate and record a caller-declared sequential Compute graph into the existing multi-set runtime |
-| `tools/vulkan-core10-multiset-graph-diagnostic.c` | Create one to three real pipelines, prepare host/GPU transfers, synchronize mapped memory and independently compare all per-stage readbacks with scalar CPU results |
+| `tools/vulkan-core10-multiset-graph-diagnostic.c` | Create one to three real pipelines, execute host-owned jobs through the synchronous port, independently verify per-stage readbacks with scalar CPU results and reject invalid job calls |
+| `tools/vulkan-core10-job-port.h` / `.c` | Open one reusable Compute graph, validate caller-owned job buffers, synchronize mapped memory, submit once and return all stage outputs to host callers |
 | `tools/vulkan-multiset-graph.comp` | Build-time-selected public integer shader using sparse storage bindings and one std140 `uvec4` uniform block |
 | `tools/build-vulkan-core10-multiset-graph.ps1` | Build Android API 24 ARM64/ARMv7 executables and 12 Vulkan 1.0 SPIR-V variants |
 | `tools/run-vulkan-core10-multiset-graph.ps1` | Execute real Android GPU runs with exact ABI selection, resource cleanup, optional noncoherent memory and opt-in fault injection |
@@ -40,8 +41,18 @@ The public methods are:
 
 The existing resource owner creates descriptor sets and pipelines, owns all
 VkBuffer/VkDeviceMemory objects, and releases partially initialized resources
-on errors. The new recorder operates on the objects that owner creates; it
+on errors. The graph recorder operates on the objects that owner creates; it
 does not duplicate memory planning or create a vendor-specific backend.
+
+The separate `vulkan_core10_job_port_t` is the **host-facing synchronous task
+interface** used by this diagnostic. Its `job_port_open` records the graph
+once. Each `job_port_submit` accepts independent caller-owned input and
+uniform arrays, synchronizes GPU memory, reuses the command buffer and
+copies every completed stage output into caller-owned destinations.
+`job_port_close` releases the CPU-side readback metadata **before** the
+Vulkan owner is destroyed. Full API contracts and lifecycle mapping to the
+future hashcat device/session integration are documented in
+`docs/vulkan-core10-job-port-integration.md`.
 
 ## Explicit graph geometry
 
@@ -84,10 +95,11 @@ The command sequence is:
 5. COMPUTE_SHADER_WRITE → TRANSFER_READ via a Vulkan 1.0 memory barrier.
 6. Copy **each** stage output into a separate CPU-visible download buffer.
 7. TRANSFER_WRITE → HOST_READ via a Vulkan 1.0 memory barrier.
-8. For each submission, update upload and uniform bytes, flush noncoherent
-   mapped allocations when applicable, submit the *same* recorded command
-   buffer, wait for the fence, invalidate noncoherent readbacks when applicable,
-   and independently verify every output word of every stage.
+8. For each caller-owned job, validate the exact upload, uniform and output
+   lengths before any GPU submission. The task port copies input and uniform
+   bytes, flushes noncoherent allocations when applicable, submits the *same*
+   recorded command buffer, waits for the fence and invalidates all readbacks.
+   The diagnostic independently verifies every output word of every stage.
 
 This uses core Vulkan 1.0 pipeline layout/descriptor binding semantics and
 `vkCmdPipelineBarrier` synchronization, consistent with the
@@ -149,9 +161,15 @@ Every injected failure returns before dispatch and frees the precisely
 acquired Vulkan resources. These are controlled application-level
 failure points, not actual GPU device loss.
 
-The independent validator also rejects **seven** deliberately corrupted
-GPU/cleanup records, including a missing noncoherent uniform flush and
-an inaccurate ARMv7 resource cleanup ledger. A recorded
+The GPU job port additionally rejected **680** invalid host-facing calls
+before submission: five for every single-stage configuration and six for
+every two-/three-stage configuration. These include incorrect byte counts,
+missing outputs, duplicate stage destination pointers and opening an active
+port twice. The independent validator checks the `JOB_PORT_READY`,
+`JOB_PORT_INVALID_CONTROLS`, `JOB_PORT_SUBMIT` and `JOB_PORT_CLOSE` event
+sequence and rejects **ten** deliberately corrupted GPU/task/cleanup records,
+including a missing Pixel noncoherent flush and an inaccurate ARMv7
+resource cleanup ledger. A recorded
 three-stage, two-set graph acquired and released exactly 39 Vulkan objects:
 nine GPU/host buffers, nine allocations, five mappings, two set layouts,
 two descriptor sets, three shader modules, three Compute pipelines and
