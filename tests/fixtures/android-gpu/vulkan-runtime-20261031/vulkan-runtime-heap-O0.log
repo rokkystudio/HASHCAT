@@ -1,0 +1,38 @@
+TEST=vulkan-core10-runtime-heap-policy
+OPTIMIZATION=O0
+GPU_DRIVER_LINKED=0
+EXIT_CODE=0
+MULTISTAGE_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8 coherent=0
+MULTISTAGE_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8 coherent=0
+MULTISTAGE_PLAN_BUFFER index=2 label=stage-b type=0 heap=0 bytes=8 coherent=0
+MULTISTAGE_PLAN_BUFFER index=3 label=gpu-output type=0 heap=0 bytes=32 coherent=0
+MULTISTAGE_PLAN_BUFFER index=4 label=staging-upload type=1 heap=1 bytes=8 coherent=1
+MULTISTAGE_PLAN_BUFFER index=5 label=staging-download type=1 heap=1 bytes=32 coherent=1
+MULTISTAGE_PLAN_HEAP index=0 reserved=56 declared=56
+MULTISTAGE_PLAN_HEAP index=1 reserved=40 declared=40
+PASS_MULTISTAGE_SIX all_resources capacity_and_roles
+MULTISTAGE_PLAN_BUFFER index=0 label=gpu-input type=1 heap=1 bytes=8 coherent=1
+MULTISTAGE_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8 coherent=0
+MULTISTAGE_PLAN_BUFFER index=2 label=stage-b type=0 heap=0 bytes=8 coherent=0
+MULTISTAGE_PLAN_BUFFER index=3 label=gpu-output type=0 heap=0 bytes=32 coherent=0
+MULTISTAGE_PLAN_BUFFER index=4 label=staging-upload type=1 heap=1 bytes=8 coherent=1
+MULTISTAGE_PLAN_BUFFER index=5 label=staging-download type=1 heap=1 bytes=32 coherent=1
+MULTISTAGE_PLAN_HEAP index=0 reserved=48 declared=48
+MULTISTAGE_PLAN_HEAP index=1 reserved=48 declared=48
+PASS_MULTISTAGE_BACKTRACK six_requests_exact_placement
+MULTISTAGE_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8 coherent=0
+MULTISTAGE_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8 coherent=0
+MULTISTAGE_PLAN_BUFFER index=2 label=stage-b type=0 heap=0 bytes=8 coherent=0
+MULTISTAGE_PLAN_BUFFER index=3 label=gpu-output type=0 heap=0 bytes=32 coherent=0
+MULTISTAGE_PLAN_BUFFER index=4 label=staging-upload type=2 heap=1 bytes=8 coherent=0
+MULTISTAGE_PLAN_BUFFER index=5 label=staging-download type=2 heap=1 bytes=32 coherent=0
+MULTISTAGE_PLAN_HEAP index=0 reserved=56 declared=56
+MULTISTAGE_PLAN_HEAP index=1 reserved=40 declared=40
+REJECT_MULTISTAGE_MEMORY_TYPE index=4 role=1 bits=0x00000002 forbidden=0x00000064
+PASS_MULTISTAGE_NONCOHERENT compatible_and_explicit_rejection
+REJECT_MULTISTAGE_ALLOCATION_COUNT requested=6 limit=5
+REJECT_MULTISTAGE_REQUIREMENTS index=0
+REJECT_MULTISTAGE_HEAP_INDEX type=0 heap=2
+REJECT_MULTISTAGE_HEAP_CAPACITY requested=6 reason=no_joint_placement
+PASS_MULTISTAGE_ERRORS count alignment heap capacity untouched
+PASS_MULTISTAGE_MEMORY_POLICY no_vulkan_driver

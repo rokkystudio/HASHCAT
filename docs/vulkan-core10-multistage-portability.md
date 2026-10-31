@@ -107,6 +107,12 @@ python -B tools/test-vulkan-core10-multistage-evidence.py --artifacts build/diag
 
 Without `--artifacts`, all archived source, actual GPU and host-test logs are still audited. Records are under `tests/fixtures/android-gpu/vulkan-core-multistage-20261031/` with original LF line endings and SHA-256 identities. No ADB serial identifiers appear in archived logs.
 
+## Follow-up: common resource runtime
+
+The later independent `tools/vulkan-core10-runtime.c` contains a reusable owner for the six GPU/staging memory allocations, pipeline and descriptor lifetimes, recorded command buffer and Vulkan 1.0 fence submission. It executes these same public three-stage shaders four times with one reused command buffer. The new owner passed actual RedMagic ARM64 **and ARMv7** GPU tests and Pixel ARM64 GPU tests, including real noncoherent staging on Pixel and complete 28-point resource-acquisition fault injection on each of the three ABI/device combinations.
+
+The earlier monolithic executable documented above remains an independent, immutable diagnostic dataset. Full later runtime results, exact ABI-specific memory properties and limitations are in `docs/vulkan-core10-runtime-portability.md` and `tests/fixtures/android-gpu/vulkan-runtime-20261031/`.
+
 ## Integration boundary
 
 This confirms a general-purpose, multi-dispatch Vulkan 1.0 Compute path, automatic six-buffer planning, memory barriers, staging and physical-device portability on two GPUs. It is **not** a Vulkan backend for hashcat and does not implement bcrypt or modify the production OpenCL kernel. The archived OpenCL bcrypt mode-3200 self-test failure **245** remains unresolved.

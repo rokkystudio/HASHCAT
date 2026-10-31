@@ -1,0 +1,633 @@
+TEST=vulkan-core10-runtime-faults
+ABI=arm64-v8a
+FAULT_POINTS=28
+FAULT_POINT=1 exit=1
+RUNTIME_CREATE_FAILED result=-3 fault_after=1
+RUNTIME_NO_COMPATIBLE_EXECUTION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+RUNTIME_SELECTED_DEVICE index=0 effective_api=1.0 requested_api=1.0 workgroup=32 groups=64 storage_bindings=4 shared_bytes=128 features=0 extensions=0
+RUNTIME_INJECT_FAULT acquisition=1 resource=device
+RUNTIME_DESTROY acquired=1 buffers=0 allocations=0 mapped=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_POINT=2 exit=1
+RUNTIME_CREATE_FAILED result=-3 fault_after=2
+RUNTIME_NO_COMPATIBLE_EXECUTION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+RUNTIME_SELECTED_DEVICE index=0 effective_api=1.0 requested_api=1.0 workgroup=32 groups=64 storage_bindings=4 shared_bytes=128 features=0 extensions=0
+RUNTIME_INJECT_FAULT acquisition=2 resource=buffer
+RUNTIME_DESTROY acquired=2 buffers=1 allocations=0 mapped=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_POINT=3 exit=1
+RUNTIME_CREATE_FAILED result=-3 fault_after=3
+RUNTIME_NO_COMPATIBLE_EXECUTION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+RUNTIME_SELECTED_DEVICE index=0 effective_api=1.0 requested_api=1.0 workgroup=32 groups=64 storage_bindings=4 shared_bytes=128 features=0 extensions=0
+RUNTIME_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+RUNTIME_INJECT_FAULT acquisition=3 resource=buffer
+RUNTIME_DESTROY acquired=3 buffers=2 allocations=0 mapped=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_POINT=4 exit=1
+RUNTIME_CREATE_FAILED result=-3 fault_after=4
+RUNTIME_NO_COMPATIBLE_EXECUTION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+RUNTIME_SELECTED_DEVICE index=0 effective_api=1.0 requested_api=1.0 workgroup=32 groups=64 storage_bindings=4 shared_bytes=128 features=0 extensions=0
+RUNTIME_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+RUNTIME_INJECT_FAULT acquisition=4 resource=buffer
+RUNTIME_DESTROY acquired=4 buffers=3 allocations=0 mapped=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_POINT=5 exit=1
+RUNTIME_CREATE_FAILED result=-3 fault_after=5
+RUNTIME_NO_COMPATIBLE_EXECUTION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+RUNTIME_SELECTED_DEVICE index=0 effective_api=1.0 requested_api=1.0 workgroup=32 groups=64 storage_bindings=4 shared_bytes=128 features=0 extensions=0
+RUNTIME_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=2 label=stage-b size=8192 alignment=64 bits=0x00000003
+RUNTIME_INJECT_FAULT acquisition=5 resource=buffer
+RUNTIME_DESTROY acquired=5 buffers=4 allocations=0 mapped=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_POINT=6 exit=1
+RUNTIME_CREATE_FAILED result=-3 fault_after=6
+RUNTIME_NO_COMPATIBLE_EXECUTION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+RUNTIME_SELECTED_DEVICE index=0 effective_api=1.0 requested_api=1.0 workgroup=32 groups=64 storage_bindings=4 shared_bytes=128 features=0 extensions=0
+RUNTIME_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=2 label=stage-b size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=3 label=gpu-output size=32768 alignment=64 bits=0x00000003
+RUNTIME_INJECT_FAULT acquisition=6 resource=buffer
+RUNTIME_DESTROY acquired=6 buffers=5 allocations=0 mapped=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_POINT=7 exit=1
+RUNTIME_CREATE_FAILED result=-3 fault_after=7
+RUNTIME_NO_COMPATIBLE_EXECUTION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+RUNTIME_SELECTED_DEVICE index=0 effective_api=1.0 requested_api=1.0 workgroup=32 groups=64 storage_bindings=4 shared_bytes=128 features=0 extensions=0
+RUNTIME_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=2 label=stage-b size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=3 label=gpu-output size=32768 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=4 label=staging-upload size=8192 alignment=64 bits=0x00000003
+RUNTIME_INJECT_FAULT acquisition=7 resource=buffer
+RUNTIME_DESTROY acquired=7 buffers=6 allocations=0 mapped=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_POINT=8 exit=1
+RUNTIME_CREATE_FAILED result=-3 fault_after=8
+RUNTIME_NO_COMPATIBLE_EXECUTION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+RUNTIME_SELECTED_DEVICE index=0 effective_api=1.0 requested_api=1.0 workgroup=32 groups=64 storage_bindings=4 shared_bytes=128 features=0 extensions=0
+RUNTIME_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=2 label=stage-b size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=3 label=gpu-output size=32768 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=4 label=staging-upload size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=5 label=staging-download size=32768 alignment=64 bits=0x00000003
+MULTISTAGE_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=2 label=stage-b type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=3 label=gpu-output type=0 heap=0 bytes=32768 coherent=1
+MULTISTAGE_PLAN_BUFFER index=4 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=5 label=staging-download type=0 heap=0 bytes=32768 coherent=1
+MULTISTAGE_PLAN_HEAP index=0 reserved=98304 declared=16101965824
+MULTISTAGE_PLAN_HEAP index=1 reserved=0 declared=104857600
+RUNTIME_INJECT_FAULT acquisition=8 resource=memory
+RUNTIME_DESTROY acquired=8 buffers=6 allocations=1 mapped=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_POINT=9 exit=1
+RUNTIME_CREATE_FAILED result=-3 fault_after=9
+RUNTIME_NO_COMPATIBLE_EXECUTION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+RUNTIME_SELECTED_DEVICE index=0 effective_api=1.0 requested_api=1.0 workgroup=32 groups=64 storage_bindings=4 shared_bytes=128 features=0 extensions=0
+RUNTIME_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=2 label=stage-b size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=3 label=gpu-output size=32768 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=4 label=staging-upload size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=5 label=staging-download size=32768 alignment=64 bits=0x00000003
+MULTISTAGE_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=2 label=stage-b type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=3 label=gpu-output type=0 heap=0 bytes=32768 coherent=1
+MULTISTAGE_PLAN_BUFFER index=4 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=5 label=staging-download type=0 heap=0 bytes=32768 coherent=1
+MULTISTAGE_PLAN_HEAP index=0 reserved=98304 declared=16101965824
+MULTISTAGE_PLAN_HEAP index=1 reserved=0 declared=104857600
+RUNTIME_INJECT_FAULT acquisition=9 resource=memory
+RUNTIME_DESTROY acquired=9 buffers=6 allocations=2 mapped=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_POINT=10 exit=1
+RUNTIME_CREATE_FAILED result=-3 fault_after=10
+RUNTIME_NO_COMPATIBLE_EXECUTION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+RUNTIME_SELECTED_DEVICE index=0 effective_api=1.0 requested_api=1.0 workgroup=32 groups=64 storage_bindings=4 shared_bytes=128 features=0 extensions=0
+RUNTIME_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=2 label=stage-b size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=3 label=gpu-output size=32768 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=4 label=staging-upload size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=5 label=staging-download size=32768 alignment=64 bits=0x00000003
+MULTISTAGE_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=2 label=stage-b type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=3 label=gpu-output type=0 heap=0 bytes=32768 coherent=1
+MULTISTAGE_PLAN_BUFFER index=4 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=5 label=staging-download type=0 heap=0 bytes=32768 coherent=1
+MULTISTAGE_PLAN_HEAP index=0 reserved=98304 declared=16101965824
+MULTISTAGE_PLAN_HEAP index=1 reserved=0 declared=104857600
+RUNTIME_INJECT_FAULT acquisition=10 resource=memory
+RUNTIME_DESTROY acquired=10 buffers=6 allocations=3 mapped=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_POINT=11 exit=1
+RUNTIME_CREATE_FAILED result=-3 fault_after=11
+RUNTIME_NO_COMPATIBLE_EXECUTION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+RUNTIME_SELECTED_DEVICE index=0 effective_api=1.0 requested_api=1.0 workgroup=32 groups=64 storage_bindings=4 shared_bytes=128 features=0 extensions=0
+RUNTIME_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=2 label=stage-b size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=3 label=gpu-output size=32768 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=4 label=staging-upload size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=5 label=staging-download size=32768 alignment=64 bits=0x00000003
+MULTISTAGE_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=2 label=stage-b type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=3 label=gpu-output type=0 heap=0 bytes=32768 coherent=1
+MULTISTAGE_PLAN_BUFFER index=4 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=5 label=staging-download type=0 heap=0 bytes=32768 coherent=1
+MULTISTAGE_PLAN_HEAP index=0 reserved=98304 declared=16101965824
+MULTISTAGE_PLAN_HEAP index=1 reserved=0 declared=104857600
+RUNTIME_INJECT_FAULT acquisition=11 resource=memory
+RUNTIME_DESTROY acquired=11 buffers=6 allocations=4 mapped=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_POINT=12 exit=1
+RUNTIME_CREATE_FAILED result=-3 fault_after=12
+RUNTIME_NO_COMPATIBLE_EXECUTION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+RUNTIME_SELECTED_DEVICE index=0 effective_api=1.0 requested_api=1.0 workgroup=32 groups=64 storage_bindings=4 shared_bytes=128 features=0 extensions=0
+RUNTIME_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=2 label=stage-b size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=3 label=gpu-output size=32768 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=4 label=staging-upload size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=5 label=staging-download size=32768 alignment=64 bits=0x00000003
+MULTISTAGE_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=2 label=stage-b type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=3 label=gpu-output type=0 heap=0 bytes=32768 coherent=1
+MULTISTAGE_PLAN_BUFFER index=4 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=5 label=staging-download type=0 heap=0 bytes=32768 coherent=1
+MULTISTAGE_PLAN_HEAP index=0 reserved=98304 declared=16101965824
+MULTISTAGE_PLAN_HEAP index=1 reserved=0 declared=104857600
+RUNTIME_INJECT_FAULT acquisition=12 resource=memory
+RUNTIME_DESTROY acquired=12 buffers=6 allocations=5 mapped=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_POINT=13 exit=1
+RUNTIME_CREATE_FAILED result=-3 fault_after=13
+RUNTIME_NO_COMPATIBLE_EXECUTION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+RUNTIME_SELECTED_DEVICE index=0 effective_api=1.0 requested_api=1.0 workgroup=32 groups=64 storage_bindings=4 shared_bytes=128 features=0 extensions=0
+RUNTIME_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=2 label=stage-b size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=3 label=gpu-output size=32768 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=4 label=staging-upload size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=5 label=staging-download size=32768 alignment=64 bits=0x00000003
+MULTISTAGE_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=2 label=stage-b type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=3 label=gpu-output type=0 heap=0 bytes=32768 coherent=1
+MULTISTAGE_PLAN_BUFFER index=4 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=5 label=staging-download type=0 heap=0 bytes=32768 coherent=1
+MULTISTAGE_PLAN_HEAP index=0 reserved=98304 declared=16101965824
+MULTISTAGE_PLAN_HEAP index=1 reserved=0 declared=104857600
+RUNTIME_INJECT_FAULT acquisition=13 resource=memory
+RUNTIME_DESTROY acquired=13 buffers=6 allocations=6 mapped=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_POINT=14 exit=1
+RUNTIME_CREATE_FAILED result=-3 fault_after=14
+RUNTIME_NO_COMPATIBLE_EXECUTION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+RUNTIME_SELECTED_DEVICE index=0 effective_api=1.0 requested_api=1.0 workgroup=32 groups=64 storage_bindings=4 shared_bytes=128 features=0 extensions=0
+RUNTIME_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=2 label=stage-b size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=3 label=gpu-output size=32768 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=4 label=staging-upload size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=5 label=staging-download size=32768 alignment=64 bits=0x00000003
+MULTISTAGE_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=2 label=stage-b type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=3 label=gpu-output type=0 heap=0 bytes=32768 coherent=1
+MULTISTAGE_PLAN_BUFFER index=4 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=5 label=staging-download type=0 heap=0 bytes=32768 coherent=1
+MULTISTAGE_PLAN_HEAP index=0 reserved=98304 declared=16101965824
+MULTISTAGE_PLAN_HEAP index=1 reserved=0 declared=104857600
+RUNTIME_INJECT_FAULT acquisition=14 resource=mapped-staging
+RUNTIME_DESTROY acquired=14 buffers=6 allocations=6 mapped=1 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_POINT=15 exit=1
+RUNTIME_CREATE_FAILED result=-3 fault_after=15
+RUNTIME_NO_COMPATIBLE_EXECUTION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+RUNTIME_SELECTED_DEVICE index=0 effective_api=1.0 requested_api=1.0 workgroup=32 groups=64 storage_bindings=4 shared_bytes=128 features=0 extensions=0
+RUNTIME_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=2 label=stage-b size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=3 label=gpu-output size=32768 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=4 label=staging-upload size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=5 label=staging-download size=32768 alignment=64 bits=0x00000003
+MULTISTAGE_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=2 label=stage-b type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=3 label=gpu-output type=0 heap=0 bytes=32768 coherent=1
+MULTISTAGE_PLAN_BUFFER index=4 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=5 label=staging-download type=0 heap=0 bytes=32768 coherent=1
+MULTISTAGE_PLAN_HEAP index=0 reserved=98304 declared=16101965824
+MULTISTAGE_PLAN_HEAP index=1 reserved=0 declared=104857600
+RUNTIME_INJECT_FAULT acquisition=15 resource=mapped-staging
+RUNTIME_DESTROY acquired=15 buffers=6 allocations=6 mapped=2 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_POINT=16 exit=1
+RUNTIME_CREATE_FAILED result=-3 fault_after=16
+RUNTIME_NO_COMPATIBLE_EXECUTION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+RUNTIME_SELECTED_DEVICE index=0 effective_api=1.0 requested_api=1.0 workgroup=32 groups=64 storage_bindings=4 shared_bytes=128 features=0 extensions=0
+RUNTIME_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=2 label=stage-b size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=3 label=gpu-output size=32768 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=4 label=staging-upload size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=5 label=staging-download size=32768 alignment=64 bits=0x00000003
+MULTISTAGE_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=2 label=stage-b type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=3 label=gpu-output type=0 heap=0 bytes=32768 coherent=1
+MULTISTAGE_PLAN_BUFFER index=4 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=5 label=staging-download type=0 heap=0 bytes=32768 coherent=1
+MULTISTAGE_PLAN_HEAP index=0 reserved=98304 declared=16101965824
+MULTISTAGE_PLAN_HEAP index=1 reserved=0 declared=104857600
+RUNTIME_STAGING upload_type=0 download_type=0 upload_coherent=1 download_coherent=1
+RUNTIME_INJECT_FAULT acquisition=16 resource=descriptor-layout
+RUNTIME_DESTROY acquired=16 buffers=6 allocations=6 mapped=2 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_POINT=17 exit=1
+RUNTIME_CREATE_FAILED result=-3 fault_after=17
+RUNTIME_NO_COMPATIBLE_EXECUTION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+RUNTIME_SELECTED_DEVICE index=0 effective_api=1.0 requested_api=1.0 workgroup=32 groups=64 storage_bindings=4 shared_bytes=128 features=0 extensions=0
+RUNTIME_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=2 label=stage-b size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=3 label=gpu-output size=32768 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=4 label=staging-upload size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=5 label=staging-download size=32768 alignment=64 bits=0x00000003
+MULTISTAGE_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=2 label=stage-b type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=3 label=gpu-output type=0 heap=0 bytes=32768 coherent=1
+MULTISTAGE_PLAN_BUFFER index=4 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=5 label=staging-download type=0 heap=0 bytes=32768 coherent=1
+MULTISTAGE_PLAN_HEAP index=0 reserved=98304 declared=16101965824
+MULTISTAGE_PLAN_HEAP index=1 reserved=0 declared=104857600
+RUNTIME_STAGING upload_type=0 download_type=0 upload_coherent=1 download_coherent=1
+RUNTIME_INJECT_FAULT acquisition=17 resource=pipeline-layout
+RUNTIME_DESTROY acquired=17 buffers=6 allocations=6 mapped=2 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_POINT=18 exit=1
+RUNTIME_CREATE_FAILED result=-3 fault_after=18
+RUNTIME_NO_COMPATIBLE_EXECUTION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+RUNTIME_SELECTED_DEVICE index=0 effective_api=1.0 requested_api=1.0 workgroup=32 groups=64 storage_bindings=4 shared_bytes=128 features=0 extensions=0
+RUNTIME_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=2 label=stage-b size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=3 label=gpu-output size=32768 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=4 label=staging-upload size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=5 label=staging-download size=32768 alignment=64 bits=0x00000003
+MULTISTAGE_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=2 label=stage-b type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=3 label=gpu-output type=0 heap=0 bytes=32768 coherent=1
+MULTISTAGE_PLAN_BUFFER index=4 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=5 label=staging-download type=0 heap=0 bytes=32768 coherent=1
+MULTISTAGE_PLAN_HEAP index=0 reserved=98304 declared=16101965824
+MULTISTAGE_PLAN_HEAP index=1 reserved=0 declared=104857600
+RUNTIME_STAGING upload_type=0 download_type=0 upload_coherent=1 download_coherent=1
+RUNTIME_INJECT_FAULT acquisition=18 resource=shader-module
+RUNTIME_DESTROY acquired=18 buffers=6 allocations=6 mapped=2 shaders=1 pipelines=0 submissions=0 idle_result=0
+FAULT_POINT=19 exit=1
+RUNTIME_CREATE_FAILED result=-3 fault_after=19
+RUNTIME_NO_COMPATIBLE_EXECUTION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+RUNTIME_SELECTED_DEVICE index=0 effective_api=1.0 requested_api=1.0 workgroup=32 groups=64 storage_bindings=4 shared_bytes=128 features=0 extensions=0
+RUNTIME_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=2 label=stage-b size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=3 label=gpu-output size=32768 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=4 label=staging-upload size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=5 label=staging-download size=32768 alignment=64 bits=0x00000003
+MULTISTAGE_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=2 label=stage-b type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=3 label=gpu-output type=0 heap=0 bytes=32768 coherent=1
+MULTISTAGE_PLAN_BUFFER index=4 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=5 label=staging-download type=0 heap=0 bytes=32768 coherent=1
+MULTISTAGE_PLAN_HEAP index=0 reserved=98304 declared=16101965824
+MULTISTAGE_PLAN_HEAP index=1 reserved=0 declared=104857600
+RUNTIME_STAGING upload_type=0 download_type=0 upload_coherent=1 download_coherent=1
+RUNTIME_INJECT_FAULT acquisition=19 resource=compute-pipeline
+RUNTIME_DESTROY acquired=19 buffers=6 allocations=6 mapped=2 shaders=1 pipelines=1 submissions=0 idle_result=0
+FAULT_POINT=20 exit=1
+RUNTIME_CREATE_FAILED result=-3 fault_after=20
+RUNTIME_NO_COMPATIBLE_EXECUTION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+RUNTIME_SELECTED_DEVICE index=0 effective_api=1.0 requested_api=1.0 workgroup=32 groups=64 storage_bindings=4 shared_bytes=128 features=0 extensions=0
+RUNTIME_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=2 label=stage-b size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=3 label=gpu-output size=32768 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=4 label=staging-upload size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=5 label=staging-download size=32768 alignment=64 bits=0x00000003
+MULTISTAGE_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=2 label=stage-b type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=3 label=gpu-output type=0 heap=0 bytes=32768 coherent=1
+MULTISTAGE_PLAN_BUFFER index=4 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=5 label=staging-download type=0 heap=0 bytes=32768 coherent=1
+MULTISTAGE_PLAN_HEAP index=0 reserved=98304 declared=16101965824
+MULTISTAGE_PLAN_HEAP index=1 reserved=0 declared=104857600
+RUNTIME_STAGING upload_type=0 download_type=0 upload_coherent=1 download_coherent=1
+RUNTIME_INJECT_FAULT acquisition=20 resource=shader-module
+RUNTIME_DESTROY acquired=20 buffers=6 allocations=6 mapped=2 shaders=2 pipelines=1 submissions=0 idle_result=0
+FAULT_POINT=21 exit=1
+RUNTIME_CREATE_FAILED result=-3 fault_after=21
+RUNTIME_NO_COMPATIBLE_EXECUTION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+RUNTIME_SELECTED_DEVICE index=0 effective_api=1.0 requested_api=1.0 workgroup=32 groups=64 storage_bindings=4 shared_bytes=128 features=0 extensions=0
+RUNTIME_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=2 label=stage-b size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=3 label=gpu-output size=32768 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=4 label=staging-upload size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=5 label=staging-download size=32768 alignment=64 bits=0x00000003
+MULTISTAGE_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=2 label=stage-b type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=3 label=gpu-output type=0 heap=0 bytes=32768 coherent=1
+MULTISTAGE_PLAN_BUFFER index=4 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=5 label=staging-download type=0 heap=0 bytes=32768 coherent=1
+MULTISTAGE_PLAN_HEAP index=0 reserved=98304 declared=16101965824
+MULTISTAGE_PLAN_HEAP index=1 reserved=0 declared=104857600
+RUNTIME_STAGING upload_type=0 download_type=0 upload_coherent=1 download_coherent=1
+RUNTIME_INJECT_FAULT acquisition=21 resource=compute-pipeline
+RUNTIME_DESTROY acquired=21 buffers=6 allocations=6 mapped=2 shaders=2 pipelines=2 submissions=0 idle_result=0
+FAULT_POINT=22 exit=1
+RUNTIME_CREATE_FAILED result=-3 fault_after=22
+RUNTIME_NO_COMPATIBLE_EXECUTION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+RUNTIME_SELECTED_DEVICE index=0 effective_api=1.0 requested_api=1.0 workgroup=32 groups=64 storage_bindings=4 shared_bytes=128 features=0 extensions=0
+RUNTIME_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=2 label=stage-b size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=3 label=gpu-output size=32768 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=4 label=staging-upload size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=5 label=staging-download size=32768 alignment=64 bits=0x00000003
+MULTISTAGE_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=2 label=stage-b type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=3 label=gpu-output type=0 heap=0 bytes=32768 coherent=1
+MULTISTAGE_PLAN_BUFFER index=4 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=5 label=staging-download type=0 heap=0 bytes=32768 coherent=1
+MULTISTAGE_PLAN_HEAP index=0 reserved=98304 declared=16101965824
+MULTISTAGE_PLAN_HEAP index=1 reserved=0 declared=104857600
+RUNTIME_STAGING upload_type=0 download_type=0 upload_coherent=1 download_coherent=1
+RUNTIME_INJECT_FAULT acquisition=22 resource=shader-module
+RUNTIME_DESTROY acquired=22 buffers=6 allocations=6 mapped=2 shaders=3 pipelines=2 submissions=0 idle_result=0
+FAULT_POINT=23 exit=1
+RUNTIME_CREATE_FAILED result=-3 fault_after=23
+RUNTIME_NO_COMPATIBLE_EXECUTION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+RUNTIME_SELECTED_DEVICE index=0 effective_api=1.0 requested_api=1.0 workgroup=32 groups=64 storage_bindings=4 shared_bytes=128 features=0 extensions=0
+RUNTIME_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=2 label=stage-b size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=3 label=gpu-output size=32768 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=4 label=staging-upload size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=5 label=staging-download size=32768 alignment=64 bits=0x00000003
+MULTISTAGE_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=2 label=stage-b type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=3 label=gpu-output type=0 heap=0 bytes=32768 coherent=1
+MULTISTAGE_PLAN_BUFFER index=4 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=5 label=staging-download type=0 heap=0 bytes=32768 coherent=1
+MULTISTAGE_PLAN_HEAP index=0 reserved=98304 declared=16101965824
+MULTISTAGE_PLAN_HEAP index=1 reserved=0 declared=104857600
+RUNTIME_STAGING upload_type=0 download_type=0 upload_coherent=1 download_coherent=1
+RUNTIME_INJECT_FAULT acquisition=23 resource=compute-pipeline
+RUNTIME_DESTROY acquired=23 buffers=6 allocations=6 mapped=2 shaders=3 pipelines=3 submissions=0 idle_result=0
+FAULT_POINT=24 exit=1
+RUNTIME_CREATE_FAILED result=-3 fault_after=24
+RUNTIME_NO_COMPATIBLE_EXECUTION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+RUNTIME_SELECTED_DEVICE index=0 effective_api=1.0 requested_api=1.0 workgroup=32 groups=64 storage_bindings=4 shared_bytes=128 features=0 extensions=0
+RUNTIME_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=2 label=stage-b size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=3 label=gpu-output size=32768 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=4 label=staging-upload size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=5 label=staging-download size=32768 alignment=64 bits=0x00000003
+MULTISTAGE_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=2 label=stage-b type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=3 label=gpu-output type=0 heap=0 bytes=32768 coherent=1
+MULTISTAGE_PLAN_BUFFER index=4 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=5 label=staging-download type=0 heap=0 bytes=32768 coherent=1
+MULTISTAGE_PLAN_HEAP index=0 reserved=98304 declared=16101965824
+MULTISTAGE_PLAN_HEAP index=1 reserved=0 declared=104857600
+RUNTIME_STAGING upload_type=0 download_type=0 upload_coherent=1 download_coherent=1
+RUNTIME_INJECT_FAULT acquisition=24 resource=descriptor-pool
+RUNTIME_DESTROY acquired=24 buffers=6 allocations=6 mapped=2 shaders=3 pipelines=3 submissions=0 idle_result=0
+FAULT_POINT=25 exit=1
+RUNTIME_CREATE_FAILED result=-3 fault_after=25
+RUNTIME_NO_COMPATIBLE_EXECUTION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+RUNTIME_SELECTED_DEVICE index=0 effective_api=1.0 requested_api=1.0 workgroup=32 groups=64 storage_bindings=4 shared_bytes=128 features=0 extensions=0
+RUNTIME_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=2 label=stage-b size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=3 label=gpu-output size=32768 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=4 label=staging-upload size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=5 label=staging-download size=32768 alignment=64 bits=0x00000003
+MULTISTAGE_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=2 label=stage-b type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=3 label=gpu-output type=0 heap=0 bytes=32768 coherent=1
+MULTISTAGE_PLAN_BUFFER index=4 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=5 label=staging-download type=0 heap=0 bytes=32768 coherent=1
+MULTISTAGE_PLAN_HEAP index=0 reserved=98304 declared=16101965824
+MULTISTAGE_PLAN_HEAP index=1 reserved=0 declared=104857600
+RUNTIME_STAGING upload_type=0 download_type=0 upload_coherent=1 download_coherent=1
+RUNTIME_INJECT_FAULT acquisition=25 resource=descriptor-set
+RUNTIME_DESTROY acquired=25 buffers=6 allocations=6 mapped=2 shaders=3 pipelines=3 submissions=0 idle_result=0
+FAULT_POINT=26 exit=1
+RUNTIME_CREATE_FAILED result=-3 fault_after=26
+RUNTIME_NO_COMPATIBLE_EXECUTION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+RUNTIME_SELECTED_DEVICE index=0 effective_api=1.0 requested_api=1.0 workgroup=32 groups=64 storage_bindings=4 shared_bytes=128 features=0 extensions=0
+RUNTIME_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=2 label=stage-b size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=3 label=gpu-output size=32768 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=4 label=staging-upload size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=5 label=staging-download size=32768 alignment=64 bits=0x00000003
+MULTISTAGE_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=2 label=stage-b type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=3 label=gpu-output type=0 heap=0 bytes=32768 coherent=1
+MULTISTAGE_PLAN_BUFFER index=4 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=5 label=staging-download type=0 heap=0 bytes=32768 coherent=1
+MULTISTAGE_PLAN_HEAP index=0 reserved=98304 declared=16101965824
+MULTISTAGE_PLAN_HEAP index=1 reserved=0 declared=104857600
+RUNTIME_STAGING upload_type=0 download_type=0 upload_coherent=1 download_coherent=1
+RUNTIME_INJECT_FAULT acquisition=26 resource=command-pool
+RUNTIME_DESTROY acquired=26 buffers=6 allocations=6 mapped=2 shaders=3 pipelines=3 submissions=0 idle_result=0
+FAULT_POINT=27 exit=1
+RUNTIME_CREATE_FAILED result=-3 fault_after=27
+RUNTIME_NO_COMPATIBLE_EXECUTION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+RUNTIME_SELECTED_DEVICE index=0 effective_api=1.0 requested_api=1.0 workgroup=32 groups=64 storage_bindings=4 shared_bytes=128 features=0 extensions=0
+RUNTIME_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=2 label=stage-b size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=3 label=gpu-output size=32768 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=4 label=staging-upload size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=5 label=staging-download size=32768 alignment=64 bits=0x00000003
+MULTISTAGE_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=2 label=stage-b type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=3 label=gpu-output type=0 heap=0 bytes=32768 coherent=1
+MULTISTAGE_PLAN_BUFFER index=4 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=5 label=staging-download type=0 heap=0 bytes=32768 coherent=1
+MULTISTAGE_PLAN_HEAP index=0 reserved=98304 declared=16101965824
+MULTISTAGE_PLAN_HEAP index=1 reserved=0 declared=104857600
+RUNTIME_STAGING upload_type=0 download_type=0 upload_coherent=1 download_coherent=1
+RUNTIME_INJECT_FAULT acquisition=27 resource=command-buffer
+RUNTIME_DESTROY acquired=27 buffers=6 allocations=6 mapped=2 shaders=3 pipelines=3 submissions=0 idle_result=0
+FAULT_POINT=28 exit=1
+RUNTIME_CREATE_FAILED result=-3 fault_after=28
+RUNTIME_NO_COMPATIBLE_EXECUTION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+RUNTIME_SELECTED_DEVICE index=0 effective_api=1.0 requested_api=1.0 workgroup=32 groups=64 storage_bindings=4 shared_bytes=128 features=0 extensions=0
+RUNTIME_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=2 label=stage-b size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=3 label=gpu-output size=32768 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=4 label=staging-upload size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=5 label=staging-download size=32768 alignment=64 bits=0x00000003
+MULTISTAGE_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=2 label=stage-b type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=3 label=gpu-output type=0 heap=0 bytes=32768 coherent=1
+MULTISTAGE_PLAN_BUFFER index=4 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=5 label=staging-download type=0 heap=0 bytes=32768 coherent=1
+MULTISTAGE_PLAN_HEAP index=0 reserved=98304 declared=16101965824
+MULTISTAGE_PLAN_HEAP index=1 reserved=0 declared=104857600
+RUNTIME_STAGING upload_type=0 download_type=0 upload_coherent=1 download_coherent=1
+RUNTIME_INJECT_FAULT acquisition=28 resource=fence
+RUNTIME_DESTROY acquired=28 buffers=6 allocations=6 mapped=2 shaders=3 pipelines=3 submissions=0 idle_result=0

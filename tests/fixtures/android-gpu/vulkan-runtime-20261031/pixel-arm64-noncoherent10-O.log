@@ -1,0 +1,45 @@
+TEST=vulkan-core10-reusable-runtime
+MODE=noncoherent10
+OPTIMIZATION=O
+ABI=arm64-v8a
+ADB_EXIT_CODE=0
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+RUNTIME_SELECTED_DEVICE index=0 effective_api=1.0 requested_api=1.0 workgroup=32 groups=64 storage_bindings=4 shared_bytes=128 features=0 extensions=0
+RUNTIME_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=2 label=stage-b size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=3 label=gpu-output size=32768 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=4 label=staging-upload size=8192 alignment=64 bits=0x00000003
+RUNTIME_REQUIREMENTS index=5 label=staging-download size=32768 alignment=64 bits=0x00000003
+MULTISTAGE_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=2 label=stage-b type=0 heap=0 bytes=8192 coherent=1
+MULTISTAGE_PLAN_BUFFER index=3 label=gpu-output type=0 heap=0 bytes=32768 coherent=1
+MULTISTAGE_PLAN_BUFFER index=4 label=staging-upload type=1 heap=0 bytes=8192 coherent=0
+MULTISTAGE_PLAN_BUFFER index=5 label=staging-download type=1 heap=0 bytes=32768 coherent=0
+MULTISTAGE_PLAN_HEAP index=0 reserved=98304 declared=16101965824
+MULTISTAGE_PLAN_HEAP index=1 reserved=0 declared=104857600
+RUNTIME_STAGING upload_type=1 download_type=1 upload_coherent=0 download_coherent=0
+RUNTIME_READY acquisitions=28 buffers=6 pipelines=3 staging=2 queue=0 core=1.0
+RUNTIME_STAGING_REQUEST mode=noncoherent upload_type=1 download_type=1 upload_coherent=0 download_coherent=0
+RUNTIME_SYNC index=4 operation=flush coherent=0 driver_call=1 atom=64 result=0
+RUNTIME_SUBMIT complete=1 command_reused=0 result=0
+RUNTIME_SYNC index=5 operation=invalidate coherent=0 driver_call=1 atom=64 result=0
+RUNTIME_PASS submission=0 verified_words=12288 stageA=de56d6d0aa66c6ec stageB=c1259ad4f024499a output=05de70c62f8d7cfd
+RUNTIME_SYNC index=4 operation=flush coherent=0 driver_call=1 atom=64 result=0
+RUNTIME_SUBMIT complete=2 command_reused=1 result=0
+RUNTIME_SYNC index=5 operation=invalidate coherent=0 driver_call=1 atom=64 result=0
+RUNTIME_PASS submission=1 verified_words=12288 stageA=66ee1b4b1385e0e3 stageB=27fb4f34e64d89a7 output=7509bfa6ed0455d8
+RUNTIME_SYNC index=4 operation=flush coherent=0 driver_call=1 atom=64 result=0
+RUNTIME_SUBMIT complete=3 command_reused=1 result=0
+RUNTIME_SYNC index=5 operation=invalidate coherent=0 driver_call=1 atom=64 result=0
+RUNTIME_PASS submission=2 verified_words=12288 stageA=69b8f65ae2e8be72 stageB=d8038be5522a0b58 output=e50a539d4459e45b
+RUNTIME_SYNC index=4 operation=flush coherent=0 driver_call=1 atom=64 result=0
+RUNTIME_SUBMIT complete=4 command_reused=1 result=0
+RUNTIME_SYNC index=5 operation=invalidate coherent=0 driver_call=1 atom=64 result=0
+RUNTIME_PASS submission=3 verified_words=12288 stageA=8fb63465a93a5631 stageB=ac37a5c3b35fc366 output=07d63cfd9773324d
+RUNTIME_DESTROY acquired=28 buffers=6 allocations=6 mapped=2 shaders=3 pipelines=3 submissions=4 idle_result=0

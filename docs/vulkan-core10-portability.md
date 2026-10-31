@@ -170,6 +170,12 @@ On ARM64, RedMagic and Pixel passed 14 actual staged three-shader GPU executions
 
 Full reproduction and SHA-256 archive: `docs/vulkan-core10-multistage-portability.md` and `tests/fixtures/android-gpu/vulkan-core-multistage-20261031/`.
 
+## Reusable Vulkan 1.0 resource runtime
+
+The standalone `tools/vulkan-core10-runtime.c` owns the six Vulkan buffer allocations, CPU staging maps, descriptor/pipeline objects, command buffer and GPU fence independently of the public synthetic workload. It records the command buffer once and reuses it for four consecutive input generations, resetting the signaled fence between submissions. The same source compiles for Android API 24 ARM64 and ARMv7; the runtime program has passed **real ARMv7 three-stage GPU execution** on RedMagic, as well as ARM64 on RedMagic and Pixel.
+
+The new archived suite contains **20 successful real GPU runs × four sequential submissions**, genuine noncoherent `flush`/`invalidate` on Pixel, **84 actual Vulkan resource-acquisition fault tests** checking partial cleanup, and **15** invalid-command controls. Physical Vulkan-1.0-only/Android-7.0 devices remain unavailable. See `docs/vulkan-core10-runtime-portability.md` and `tests/fixtures/android-gpu/vulkan-runtime-20261031/`. The earlier monolithic six-buffer implementation and its historical evidence are preserved unchanged.
+
 ## Remaining integration scope
 
 The project now has a separate **capability-driven Vulkan 1.0 synthetic Compute path**, including real GPU staging, exact memory-heap planning and an optional Vulkan 1.1 API requirement.

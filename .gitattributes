@@ -32,3 +32,7 @@ tests/fixtures/android-gpu/vulkan-core-baseline-20261031/manifest.json text eol=
 # Preserve Vulkan 1.0 three-stage synthetic GPU and native C test evidence.
 tests/fixtures/android-gpu/vulkan-core-multistage-20261031/*.log text eol=lf
 tests/fixtures/android-gpu/vulkan-core-multistage-20261031/manifest.json text eol=lf
+
+# Preserve standalone Vulkan 1.0 reusable runtime GPU/fault evidence.
+tests/fixtures/android-gpu/vulkan-runtime-20261031/*.log text eol=lf
+tests/fixtures/android-gpu/vulkan-runtime-20261031/manifest.json text eol=lf

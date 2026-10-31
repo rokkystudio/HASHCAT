@@ -85,6 +85,10 @@ The four negative controls are: zero requested submissions, a count exceeding th
 
 The original six SPIR-V shader binaries were rebuilt byte-for-byte; their hashes match the prior three-stage experiment. Only the separate replay-enabled host executable is new. Reused commands read the same descriptor-bound buffers but receive distinct host input values on each submission.
 
+## Follow-up: Vulkan 1.0 reusable resource runtime
+
+A separate self-contained Vulkan 1.0 runtime now owns the GPU resources, descriptor/pipeline lifetimes, command buffer and fence. It runs the same public three-stage synthetic integer workload with distinct input before each of four sequential submissions, and also supports real noncoherent CPU staging on devices exposing a compatible memory type. The runtime was tested on RedMagic ARM64 and ARMv7 and Pixel ARM64, all with default core Vulkan 1.0; optional Vulkan 1.1 was requested separately. In each of the three process/ABI targets, all 28 deterministic post-acquisition fault points returned explicit errors and released the partially acquired Vulkan objects. Original logs and independent CPU verification are in `docs/vulkan-core10-runtime-portability.md` and `tests/fixtures/android-gpu/vulkan-runtime-20261031/`. No hashcat or cryptographic GPU workload was executed.
+
 ## Scope limitations and next infrastructure tests
 
 **Confirmed:** The tested Vulkan 1.1 drivers correctly execute sequential multiple-submit command-buffer reuse with updated coherent input, two intermediate compute barriers, final host readback, fence wait/reset and exact output comparisons. The reuse path works without Vulkan 1.3 or firmware replacement.
