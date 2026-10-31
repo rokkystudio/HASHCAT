@@ -20,3 +20,7 @@ tests/fixtures/android-gpu/**/*.log -text whitespace=-blank-at-eol
 # Keep native Vulkan CPU test evidence LF-stable for exact log SHA-256 checks.
 tests/fixtures/vulkan-host-policy-20261031/*.log text eol=lf
 tests/fixtures/vulkan-host-policy-20261031/manifest.json text eol=lf
+
+# Keep Vulkan heap allocation evidence byte-stable across Windows checkouts.
+tests/fixtures/android-gpu/vulkan-heap-20261031/*.log text eol=lf
+tests/fixtures/android-gpu/vulkan-heap-20261031/manifest.json text eol=lf

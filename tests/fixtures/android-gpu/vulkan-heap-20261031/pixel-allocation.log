@@ -1,0 +1,28 @@
+TEST=vulkan-1.0-memory-heap-probe
+ADB_EXIT_CODE=0
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_HEAP_PROFILE memory_types=4 memory_heaps=2 max_allocations=16384
+DEVICE_HEAP index=0 size=16101965824 flags=0x00000001
+DEVICE_HEAP index=1 size=104857600 flags=0x00000001
+DEVICE_MEMORY_TYPE index=0 heap=0 flags=0x00000007
+DEVICE_MEMORY_TYPE index=1 heap=0 flags=0x0000000b
+DEVICE_MEMORY_TYPE index=2 heap=0 flags=0x00000011
+DEVICE_MEMORY_TYPE index=3 heap=1 flags=0x00000021
+ACTUAL_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 memory_bits=0x00000003
+ACTUAL_REQUIREMENTS index=1 label=gpu-output size=8192 alignment=64 memory_bits=0x00000003
+ACTUAL_REQUIREMENTS index=2 label=staging-upload size=8192 alignment=64 memory_bits=0x00000003
+ACTUAL_REQUIREMENTS index=3 label=staging-download size=8192 alignment=64 memory_bits=0x00000003
+PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+PLAN_BUFFER index=1 label=gpu-output type=0 heap=0 bytes=8192 coherent=1
+PLAN_BUFFER index=2 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+PLAN_BUFFER index=3 label=staging-download type=0 heap=0 bytes=8192 coherent=1
+PLAN_HEAP index=0 reserved=32768 declared=16101965824
+PLAN_HEAP index=1 reserved=0 declared=104857600
+ALLOCATED_BUFFER index=0 type=0 heap=0 bytes=8192
+ALLOCATED_BUFFER index=1 type=0 heap=0 bytes=8192
+ALLOCATED_BUFFER index=2 type=0 heap=0 bytes=8192
+ALLOCATED_BUFFER index=3 type=0 heap=0 bytes=8192
+MAPPED_STAGING index=2 coherent=1 bytes=8192
+MAPPED_STAGING index=3 coherent=1 bytes=8192
+PASS_VULKAN_HEAP_PROBE device_index=0 buffers=4 allocations=4 mapped_staging=2 gpu_dispatches=0

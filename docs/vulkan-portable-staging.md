@@ -147,6 +147,14 @@ python -B tools/test-vulkan-staging-policy-host-evidence.py --artifacts build/di
 
 This validates the policy's exact **C behavior**, not a third GPU model's Vulkan driver. Automatic staging fallback and noncoherent cache synchronization still require hardware observation on actual devices exposing those capabilities. No hashcat execution is involved.
 
+## Follow-up: exact four-buffer Vulkan heap allocation planning
+
+`tools/vulkan-memory-heap-policy.h` and `tools/vulkan-memory-heap-policy.c` now provide a separate **joint** memory allocation planner for the two compute and two host staging buffers. The planner validates each actual `memoryTypeBits`, `VkMemoryType.heapIndex`, `VkMemoryHeap.size` and `maxMemoryAllocationCount` and explores other compatible memory-type assignments if one earlier choice prevents a later buffer from fitting. GPU buffers prefer compatible `DEVICE_LOCAL` types; host staging requires `HOST_VISIBLE` and prefers coherent memory, with a noncoherent alternative when necessary.
+
+The native C implementation passed **200,704** simulated two-buffer combinations at `-O0` and `-O2`, cross-checked by a separate Python feasibility oracle. In a second, real Vulkan 1.0 *buffer-only* diagnostic, Adreno and Mali each successfully allocated and bound four 8192-byte buffers and mapped both staging buffers, after selecting memory from actual driver heap properties. This test dispatched **zero** GPU compute commands. Full hardware logs, source identities and limitations are documented in `docs/vulkan-memory-heap-portability.md` and `tests/fixtures/android-gpu/vulkan-heap-20261031/`.
+
+The new heap planner is not yet part of the original standalone GPU staging execution program or a production hashcat backend; the earlier GPU execution evidence remains independently versioned.
+
 ## Compatibility boundaries
 
 This is a portable **synthetic Vulkan Compute data-transfer module**. It does not implement generic pipeline scheduling, an integrated Vulkan backend for hashcat, a cryptographic kernel, vendor-specific GPU workarounds or a guarantee that every device supports the shader's requirements.

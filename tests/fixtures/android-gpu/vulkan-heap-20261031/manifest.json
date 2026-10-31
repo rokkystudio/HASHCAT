@@ -1,0 +1,124 @@
+{
+  "date": "2026-10-31",
+  "scope": "Vulkan 1.0 noncryptographic memory heap planning, host C exhaustive oracle and four real allocated/bound buffers on Android GPUs",
+  "toolchains": {
+    "native_gcc": "MSYS2 MinGW GCC 16.2.0",
+    "native_target": "x86_64-w64-mingw32",
+    "ndk_clang": "21.0.0",
+    "ndk": "29.0.14206865",
+    "android_target": "aarch64-linux-android26"
+  },
+  "source_policy": "UTF-8 with CRLF normalized to LF",
+  "workload": {
+    "vulkan_minimum": "1.0",
+    "buffer_count": 4,
+    "bytes_per_buffer": 8192,
+    "roles": [
+      "gpu-input",
+      "gpu-output",
+      "staging-upload",
+      "staging-download"
+    ],
+    "gpu_dispatches": 0,
+    "host_optimizations": [
+      "O0",
+      "O2"
+    ],
+    "exhaustive_cases": 200704,
+    "expected_accepted": 78138,
+    "expected_unsupported": 24816,
+    "expected_capacity": 97750
+  },
+  "source_sha256": {
+    "tools/vulkan-auto-config.c": "7dda45d969c6fd092c31821cc8022f69a4dd8b748e852fcb7a2bd23552a571dd",
+    "tools/vulkan-auto-config.h": "1329f5b833bd8a0ffed9e3eadddead210665a1e8fba2f051e6f4259d63385086",
+    "tools/vulkan-memory-heap-policy.c": "b487214d3d6e19027dae5d16797804d241ea8b9b688366de9ffbd4be45757db4",
+    "tools/vulkan-memory-heap-policy.h": "8f04b683784511a03e16a1e681385ccca8d70db2ad29c94e059203d85ba78d6c",
+    "tools/vulkan-memory-heap-probe.c": "21307cddd6f3a28c7b7f0f2849a87c920e6e083b778e091c226ad99cc35de5c7",
+    "tools/test-vulkan-memory-heap-policy-host.c": "2dcac915ac5754f0c2d211d4f008ad40edb20ea9f21a2347c0a88be5fb431273",
+    "tools/build-vulkan-memory-heap-policy.ps1": "aeec611c70ee016cfa8a9b7f53dbdd10efd83120c293e5b7c4dafa0955fa9318",
+    "tools/run-vulkan-memory-heap-probe.ps1": "cad07d189f0a9fbccc5418ba7ff4d7ac3ec8e018be997a54125c894182a3cee5"
+  },
+  "artifact_sha256": {
+    "vulkan-heap-policy-O0.exe": "60af6501dda8e18600edd271a9b8f54c7199ab35e9847aebf763067374c7fda1",
+    "vulkan-heap-policy-O2.exe": "bf756e35a4edc1e9c283d1f26cc7537dc68fb7f4c19ad6caac8e8df8dbbbc8e3",
+    "vulkan-heap-probe-arm64": "be0996e29a8624c06bf78ac21604f12e24aa7985064a5f6915d0944b902e5f1e"
+  },
+  "device_profiles": {
+    "redmagic": {
+      "model": "RedMagic NX709S",
+      "gpu": "Adreno (TM) 730",
+      "vendor_id": "0x5143",
+      "device_id": "0x7030002",
+      "driver_version": "0x80267000",
+      "vulkan_api_version": "1.1.128",
+      "queue_family": 0,
+      "shared_memory_limit": 32768
+    },
+    "pixel": {
+      "model": "Pixel 9 Pro XL",
+      "gpu": "Mali-G715",
+      "vendor_id": "0x13b5",
+      "device_id": "0xb8a20000",
+      "driver_version": "0x0d802000",
+      "vulkan_api_version": "1.4.305",
+      "queue_family": 0,
+      "shared_memory_limit": 32768
+    }
+  },
+  "host_imported_dlls": [
+    "KERNEL32.dll",
+    "msvcrt.dll"
+  ],
+  "native_tests_use_gpu_driver": false,
+  "android_gpu_dispatches": 0,
+  "host_runs": [
+    {
+      "optimization": "O0",
+      "file": "vulkan-heap-policy-O0.log",
+      "sha256": "a449826384a872c450bddd56b4c4f19786a1570fd02fd949c4905ebecf7adf93",
+      "exit_code": 0
+    },
+    {
+      "optimization": "O2",
+      "file": "vulkan-heap-policy-O2.log",
+      "sha256": "58a97e11db3e03a4d2d94d481b0f0031d80a7022728390348478901a65d2fbe4",
+      "exit_code": 0
+    }
+  ],
+  "device_runs": [
+    {
+      "device": "redmagic",
+      "file": "redmagic-allocation.log",
+      "sha256": "15db0fe20ad7883755bcbd8b71c3be4940cf8af397de77786c790796a3c85992",
+      "exit_code": 0
+    },
+    {
+      "device": "pixel",
+      "file": "pixel-allocation.log",
+      "sha256": "6dc6d54aa65c234008c90efc3ffcbf7bafbc5c5c9a180c12177d410d0586ecc0",
+      "exit_code": 0
+    }
+  ],
+  "negative_runs": [
+    {
+      "device": "redmagic",
+      "file": "redmagic-negative-controls.log",
+      "sha256": "2c6eac2da131b86b3da78dd034973219329ec9f74b4e72dbf6d15a04464db8d5",
+      "exit_code": 2
+    },
+    {
+      "device": "pixel",
+      "file": "pixel-negative-controls.log",
+      "sha256": "2c6eac2da131b86b3da78dd034973219329ec9f74b4e72dbf6d15a04464db8d5",
+      "exit_code": 2
+    }
+  ],
+  "limitations": [
+    "Declared VkMemoryHeap.size is capacity, not available free memory or VK_EXT_memory_budget; vkAllocateMemory must be checked",
+    "Two actual mobile GPUs successfully allocated and bound the four synthetic buffers; unknown third-party GPUs are not validated by those results",
+    "Both real staging memory types were HOST_COHERENT; real noncoherent VkDeviceMemory flushing is not independently observed",
+    "No GPU compute command, shader pipeline or cryptographic workload is executed by the heap probe",
+    "The four-buffer capacity planner is isolated Vulkan infrastructure, not a production hashcat backend; OpenCL bcrypt error 245 remains unresolved"
+  ]
+}

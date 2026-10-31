@@ -1,0 +1,2 @@
+TEST=vulkan-1.0-memory-heap-probe
+INVALID unexpected-arguments exit=2

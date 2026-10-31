@@ -1,0 +1,42 @@
+TEST=synthetic-vulkan-heap-allocation-policy
+OPTIMIZATION=O0
+VULKAN_DRIVER_LINKED=0
+EXIT_CODE=0
+PLAN_BUFFER index=0 label=general-gpu type=1 heap=1 bytes=8 coherent=0
+PLAN_BUFFER index=1 label=restricted-gpu type=0 heap=0 bytes=8 coherent=0
+PLAN_HEAP index=0 reserved=8 declared=8
+PLAN_HEAP index=1 reserved=8 declared=12
+PASS_HEAP_BACKTRACK alternate_type_prevents_false_incompatibility
+PLAN_BUFFER index=0 label=gpu-upload-target type=0 heap=0 bytes=8 coherent=0
+PLAN_BUFFER index=1 label=gpu-download-source type=0 heap=0 bytes=8 coherent=0
+PLAN_BUFFER index=2 label=cpu-upload type=1 heap=1 bytes=5 coherent=1
+PLAN_BUFFER index=3 label=cpu-download type=1 heap=1 bytes=5 coherent=1
+PLAN_HEAP index=0 reserved=16 declared=16
+PLAN_HEAP index=1 reserved=10 declared=10
+PASS_HEAP_FOUR_BUFFERS two_gpu_two_staging_exact_heap_sizes
+PLAN_BUFFER index=0 label=coherent-only type=0 heap=0 bytes=8 coherent=1
+PLAN_BUFFER index=1 label=coherent-or-noncoherent type=1 heap=1 bytes=8 coherent=0
+PLAN_HEAP index=0 reserved=8 declared=8
+PLAN_HEAP index=1 reserved=8 declared=8
+PASS_HEAP_NONCOHERENT_FALLBACK explicit_capacity_and_cache_flags
+REJECT_HEAP_CAPACITY buffers=2 reason=no_combination_fits_declared_heaps
+REJECT_ALLOCATION_TYPE index=1 role=0 bits=0x00000000 forbidden=0x00000000
+REJECT_ALLOCATION_TYPE index=1 role=1 bits=0x00000001 forbidden=0x00000000
+REJECT_ALLOCATION_TYPE index=1 role=0 bits=0x00000001 forbidden=0x00000001
+REJECT_ALLOCATION_COUNT existing=0 requested=2 maximum=1
+REJECT_ALLOCATION_COUNT existing=3 requested=2 maximum=4
+REJECT_ALLOCATION_COUNT existing=4294967295 requested=2 maximum=4
+REJECT_HEAP_INDEX type=2 heap=2 heap_count=2
+REJECT_ALLOCATION_REQUIREMENTS index=0
+REJECT_ALLOCATION_REQUIREMENTS index=0
+REJECT_ALLOCATION_REQUIREMENTS index=0
+REJECT_ALLOCATION_REQUIREMENTS index=0
+PASS_HEAP_FAILURES capacity masks counts invalid_input untouched
+PLAN_BUFFER index=0 label=last-valid-memory-type type=31 heap=0 bytes=8 coherent=0
+PLAN_BUFFER index=1 label=other-type type=1 heap=1 bytes=8 coherent=0
+PLAN_HEAP index=0 reserved=8 declared=8
+PLAN_HEAP index=1 reserved=8 declared=12
+REJECT_HEAP_CAPACITY buffers=2 reason=no_combination_fits_declared_heaps
+PASS_HEAP_BOUNDARIES bit31 unsigned64_capacity
+PASS_HEAP_EXHAUSTIVE layouts=64 heap_maps=8 masks=7 roles=4 sizes=2 cases=200704 accepted=78138 unsupported=24816 capacity=97750
+PASS_HEAP_POLICY all six groups without Vulkan driver

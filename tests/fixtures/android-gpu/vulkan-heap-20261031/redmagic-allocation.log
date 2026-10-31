@@ -1,0 +1,33 @@
+TEST=vulkan-1.0-memory-heap-probe
+ADB_EXIT_CODE=0
+VULKAN_CANDIDATE index=0 name=Adreno (TM) 730 vendor=0x5143 device=0x7030002 api=1.1.128 driver=0x80267000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=65535 shared_max=32768 storage_range_max=134217728 descriptor_max=524288 non_coherent_atom=1
+DEVICE_HEAP_PROFILE memory_types=9 memory_heaps=2 max_allocations=4096
+DEVICE_HEAP index=0 size=11584221184 flags=0x00000001
+DEVICE_HEAP index=1 size=268435456 flags=0x00000001
+DEVICE_MEMORY_TYPE index=0 heap=0 flags=0x00000001
+DEVICE_MEMORY_TYPE index=1 heap=0 flags=0x00000001
+DEVICE_MEMORY_TYPE index=2 heap=0 flags=0x00000001
+DEVICE_MEMORY_TYPE index=3 heap=0 flags=0x0000000b
+DEVICE_MEMORY_TYPE index=4 heap=0 flags=0x00000007
+DEVICE_MEMORY_TYPE index=5 heap=0 flags=0x00000007
+DEVICE_MEMORY_TYPE index=6 heap=0 flags=0x0000000f
+DEVICE_MEMORY_TYPE index=7 heap=1 flags=0x00000021
+DEVICE_MEMORY_TYPE index=8 heap=0 flags=0x00000011
+ACTUAL_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 memory_bits=0x00000049
+ACTUAL_REQUIREMENTS index=1 label=gpu-output size=8192 alignment=64 memory_bits=0x00000041
+ACTUAL_REQUIREMENTS index=2 label=staging-upload size=8192 alignment=64 memory_bits=0x00000041
+ACTUAL_REQUIREMENTS index=3 label=staging-download size=8192 alignment=64 memory_bits=0x00000049
+PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=0
+PLAN_BUFFER index=1 label=gpu-output type=0 heap=0 bytes=8192 coherent=0
+PLAN_BUFFER index=2 label=staging-upload type=6 heap=0 bytes=8192 coherent=1
+PLAN_BUFFER index=3 label=staging-download type=6 heap=0 bytes=8192 coherent=1
+PLAN_HEAP index=0 reserved=32768 declared=11584221184
+PLAN_HEAP index=1 reserved=0 declared=268435456
+ALLOCATED_BUFFER index=0 type=0 heap=0 bytes=8192
+ALLOCATED_BUFFER index=1 type=0 heap=0 bytes=8192
+ALLOCATED_BUFFER index=2 type=6 heap=0 bytes=8192
+ALLOCATED_BUFFER index=3 type=6 heap=0 bytes=8192
+MAPPED_STAGING index=2 coherent=1 bytes=8192
+MAPPED_STAGING index=3 coherent=1 bytes=8192
+PASS_VULKAN_HEAP_PROBE device_index=0 buffers=4 allocations=4 mapped_staging=2 gpu_dispatches=0
