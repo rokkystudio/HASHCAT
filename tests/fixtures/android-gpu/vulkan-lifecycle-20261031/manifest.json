@@ -1,0 +1,147 @@
+{
+  "observation_date": "2026-10-31",
+  "scope": "actual Vulkan object creation and destruction on two GPUs; no dispatch, password processing, cryptographic shaders, hashcat API calls or self-test bypass",
+  "toolchain": {
+    "android_ndk": "29.0.14206865",
+    "native_compiler": "Clang 21.0.0",
+    "shader_compiler": "glslc shaderc v2022.3",
+    "target": "aarch64-linux-android26",
+    "spirv_target": "vulkan1.1"
+  },
+  "device_profiles": {
+    "redmagic": {
+      "model": "RedMagic NX709S",
+      "gpu": "Adreno (TM) 730",
+      "vendor_id": "0x5143",
+      "device_id": "0x7030002",
+      "driver_version": "0x80267000",
+      "vulkan_api_version": "1.1.128",
+      "queue_family": 0,
+      "shared_memory_limit": 32768
+    },
+    "pixel": {
+      "model": "Pixel 9 Pro XL",
+      "gpu": "Mali-G715",
+      "vendor_id": "0x13b5",
+      "device_id": "0xb8a20000",
+      "driver_version": "0x0d802000",
+      "vulkan_api_version": "1.4.305",
+      "queue_family": 0,
+      "shared_memory_limit": 32768
+    }
+  },
+  "resource_test": {
+    "iterations_per_optimization": 4,
+    "optimizations": [
+      "O0",
+      "O"
+    ],
+    "managed_resources_per_cycle": 14,
+    "gpu_submissions": 0,
+    "fault_steps": [
+      "instance",
+      "device",
+      "buffer",
+      "device-memory",
+      "memory-map",
+      "descriptor-layout",
+      "pipeline-layout",
+      "shader-module",
+      "compute-pipeline",
+      "descriptor-pool",
+      "descriptor-set",
+      "command-pool",
+      "command-buffer",
+      "fence"
+    ],
+    "injected_failure_exit_code": 42,
+    "invalid_input_exit_code": 2,
+    "invalid_input_cases": [
+      "zero-cycles",
+      "too-many-cycles",
+      "noninteger-cycles",
+      "unknown-failure-step",
+      "missing-shader"
+    ],
+    "expected_created_and_released_per_fault": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14
+    ],
+    "host_visible_coherent_buffer_bytes": 4096
+  },
+  "source_sha256": {
+    "tools/vulkan-resource-lifecycle-diagnostic.c": "57d8679d81cf8530dd7981063e083e98835d3b3a0986989c7060397d115e469c",
+    "tools/build-vulkan-resource-lifecycle.ps1": "dcfb0e27e98b6812d5d41a44dcd76285525303b9977b048741b312e81695eb1e",
+    "tools/run-vulkan-resource-lifecycle.ps1": "c5c85ace69a538961ef5569f8686ae66b269b06bb6ea4413535ce19574d841c8",
+    "tools/vulkan-pipeline-stage-a.comp": "e9c8ba8d1502a0120ad05043096cc02400221f3099d7c8432307c6cef2caeec8"
+  },
+  "build_artifact_sha256": {
+    "vulkan-resource-lifecycle-arm64": "54adf6750907902fb50c7159460952a14d8052cb58969226e338157abb0c052e",
+    "lifecycle-O0.spv": "c391fa1c7af20b012719c282f5589c48eb0652adc2f78c1491defb7e25999ff0",
+    "lifecycle-O.spv": "2d04ccfa7d801f15ecd42c4bf76a4582c9490366ec8a21039ca0e38ef1901706"
+  },
+  "successful_device_runs": [
+    {
+      "device": "redmagic",
+      "optimization": "O0",
+      "file": "redmagic-O0.log",
+      "exit_code": 0,
+      "sha256": "6892e60a937baead28a37883586e6ec5f1bd52ca6d445b507a6d54146eb36fee"
+    },
+    {
+      "device": "redmagic",
+      "optimization": "O",
+      "file": "redmagic-O.log",
+      "exit_code": 0,
+      "sha256": "3c30046ef842b884f413b1ee0fc4d8fc66e116020fa5d7024b180fc73ee2826b"
+    },
+    {
+      "device": "pixel",
+      "optimization": "O0",
+      "file": "pixel-O0.log",
+      "exit_code": 0,
+      "sha256": "3b10c9af7b77df472ba6ed70c1e07206921284d122758de8dfe7ecee40834d8e"
+    },
+    {
+      "device": "pixel",
+      "optimization": "O",
+      "file": "pixel-O.log",
+      "exit_code": 0,
+      "sha256": "46609fccaec54aa9a159017c45c751a50f78b831f2d9160771c76bae07dde822"
+    }
+  ],
+  "failed_device_runs": [
+    {
+      "device": "redmagic",
+      "file": "redmagic-negative-controls.log",
+      "resource_fault_count": 14,
+      "invalid_input_count": 5,
+      "sha256": "c358fbfe8b793e3a3bf85b350bf85216d9cd1bb22600d27e09d6873159803365"
+    },
+    {
+      "device": "pixel",
+      "file": "pixel-negative-controls.log",
+      "resource_fault_count": 14,
+      "invalid_input_count": 5,
+      "sha256": "c358fbfe8b793e3a3bf85b350bf85216d9cd1bb22600d27e09d6873159803365"
+    }
+  ],
+  "limitations": [
+    "A balanced application resource ledger does not prove the driver has no internal leaks",
+    "Only sequential create/destroy without GPU queue submission was exercised",
+    "Actual Vulkan compute arithmetic is tested separately in vulkan-pipeline-20261031 and vulkan-resubmit-20261031",
+    "The Qualcomm OpenCL bcrypt self-test failure 245 remains unresolved"
+  ]
+}

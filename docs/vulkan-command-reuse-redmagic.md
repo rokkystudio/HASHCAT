@@ -91,4 +91,10 @@ The original six SPIR-V shader binaries were rebuilt byte-for-byte; their hashes
 
 **Not tested:** Simultaneous submissions, multiple GPU queues, asynchronous scheduling, submission while a command buffer is pending, noncoherent memory, device loss and large-scale resource pressure. No result claims a Vulkan backend for hashcat or a corrected bcrypt kernel. The last real RedMagic OpenCL bcrypt self-test failure (exit 245) is a separate unresolved problem.
 
-The next safe, noncryptographic infrastructure task is to evaluate memory-resource lifetime and initialization errors, including correct cleanup when Vulkan object creation fails, without adding any password-cracking functionality.
+## Follow-up: Vulkan resource lifetime and fault injection
+
+A separate standalone Vulkan 1.1 resource diagnostic now exercises fourteen owned objects and states: instance, logical device, storage buffer, host-coherent memory/mapping, descriptor and pipeline layouts, shader module, compute pipeline, descriptor pool/set, command pool/buffer and an unsignaled fence. It creates and releases the entire graph four times with each original synthetic stage-A shader optimization, on both RedMagic and Pixel.
+
+All eight lifecycles per device balanced fourteen successful acquisitions with fourteen cleanup actions. A deliberately injected error at each of the fourteen checkpoints resulted in balanced cleanup and exit code 42 on **both devices**, while five invalid CLI inputs were rejected with exit code 2. The program never submits GPU work. Exact outcomes, source/binary hashes and archived failure records are in `docs/vulkan-resource-lifecycle-redmagic.md` and `tests/fixtures/android-gpu/vulkan-lifecycle-20261031/`.
+
+These are Vulkan **application-side** ownership checks; they cannot prove the proprietary drivers are free of internal memory leaks or that any cryptographic workload is correct.

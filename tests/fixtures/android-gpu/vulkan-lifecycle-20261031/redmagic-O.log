@@ -1,0 +1,13 @@
+PIPELINE=resource-lifecycle
+OPTIMIZATION=O
+CYCLES=4
+ADB_EXIT_CODE=0
+VULKAN_DEVICE cycle=0 name=Adreno (TM) 730 vendor=0x5143 device=0x7030002 driver=0x80267000 api=1.1.128 queue_family=0
+PASS Vulkan resource cycle=0 created=14 released=14 shader_dispatched=0
+VULKAN_DEVICE cycle=1 name=Adreno (TM) 730 vendor=0x5143 device=0x7030002 driver=0x80267000 api=1.1.128 queue_family=0
+PASS Vulkan resource cycle=1 created=14 released=14 shader_dispatched=0
+VULKAN_DEVICE cycle=2 name=Adreno (TM) 730 vendor=0x5143 device=0x7030002 driver=0x80267000 api=1.1.128 queue_family=0
+PASS Vulkan resource cycle=2 created=14 released=14 shader_dispatched=0
+VULKAN_DEVICE cycle=3 name=Adreno (TM) 730 vendor=0x5143 device=0x7030002 driver=0x80267000 api=1.1.128 queue_family=0
+PASS Vulkan resource cycle=3 created=14 released=14 shader_dispatched=0
+PASS Vulkan resource lifecycle: 4 cycles, 14 resources/cycle, all resources released; GPU submissions=0

@@ -1,0 +1,22 @@
+PIPELINE=resource-lifecycle
+RESOURCE_FAULT_CONTROLS=14
+INVALID_INPUT_CONTROLS=5
+NEGATIVE instance exit=42 created=1 released=1
+NEGATIVE device exit=42 created=2 released=2
+NEGATIVE buffer exit=42 created=3 released=3
+NEGATIVE device-memory exit=42 created=4 released=4
+NEGATIVE memory-map exit=42 created=5 released=5
+NEGATIVE descriptor-layout exit=42 created=6 released=6
+NEGATIVE pipeline-layout exit=42 created=7 released=7
+NEGATIVE shader-module exit=42 created=8 released=8
+NEGATIVE compute-pipeline exit=42 created=9 released=9
+NEGATIVE descriptor-pool exit=42 created=10 released=10
+NEGATIVE descriptor-set exit=42 created=11 released=11
+NEGATIVE command-pool exit=42 created=12 released=12
+NEGATIVE command-buffer exit=42 created=13 released=13
+NEGATIVE fence exit=42 created=14 released=14
+INVALID zero-cycles exit=2
+INVALID too-many-cycles exit=2
+INVALID noninteger-cycles exit=2
+INVALID unknown-failure-step exit=2
+INVALID missing-shader exit=2

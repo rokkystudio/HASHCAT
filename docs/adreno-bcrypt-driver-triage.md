@@ -87,6 +87,8 @@ A separate synthetic three-stage Vulkan 1.1 program was also compiled and **exec
 
 A further Vulkan 1.1 lifecycle diagnostic reuses a single recorded three-stage command buffer over four sequential queue submissions, changing public synthetic input between submits and resetting an already-completed fence. Both GPU devices passed all 98,304 checked 32-bit output words across the optimized and unoptimized variants per device. Four input rejection controls per phone returned code 2. Detailed provenance and real-device logs are in `docs/vulkan-command-reuse-redmagic.md` and `tests/fixtures/android-gpu/vulkan-resubmit-20261031/`.
 
+A separate Vulkan 1.1 object lifecycle diagnostic tested 14 real resource acquisitions and cleanup actions on each device without submitting GPU work. Four complete acquisition/release cycles passed for each original stage-A shader optimization on RedMagic and Pixel. Each device also passed 14 deterministic failure injections after Vulkan resource creation (exit 42 with balanced cleanup) and five invalid CLI input checks (exit 2). Sources, exact artifact identities and the original device results are recorded in `docs/vulkan-resource-lifecycle-redmagic.md` and `tests/fixtures/android-gpu/vulkan-lifecycle-20261031/`. These checks cover application-side Vulkan object ownership, not internal driver memory accounting.
+
 The archived mode-3200 OpenCL self-test failure (245) and the distinct optimizer-disabled compiler SIGSEGV (139) remain unresolved.
 
 **Current decision:** Preserve original production code and hashcat's self-test; do not declare Adreno bcrypt mode 3200 operational until an authentic device execution passes.
