@@ -16,3 +16,7 @@ tests/fixtures/android-gpu/redmagic-selected-modes-20261030/m03200.hash text eol
 # Preserve raw Android console evidence, including progress carriage returns.
 # Console redraw padding is intentional, not source-code trailing whitespace.
 tests/fixtures/android-gpu/**/*.log -text whitespace=-blank-at-eol
+
+# Keep native Vulkan CPU test evidence LF-stable for exact log SHA-256 checks.
+tests/fixtures/vulkan-host-policy-20261031/*.log text eol=lf
+tests/fixtures/vulkan-host-policy-20261031/manifest.json text eol=lf

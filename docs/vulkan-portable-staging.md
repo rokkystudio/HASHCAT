@@ -109,6 +109,44 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/run-vulkan-staging
 
 That command is provided to document the exact test interface, not as evidence of a run of the final modular build. The runner executes `auto` and `staging` on both `-O0` and `-O`, checks every buffer's permitted type and readback checksum, records device logs, tests four invalid inputs and deletes its staged files using a `finally` block.
 
+## Exhaustive native-C policy verification for unknown GPUs (2026-10-31)
+
+A separate test `tools/test-vulkan-staging-policy-host.c` compiles the **actual** universal Vulkan 1.0 and staging memory selection sources into a Windows native program. It replaces only Vulkan's physical-device query and mapped-memory cache entry points with deterministic, in-process mock functions. No Vulkan loader, Android device or GPU driver is linked or called. The PE import table has only `KERNEL32.dll` and `msvcrt.dll`.
+
+The test uses four [Vulkan-supported memory property classes](https://docs.vulkan.org/refpages/latest/refpages/source/VkPhysicalDeviceMemoryProperties.html): `DEVICE_LOCAL`, `HOST_VISIBLE|HOST_CACHED` (noncoherent), `HOST_VISIBLE|HOST_COHERENT`, and `DEVICE_LOCAL|HOST_VISIBLE|HOST_COHERENT`. It assigns each class to three synthetic memory-type slots and enumerates all seven nonempty three-bit compatibility masks.
+
+| Exact C policy coverage | Number |
+| --- | ---: |
+| Distinct three-type memory-property layouts | 64 (4³) |
+| Nonempty compatibility masks per input/output buffer | 7 |
+| Direct-auto and forced-staging requests | 2 |
+| Actual selector checks per individual mask | 448 |
+| **Actual transfer-path decisions** | **6,272** (64 × 7 × 7 × 2) |
+| Compiler optimization builds | `-O0` and `-O2` |
+| Native-C test groups | 6 |
+
+Additional deterministic checks cover the extreme 32nd Vulkan memory type (bit 31), missing or disjoint type bitmasks, invalid memory requirements, 64-bit allocation overflow, alignment to a noncoherent 256-byte cache atom, compute workgroup/invocation limits, descriptor/storage limits, and queue-family discovery when the first family does **not** support Compute.
+
+The mock `vkFlushMappedMemoryRanges` and `vkInvalidateMappedMemoryRanges` record and assert calls with `offset=0`, `size=VK_WHOLE_SIZE` and the correct `VkDeviceMemory` handle. They also inject Vulkan error codes to verify that they propagate. When an entire memory allocation is mapped from zero, `VK_WHOLE_SIZE` covers the mapped allocation end and obeys the specified [noncoherent mapped-range alignment constraints](https://docs.vulkan.org/refpages/latest/refpages/source/VkMappedMemoryRange.html).
+
+Both native GCC builds pass all 6,272 transfer decisions with **identical** outputs. The regression scripts are:
+
+- `tools/run-vulkan-staging-policy-host.ps1` — strict MSYS2 GCC build, actual compiled C execution at `-O0` and `-O2`, PE import check and reproducible logs
+- `tools/test-vulkan-staging-policy-host-evidence.py` — offline source and executable SHA-256 checks, exact log validation, independent optimization parity and deliberate corrupted-log rejection
+- `tests/fixtures/vulkan-host-policy-20261031/` — two original native host logs and provenance manifest
+
+The manifest records source-file SHA-256 over UTF-8 text with **CRLF normalized to LF**, so Windows Git checkout line endings do not cause false source mismatches. Windows executables and original execution logs are always verified by their **exact raw bytes**. The native runner checks the PE imports of both binaries before accepting the results.
+
+Reproduction from the Windows project root:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/run-vulkan-staging-policy-host.ps1 -AndroidNdk D:\ANDROID\SDK\ndk\29.0.14206865 -HostGcc C:\msys64\mingw64\bin\gcc.exe
+
+python -B tools/test-vulkan-staging-policy-host-evidence.py --artifacts build/diagnostic-multimode/vulkan-staging-policy-host-20261031
+```
+
+This validates the policy's exact **C behavior**, not a third GPU model's Vulkan driver. Automatic staging fallback and noncoherent cache synchronization still require hardware observation on actual devices exposing those capabilities. No hashcat execution is involved.
+
 ## Compatibility boundaries
 
 This is a portable **synthetic Vulkan Compute data-transfer module**. It does not implement generic pipeline scheduling, an integrated Vulkan backend for hashcat, a cryptographic kernel, vendor-specific GPU workarounds or a guarantee that every device supports the shader's requirements.

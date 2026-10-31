@@ -1,0 +1,67 @@
+{
+  "date": "2026-10-31",
+  "scope": "real native C Vulkan 1.0 capability and staging-memory functions tested on Windows CPU with mock driver entry points",
+  "compiler": {
+    "name": "MSYS2 MinGW GCC",
+    "version": "16.2.0",
+    "target": "x86_64-w64-mingw32",
+    "optimization_modes": [
+      "O0",
+      "O2"
+    ],
+    "flags": [
+      "-std=c11",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-Wconversion",
+      "-Wshadow"
+    ]
+  },
+  "test_matrix": {
+    "valid_memory_property_classes": 4,
+    "independent_memory_type_slots": 3,
+    "property_layouts": 64,
+    "nonempty_masks_per_buffer": 7,
+    "direct_or_forced_staging_requests": 2,
+    "memory_type_selection_cases": 448,
+    "transfer_decision_cases": 6272,
+    "native_test_groups": 6,
+    "uses_gpu_driver": false
+  },
+  "source_sha256": {
+    "tools/vulkan-auto-config.c": "7dda45d969c6fd092c31821cc8022f69a4dd8b748e852fcb7a2bd23552a571dd",
+    "tools/vulkan-auto-config.h": "1329f5b833bd8a0ffed9e3eadddead210665a1e8fba2f051e6f4259d63385086",
+    "tools/vulkan-staging-memory.c": "bd1436e668d34a1a65060fac75b02593df835ea576b6eb4b3422f239ff9ff89a",
+    "tools/vulkan-staging-memory.h": "628bc9299fd8da05112940b418c4fde6ceb88effa6567884bb5a195af6cb78cd",
+    "tools/test-vulkan-staging-policy-host.c": "4d4cc826733cc8952c4671abf4810899643aa2a6b848a249e0f86ab81618c11f",
+    "tools/run-vulkan-staging-policy-host.ps1": "cb091aec8f017a09cc496ed24b9d10d117c30ac4ef01c6899707a45616c013d5"
+  },
+  "imported_dlls": [
+    "KERNEL32.dll",
+    "msvcrt.dll"
+  ],
+  "runs": [
+    {
+      "optimization": "O0",
+      "file": "vulkan-staging-policy-O0.log",
+      "sha256": "a0400caece96b079c805b4a00cc302069a82ed088d57bdaf09e3e42395fb6998",
+      "binary_sha256": "5dc1238ae17906bcc27a2faa175556645ac341285e2c5ab13182af256e989b30",
+      "exit_code": 0
+    },
+    {
+      "optimization": "O2",
+      "file": "vulkan-staging-policy-O2.log",
+      "sha256": "4b261a084394d7dceb9b4f1d60fea0282ba22de9bc549abdd36133d04e6fdccf",
+      "binary_sha256": "126576f5c788c63acec94da5c1b2bb78024c66c015a57818b7baa4870457c476",
+      "exit_code": 0
+    }
+  ],
+  "limitations": [
+    "The native C test uses mock Vulkan query and mapped-memory functions and does not execute commands on an actual GPU",
+    "A real noncoherent HOST_VISIBLE GPU allocation and automatic fallback on an actual local-only device remain untested",
+    "The already archived Adreno/Mali GPU runs belong to a separate earlier combined binary, not this native test",
+    "No hashcat application or credential-processing code is loaded"
+  ],
+  "source_hash_policy": "UTF-8 source with CRLF normalized to LF"
+}

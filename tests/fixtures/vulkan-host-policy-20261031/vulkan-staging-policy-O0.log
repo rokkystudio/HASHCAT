@@ -1,0 +1,55 @@
+TEST=vulkan-host-c-memory-policy
+OPTIMIZATION=O0
+VULKAN_DRIVER_LINKED=0
+EXIT_CODE=0
+PASS_HOST_MEMORY_TYPES coherent noncoherent gpu_local bit31 invalid
+AUTO_TRANSFER mode=direct input_memory_type=2 output_memory_type=2 input_coherent=1 output_coherent=1
+AUTO_TRANSFER mode=staging input_gpu_type=0 output_gpu_type=0 input_visible=0 output_visible=0 forced=0
+AUTO_TRANSFER mode=staging input_gpu_type=0 output_gpu_type=1 input_visible=0 output_visible=1 forced=0
+AUTO_TRANSFER mode=staging input_gpu_type=0 output_gpu_type=1 input_visible=1 output_visible=1 forced=1
+REJECT_STORAGE_MEMORY input_bits=0x00000000 output_bits=0x00000006 input_result=-8 output_result=0
+PASS_HOST_TRANSFER_MODES direct local_only mixed forced invalid
+PASS_HOST_EXHAUSTIVE_MATRIX layouts=64 masks=7 selections=448 transfers=6272
+AUTO_BUFFER index=0 offset=0 required=384 driver_alignment=64 effective_alignment=256 compatible_bits=0x00000002
+AUTO_BUFFER index=1 offset=512 required=257 driver_alignment=64 effective_alignment=256 compatible_bits=0x00000002
+AUTO_MEMORY type=1 coherent=0 bytes=769 compatible_bits=0x00000002 atom=256
+AUTO_BUFFER index=0 offset=0 required=384 driver_alignment=64 effective_alignment=64 compatible_bits=0x00000006
+AUTO_BUFFER index=1 offset=384 required=257 driver_alignment=64 effective_alignment=64 compatible_bits=0x00000006
+AUTO_MEMORY type=2 coherent=1 bytes=641 compatible_bits=0x00000006 atom=256
+REJECT_MEMORY_TYPE compatible_bits=0x00000001 need=HOST_VISIBLE fallback=staging-required
+REJECT_MEMORY_TYPE compatible_bits=0x00000000 need=HOST_VISIBLE fallback=staging-required
+REJECT_MEMORY_REQUIREMENTS index=0
+REJECT_MEMORY_REQUIREMENTS index=1
+AUTO_BUFFER index=0 offset=0 required=18446744073709551552 driver_alignment=64 effective_alignment=64 compatible_bits=0x00000006
+PASS_HOST_MEMORY_PLANS atomic_alignment coherent disjoint overflow
+PASS_HOST_MAPPED_SYNC coherent flush invalidate full_range errors
+VULKAN_CANDIDATE index=0 name=synthetic-vulkan-1.0 vendor=0x1111 device=0x2222 api=1.0.0 driver=0x00000000
+ACCEPT_COMPUTE index=0 queue_family=1 local_max=256 invocations_max=512 groups_max=1024 shared_max=16384 storage_range_max=65536 descriptor_max=8 non_coherent_atom=256
+VULKAN_CANDIDATE index=0 name=synthetic-vulkan-1.0 vendor=0x1111 device=0x2222 api=1.0.0 driver=0x00000000
+REJECT_COMPUTE dimension=0 local=0 max_local=256 groups=64 max_groups=1024
+VULKAN_CANDIDATE index=0 name=synthetic-vulkan-1.0 vendor=0x1111 device=0x2222 api=1.0.0 driver=0x00000000
+REJECT_COMPUTE dimension=0 local=257 max_local=256 groups=64 max_groups=1024
+VULKAN_CANDIDATE index=0 name=synthetic-vulkan-1.0 vendor=0x1111 device=0x2222 api=1.0.0 driver=0x00000000
+REJECT_COMPUTE dimension=1 invocation_limit=512
+VULKAN_CANDIDATE index=0 name=synthetic-vulkan-1.0 vendor=0x1111 device=0x2222 api=1.0.0 driver=0x00000000
+REJECT_COMPUTE dimension=0 local=32 max_local=256 groups=0 max_groups=1024
+VULKAN_CANDIDATE index=0 name=synthetic-vulkan-1.0 vendor=0x1111 device=0x2222 api=1.0.0 driver=0x00000000
+REJECT_COMPUTE dimension=0 local=32 max_local=256 groups=1025 max_groups=1024
+VULKAN_CANDIDATE index=0 name=synthetic-vulkan-1.0 vendor=0x1111 device=0x2222 api=1.0.0 driver=0x00000000
+REJECT_STORAGE descriptors=0 max_descriptor_set=8 max_stage=4 requested_range=8192 max_storage_range=65536 requested_shared=128 max_shared=16384
+VULKAN_CANDIDATE index=0 name=synthetic-vulkan-1.0 vendor=0x1111 device=0x2222 api=1.0.0 driver=0x00000000
+REJECT_STORAGE descriptors=5 max_descriptor_set=8 max_stage=4 requested_range=8192 max_storage_range=65536 requested_shared=128 max_shared=16384
+VULKAN_CANDIDATE index=0 name=synthetic-vulkan-1.0 vendor=0x1111 device=0x2222 api=1.0.0 driver=0x00000000
+REJECT_STORAGE descriptors=2 max_descriptor_set=8 max_stage=4 requested_range=65537 max_storage_range=65536 requested_shared=128 max_shared=16384
+VULKAN_CANDIDATE index=0 name=synthetic-vulkan-1.0 vendor=0x1111 device=0x2222 api=1.0.0 driver=0x00000000
+REJECT_STORAGE descriptors=2 max_descriptor_set=8 max_stage=4 requested_range=8192 max_storage_range=65536 requested_shared=16385 max_shared=16384
+VULKAN_CANDIDATE index=0 name=synthetic-vulkan-1.0 vendor=0x1111 device=0x2222 api=1.0.0 driver=0x00000000
+REJECT_QUEUE no_queue_families
+VULKAN_CANDIDATE index=0 name=synthetic-vulkan-1.0 vendor=0x1111 device=0x2222 api=1.0.0 driver=0x00000000
+REJECT_QUEUE no_compute_queue
+VULKAN_CANDIDATE index=0 name=synthetic-vulkan-1.0 vendor=0x1111 device=0x2222 api=1.0.0 driver=0x00000000
+REJECT_QUEUE no_compute_queue
+VULKAN_CANDIDATE index=0 name=synthetic-vulkan-1.0 vendor=0x1111 device=0x2222 api=0.0.0 driver=0x00000000
+REJECT_VULKAN_API index=0 requires=1.0
+PASS_HOST_COMPUTE_CAPABILITIES queue limits requirements errors
+PASS_HOST_POLICY all six native-C test groups, no Vulkan driver
