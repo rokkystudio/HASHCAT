@@ -52,6 +52,19 @@ Clean generated outputs:
 .\scripts\CLEAN.ps1
 ```
 
+## Experimental Vulkan 1.0 discovery on Android
+
+The native hashcat backend includes opt-in Vulkan 1.0 physical-device discovery. It does not schedule hashcat kernels on Vulkan or replace CUDA, HIP, Metal or OpenCL.
+
+Build isolated Android API 24 ARM64/ARMv7 executables without publishing release packages:
+
+```powershell
+.\scripts\BUILD.ps1 -Target android-arm64-v8a -AndroidApi 24 -EnableVulkanDiscovery -Package:$false
+.\scripts\BUILD.ps1 -Target android-armeabi-v7a -AndroidApi 24 -EnableVulkanDiscovery -Package:$false
+```
+
+The full native HASHCAT frontend passed `hashcat -I` on RedMagic ARM64, RedMagic ARMv7 and Pixel ARM64. Exact evidence, dependencies, compatibility limits and offline verification are in [the Android Vulkan frontend verification report](docs/vulkan-hashcat-frontend-android-verification.md).
+
 ## Working on hashcat source
 
 Edit files directly under `source/`, then commit them in this repository:

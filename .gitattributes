@@ -52,3 +52,7 @@ tests/fixtures/android-gpu/vulkan-multiset-graph-20261031/manifest.json text eol
 # Preserve original hashcat backend_ctx Vulkan discovery and API validation transcripts.
 tests/fixtures/android-gpu/vulkan-backend-catalog-20261031/*.log text eol=lf
 tests/fixtures/android-gpu/vulkan-backend-catalog-20261031/manifest.json text eol=lf
+
+# Preserve extracted real Android HASHCAT -I Vulkan discovery transcripts as LF-only evidence.
+tests/fixtures/android-gpu/vulkan-hashcat-frontend-20261101/*.log -text whitespace=-blank-at-eol
+tests/fixtures/android-gpu/vulkan-hashcat-frontend-20261101/manifest.json text eol=lf

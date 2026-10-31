@@ -119,7 +119,9 @@ Android native build with the opt-in flag:
 
 This adds WITH_VULKAN_DISCOVERY, ../tools as an include directory, the
 native backend_vulkan.c object, the generic Vulkan discovery source
-objects and the Android loader link option -lvulkan.
+objects and the Android loader link option -lvulkan **only for the
+HASHCAT frontend or owning shared library**. The kernel modules and
+bridges have no extra Vulkan loader dependency.
 
 An ENABLE_VULKAN_DISCOVERY=1 attempt with a non-Android native build
 is explicitly rejected by the Makefile. All other builds retain the
@@ -137,10 +139,16 @@ backend.c object files and two linked backend-catalogue Android
 executables. The binary checks require libvulkan.so and reject mandatory
 Vulkan-1.1-only entry points.
 
-**The full hashcat Android executable is not linked by this diagnostic
-build**, and HASHCAT-APP still bundles its separately published native
-archives. A release-integrated native build, APK update and app-side test
-remain separate tasks.
+The independent catalogue diagnostic itself does not link the full
+hashcat executable. The explicit -EnableVulkanDiscovery option in
+scripts/BUILD.ps1 also builds **the complete Android HASHCAT frontend**
+for ARM64 and ARMv7, without publishing new release packages. Both
+full binaries were executed on real devices using hashcat -I. The full
+build uses relative runtime-asset discovery and excludes bundled UnRAR
+on Android API 24 because that dependency requires lutimes. The exact
+hardware evidence is in docs/vulkan-hashcat-frontend-android-verification.md.
+HASHCAT-APP continues to package its previously published archives;
+no APK or app repository was updated.
 
 ## Real Android verification
 
@@ -207,10 +215,14 @@ on these GPUs with 120 successful runs and 480 fence-separated jobs.
 The current backend_ctx bridge **does not execute that graph inside the
 production hashcat frontend**.
 
-Next steps are an Android production build that links the optional
-backend discovery, verification of discovery in the real hashcat
-command-line process, and explicit device/session ownership that
-remains separate from existing cryptographic kernel dispatch.
+Full Android API-24 HASHCAT frontends for ARM64 and ARMv7 now link the
+optional Vulkan discovery. Real hashcat -I sessions on RedMagic ARM64,
+RedMagic ARMv7 and Pixel ARM64 confirmed Vulkan catalogue creation,
+normal OpenCL GPU discovery and catalogue destruction with process exit 0.
+The next work is explicit Vulkan device/session ownership beyond discovery
+and eventually separate integration with the production scheduling lifecycle.
+See docs/vulkan-hashcat-frontend-android-verification.md for hardware logs,
+source/binary SHA-256 and independent ELF inspection.
 
 There is no full Vulkan-only hashcat backend, no SHA/bcrypt password
 kernel port, no candidate processing or GPU-cracking scheduler. The

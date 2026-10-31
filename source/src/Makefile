@@ -490,7 +490,7 @@ WIN_OBJS                := $(foreach OBJ,$(OBJS_ALL),obj/$(OBJ).WIN.o)
 ifeq ($(ENABLE_VULKAN_DISCOVERY),1)
 ifeq ($(UNAME),Android)
 CFLAGS_NATIVE           += -DWITH_VULKAN_DISCOVERY -I../tools
-LFLAGS_NATIVE           += -lvulkan
+LFLAGS_VULKAN           := -lvulkan
 NATIVE_OBJS             += obj/backend_vulkan.NATIVE.o
 NATIVE_OBJS             += obj/vulkan-auto-config.NATIVE.o
 NATIVE_OBJS             += obj/vulkan-core11-policy.NATIVE.o
@@ -774,15 +774,15 @@ $(HASHCAT_LIBRARY): $(NATIVE_OBJS)
 	$(CC)                     $^ -o $@                    $(LFLAGS_NATIVE) -shared -install_name $(DESTDIR)$(LIBRARY_FOLDER)/$(HASHCAT_LIBRARY) -current_version $(VERSION_PURE) -compatibility_version $(VERSION_PURE)
 else
 $(HASHCAT_LIBRARY): $(NATIVE_OBJS)
-	$(CC)                     $^ -o $@                    $(LFLAGS_NATIVE) -shared -Wl,-soname,$(HASHCAT_LIBRARY)
+	$(CC)                     $^ -o $@                    $(LFLAGS_NATIVE) $(LFLAGS_VULKAN) -shared -Wl,-soname,$(HASHCAT_LIBRARY)
 endif
 
 ifeq ($(SHARED),1)
 $(HASHCAT_FRONTEND): src/main.c $(HASHCAT_LIBRARY)
-	$(CC)    $(CCFLAGS) $(CFLAGS_NATIVE) $^ -o $@ $(HASHCAT_LIBRARY) $(LFLAGS_NATIVE) -DCOMPTIME=$(COMPTIME) -DVERSION_TAG=\"$(VERSION_TAG)\" -DINSTALL_FOLDER=\"$(INSTALL_FOLDER)\" -DSHARED_FOLDER=\"$(SHARED_FOLDER)\" -DDOCUMENT_FOLDER=\"$(DOCUMENT_FOLDER)\"
+	$(CC)    $(CCFLAGS) $(CFLAGS_NATIVE) $^ -o $@ $(HASHCAT_LIBRARY) $(LFLAGS_NATIVE) $(LFLAGS_VULKAN) -DCOMPTIME=$(COMPTIME) -DVERSION_TAG=\"$(VERSION_TAG)\" -DINSTALL_FOLDER=\"$(INSTALL_FOLDER)\" -DSHARED_FOLDER=\"$(SHARED_FOLDER)\" -DDOCUMENT_FOLDER=\"$(DOCUMENT_FOLDER)\"
 else
 $(HASHCAT_FRONTEND): src/main.c obj/combined.NATIVE.a
-	$(CC)    $(CCFLAGS) $(CFLAGS_NATIVE) $^ -o $@                    $(LFLAGS_NATIVE) -DCOMPTIME=$(COMPTIME) -DVERSION_TAG=\"$(VERSION_TAG)\" -DINSTALL_FOLDER=\"$(INSTALL_FOLDER)\" -DSHARED_FOLDER=\"$(SHARED_FOLDER)\" -DDOCUMENT_FOLDER=\"$(DOCUMENT_FOLDER)\"
+	$(CC)    $(CCFLAGS) $(CFLAGS_NATIVE) $^ -o $@                    $(LFLAGS_NATIVE) $(LFLAGS_VULKAN) -DCOMPTIME=$(COMPTIME) -DVERSION_TAG=\"$(VERSION_TAG)\" -DINSTALL_FOLDER=\"$(INSTALL_FOLDER)\" -DSHARED_FOLDER=\"$(SHARED_FOLDER)\" -DDOCUMENT_FOLDER=\"$(DOCUMENT_FOLDER)\"
 endif
 
 ##

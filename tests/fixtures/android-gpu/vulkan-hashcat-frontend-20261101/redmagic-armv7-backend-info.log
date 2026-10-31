@@ -1,0 +1,37 @@
+TEST=vulkan-hashcat-real-frontend
+ABI=armeabi-v7a
+COMMAND=-I
+ADB_EXIT_CODE=0
+hashcat (v7.1.2) starting in backend information mode
+
+VULKAN_LOADER_VERSION=1.3.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=3 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0
+BACKEND_VULKAN_CATALOG_READY devices=1 requested_api=1.0 scheduled=0
+Vulkan 1.0 discovery found 1 physical device(s); Vulkan Compute scheduling is not enabled.
+OpenCL Info:
+============
+
+OpenCL Platform ID #1
+  Vendor..: QUALCOMM
+  Name....: QUALCOMM Snapdragon(TM)
+  Version.: OpenCL 3.0 QUALCOMM build: commit #21eaafda81 changeid #I578ccc16f0 Date: 07/19/22 Tue Local Branch:  Remote Branch: 
+
+  Backend Device ID #01
+    Type...........: GPU
+    Vendor.ID......: 2147483648
+    Vendor.........: QUALCOMM
+    Name...........: QUALCOMM Adreno(TM)
+    Version........: OpenCL 3.0 Adreno(TM) 730
+    Processor(s)...: 4
+    Preferred.Thrd.: 32
+    Clock..........: 1
+    Memory.Total...: 5523 MB (limited to 512 MB allocatable in one block)
+    Memory.Free....: 2761 MB
+    Memory.Unified.: 1
+    Local.Memory...: 32 KB
+    OpenCL.Version.: OpenCL C 3.0 Adreno(TM) 730
+    Driver.Version.: OpenCL 3.0 QUALCOMM build: commit #21eaafda81 changeid #I578ccc16f0 Date: 07/19/22 Tue Local Branch:  Remote Branch:  Compiler E031.38.11.04
+
+DEVICE_CATALOG_CLOSE devices=1 selections=0
+HC_NATIVE_EXIT=0

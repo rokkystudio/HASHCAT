@@ -1,0 +1,94 @@
+{
+  "date": "2026-11-01",
+  "scope": "Actual Android HASHCAT -I process with optional Vulkan 1.0 discovery",
+  "build_flag": "ENABLE_VULKAN_DISCOVERY=1",
+  "target_android_api": 24,
+  "required_vulkan_api": "1.0",
+  "full_hashcat_android_frontend_linked": true,
+  "hashcat_vulkan_kernel_scheduling": false,
+  "release_archives_modified": false,
+  "physically_vulkan10_only_gpu_tested": false,
+  "android_7_api24_device_tested": false,
+  "unrar_disabled_for_api24": true,
+  "shared_assets_from_executable_directory": true,
+  "source_hash_policy": "CRLF normalized to LF",
+  "capture_policy": "Native HASHCAT stdout/stderr lines extracted from stored real ADB command transcripts, with enclosing host report headings removed and line endings normalized to LF. The exit marker comes from the native Android process. These are not claimed to be byte-for-byte unmodified original ADB streams.",
+  "source_sha256": {
+    "scripts/BUILD.ps1": "614cb5557152125f50e2593dadefb3f0d2cf6309917c900c03b749982869d66c",
+    "source/src/Makefile": "ae2ff1976f3daf006ac9f6453733dc5c09391e4d42d522656badeb1cdaf2abab",
+    "source/src/backend.c": "fe55d7f02ed0b096bcf6737f7560eea992340b71ece4590cd4be5440d517fb1a",
+    "source/src/backend_vulkan.c": "200c425874152a663031a9383331a80220fd8fb19fe63c2f3bef5f5da6d7d269",
+    "source/include/backend_vulkan.h": "fafdddc159e2e92aac85668c193ce818fab49b6b949bb7e3dc336c9570cf9557",
+    "source/include/types.h": "4b6801630b0c1199f35fcc976f6cf072c108e45a8ba029508c341f3bd4a0b270",
+    "tools/vulkan-auto-config.c": "7dda45d969c6fd092c31821cc8022f69a4dd8b748e852fcb7a2bd23552a571dd",
+    "tools/vulkan-auto-config.h": "1329f5b833bd8a0ffed9e3eadddead210665a1e8fba2f051e6f4259d63385086",
+    "tools/vulkan-core11-policy.c": "ac4fd1bf17a4e61d801de94ee51f6df920e9ce1b9285168e94f2ea412305ede8",
+    "tools/vulkan-core11-policy.h": "e56989252c758b7e8289067540b7d04b9e534d85ae56a05e3f3a4d465662b0fa",
+    "tools/vulkan-core10-device-catalog.c": "7e454956b965356b1418e8730913b92304b78bab20b1cd3d510a90e19cc6ef6b",
+    "tools/vulkan-core10-device-catalog.h": "8c963d3b6dfaee7137a2d4269114448ec0521d8ee548e7daa83f273e2dde9c05",
+    "tools/archive-vulkan-hashcat-frontend-evidence.py": "9a8f92b66e4a03a7c20145bd364cccbcba7f27f24732970763fd4768926e062d",
+    "tools/test-vulkan-hashcat-frontend-evidence.py": "1f4c0eebdfcaba1fa4c38a79cd48ff4613d98b8f08166e3686308a739f7f53c0"
+  },
+  "binaries": {
+    "arm64-v8a": {
+      "sha256": "d915e10e0215154e2274b0b2b1899b22724d73d40becad1533e8b03bb78d7478",
+      "size_bytes": 1523960,
+      "modules": 581,
+      "bridges": 4,
+      "opencl_files": 1595
+    },
+    "armeabi-v7a": {
+      "sha256": "38b0e5ba3bbcd88f120f77b026ae2a049e85f49136e3fe266d942928da18df1c",
+      "size_bytes": 1779708,
+      "modules": 581,
+      "bridges": 4,
+      "opencl_files": 1595
+    }
+  },
+  "runs": [
+    {
+      "device": "redmagic-arm64",
+      "abi": "arm64-v8a",
+      "opencl_vendor": "QUALCOMM",
+      "gpu_name": "QUALCOMM Adreno(TM)",
+      "loader_minor": 3,
+      "file": "redmagic-arm64-backend-info.log",
+      "sha256": "75a44b209afcdecb7ac505e1fdca525335c2e00f762ae87cf7926205625d5044",
+      "vulkan_instance_lifecycles": 1,
+      "hashcat_opencl_backend_retained": true,
+      "vulkan_hash_scheduler_enabled": false
+    },
+    {
+      "device": "redmagic-armv7",
+      "abi": "armeabi-v7a",
+      "opencl_vendor": "QUALCOMM",
+      "gpu_name": "QUALCOMM Adreno(TM)",
+      "loader_minor": 3,
+      "file": "redmagic-armv7-backend-info.log",
+      "sha256": "74cddc792211ff2b4eb5fa82ddc83ff7f6d5dfcd20a2e8206a4278458481182c",
+      "vulkan_instance_lifecycles": 1,
+      "hashcat_opencl_backend_retained": true,
+      "vulkan_hash_scheduler_enabled": false
+    },
+    {
+      "device": "pixel-arm64",
+      "abi": "arm64-v8a",
+      "opencl_vendor": "ARM",
+      "gpu_name": "Mali-G715 r0p0",
+      "loader_minor": 4,
+      "file": "pixel-arm64-backend-info.log",
+      "sha256": "ee0141c201255a3ed327833f8df4b835155bdd12882184ff2a7071fce84f7cb7",
+      "vulkan_instance_lifecycles": 1,
+      "hashcat_opencl_backend_retained": true,
+      "vulkan_hash_scheduler_enabled": false
+    }
+  ],
+  "limitations": [
+    "The complete native executable was built; no Android APK was produced or modified.",
+    "Only backend information (-I) and version reporting were tested on physical devices.",
+    "Vulkan devices are discovered inside backend_ctx but are not scheduled as hashcat kernel devices.",
+    "The observed normal GPU backend is OpenCL, not Vulkan Compute execution.",
+    "Android 7/API24 system hardware and physically Vulkan-1.0-only GPUs were not available.",
+    "Build outputs remain under ignored diagnostic directories; release zip archives and HASHCAT-APP are untouched."
+  ]
+}

@@ -12,6 +12,7 @@ param(
     [string]$VersionTag = 'v7.1.2',
     [string]$SourceRef = '',
     [bool]$Package = $true,
+    [switch]$EnableVulkanDiscovery,
     [switch]$Clean
 )
 
@@ -353,7 +354,7 @@ function Restore-SourceCheckout([string]$SourceDirectory) {
 Builds one Android ABI from the monorepo hashcat source tree.
 
 .DESCRIPTION
-Uses Android NDK Clang through MSYS2, builds the hashcat frontend and native modules/bridges, then copies ABI-specific binaries and shared runtime assets into build and release directories.
+Uses Android NDK Clang through MSYS2, builds the hashcat frontend and native modules/bridges, then copies ABI-specific binaries and shared runtime assets into build and release directories. With EnableVulkanDiscovery, passes the Android-only Vulkan 1.0 discovery flag to the native Makefile and places the resulting binaries in an isolated diagnostic output directory without creating a release package.
 #>
 function Invoke-AndroidTarget([pscustomobject]$Config, [string]$ResolvedAndroidNdk, [string]$ResolvedMsys2Bash) {
     $ndkToolchainBin = Join-Path $ResolvedAndroidNdk 'toolchains\llvm\prebuilt\windows-x86_64\bin'
@@ -369,13 +370,30 @@ function Invoke-AndroidTarget([pscustomobject]$Config, [string]$ResolvedAndroidN
     $sourceForMsys = Convert-ToMsysPath $SourceDir
     $ndkBinForMsys = Convert-ToMsysPath $ndkToolchainBin
     $tempForMsys = Convert-ToMsysPath $TempDir
-    $buildAbiDir = Join-Path $BuildRootDir $Config.Abi
+    $buildAbiDir = if ($EnableVulkanDiscovery) {
+        Join-Path $BuildRootDir "diagnostic-multimode\vulkan-hashcat-frontend-20261101\$($Config.Abi)"
+    } else {
+        Join-Path $BuildRootDir $Config.Abi
+    }
     $cc = "$($Config.ClangPrefix)$AndroidApi-clang"
     $cxx = "$($Config.ClangPrefix)$AndroidApi-clang++"
     $makeVars = @($Config.MakeVars)
 
     # hashcat's Rust bridge rules can build host .dll/.so plugins, but they do not currently cross-build
     # Rust sub-plugins for Android ABIs. Keep Android artifacts native/NDK-only instead of mixing host Rust output.
+    if ($EnableVulkanDiscovery) {
+        $makeVars += @(
+            'ENABLE_VULKAN_DISCOVERY=1',
+            # Use the executable directory as the shared asset root on Android.
+            'SHARED_FOLDER='
+        )
+
+        # The bundled UnRAR dependency calls lutimes, unavailable at Android API 24.
+        if ([int]$AndroidApi -lt 26) {
+            $makeVars += 'ENABLE_UNRAR=0'
+        }
+    }
+
     $makeVars += @(
         'MAINTAINER_MODE=1',
         'PYTHON_CONFIG=',
@@ -482,6 +500,20 @@ function Invoke-AndroidTarget([pscustomobject]$Config, [string]$ResolvedAndroidN
 $ExpandedTargets = Expand-BuildTargets $Target $AndroidAbi
 $AndroidTargets = @($ExpandedTargets | Where-Object { $AndroidTargetSpecs.Contains($_) })
 $DesktopTargets = @($ExpandedTargets | Where-Object { -not $AndroidTargetSpecs.Contains($_) })
+
+if ($EnableVulkanDiscovery) {
+    if ($Package) {
+        throw 'Experimental Vulkan discovery must use -Package:$false so published Android release archives remain unchanged.'
+    }
+
+    if ($DesktopTargets.Count -gt 0 -or $AndroidTargets.Count -eq 0) {
+        throw 'Experimental Vulkan discovery requires only explicit Android build targets.'
+    }
+
+    if ([int]$AndroidApi -lt 24) {
+        throw 'Experimental Vulkan 1.0 discovery requires Android API 24 or later.'
+    }
+}
 
 $buildMutex = [System.Threading.Mutex]::new($false, 'Global\HASHCAT_WRAPPER_D_PROJECTS_HASHCAT_ANDROID_RUNTIME_V2')
 $lockTaken = $false
