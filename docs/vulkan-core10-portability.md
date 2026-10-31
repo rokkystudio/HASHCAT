@@ -176,6 +176,12 @@ The standalone `tools/vulkan-core10-runtime.c` owns the six Vulkan buffer alloca
 
 The new archived suite contains **20 successful real GPU runs × four sequential submissions**, genuine noncoherent `flush`/`invalidate` on Pixel, **84 actual Vulkan resource-acquisition fault tests** checking partial cleanup, and **15** invalid-command controls. Physical Vulkan-1.0-only/Android-7.0 devices remain unavailable. See `docs/vulkan-core10-runtime-portability.md` and `tests/fixtures/android-gpu/vulkan-runtime-20261031/`. The earlier monolithic six-buffer implementation and its historical evidence are preserved unchanged.
 
+## Vulkan 1.0 Compute resource graph with variable sizes
+
+An independent `tools/vulkan-core10-graph.c` runtime receives explicit buffer counts, storage descriptor mappings and SPIR-V 1.0 Compute stage counts, using dynamically sized resource arrays. All buffers are jointly planned against actual Vulkan memory type masks and ABI-local heap properties. The same three public integer shaders run as one-, two- and three-stage pipelines with four, five and six buffers, and the native heap planner also covers seven buffers.
+
+RedMagic ARM64, RedMagic ARMv7 and Pixel ARM64 passed **60 actual GPU graph runs**, each with four sequential submissions. On Pixel every graph size supports real noncoherent staging with driver `flush`/`invalidate`; incompatible RedMagic memory is explicitly rejected. **216** hardware resource-acquisition cleanup cases and **27** invalid CLI requests also passed. Default Vulkan API is 1.0, optional 1.1 only by explicit request, and both ARM binaries target Android API 24. A physical Vulkan-1.0-only GPU and Android-7.0 phone remain unavailable. See `docs/vulkan-core10-dynamic-graph-portability.md` and `tests/fixtures/android-gpu/vulkan-dynamic-graph-20261031/`.
+
 ## Remaining integration scope
 
 The project now has a separate **capability-driven Vulkan 1.0 synthetic Compute path**, including real GPU staging, exact memory-heap planning and an optional Vulkan 1.1 API requirement.

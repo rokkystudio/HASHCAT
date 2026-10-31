@@ -1,0 +1,61 @@
+TEST=vulkan-core10-dynamic-graph-host
+OPTIMIZATION=O0
+GPU_DRIVER_LINKED=0
+EXIT_CODE=0
+GRAPH_PLAN_BUFFER index=0 label=input type=0 heap=0 bytes=8 coherent=0
+GRAPH_PLAN_BUFFER index=1 label=a type=0 heap=0 bytes=8 coherent=0
+GRAPH_PLAN_BUFFER index=2 label=upload type=1 heap=1 bytes=8 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=download type=1 heap=1 bytes=32 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=16 declared=64
+GRAPH_PLAN_HEAP index=1 reserved=40 declared=64
+PASS_GRAPH_VARIABLE count=4 gpu=2 mapped=2
+GRAPH_PLAN_BUFFER index=0 label=input type=0 heap=0 bytes=8 coherent=0
+GRAPH_PLAN_BUFFER index=1 label=a type=0 heap=0 bytes=8 coherent=0
+GRAPH_PLAN_BUFFER index=2 label=b type=0 heap=0 bytes=8 coherent=0
+GRAPH_PLAN_BUFFER index=3 label=upload type=1 heap=1 bytes=8 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=download type=1 heap=1 bytes=32 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=24 declared=64
+GRAPH_PLAN_HEAP index=1 reserved=40 declared=64
+PASS_GRAPH_VARIABLE count=5 gpu=3 mapped=2
+GRAPH_PLAN_BUFFER index=0 label=input type=0 heap=0 bytes=8 coherent=0
+GRAPH_PLAN_BUFFER index=1 label=a type=0 heap=0 bytes=8 coherent=0
+GRAPH_PLAN_BUFFER index=2 label=b type=0 heap=0 bytes=8 coherent=0
+GRAPH_PLAN_BUFFER index=3 label=c type=0 heap=0 bytes=32 coherent=0
+GRAPH_PLAN_BUFFER index=4 label=upload type=1 heap=1 bytes=8 coherent=1
+GRAPH_PLAN_BUFFER index=5 label=download type=1 heap=1 bytes=32 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=56 declared=64
+GRAPH_PLAN_HEAP index=1 reserved=40 declared=64
+PASS_GRAPH_VARIABLE count=6 gpu=4 mapped=2
+GRAPH_PLAN_BUFFER index=0 label=input type=0 heap=0 bytes=8 coherent=0
+GRAPH_PLAN_BUFFER index=1 label=a type=0 heap=0 bytes=8 coherent=0
+GRAPH_PLAN_BUFFER index=2 label=b type=0 heap=0 bytes=8 coherent=0
+GRAPH_PLAN_BUFFER index=3 label=c type=0 heap=0 bytes=32 coherent=0
+GRAPH_PLAN_BUFFER index=4 label=extra type=0 heap=0 bytes=8 coherent=0
+GRAPH_PLAN_BUFFER index=5 label=upload type=1 heap=1 bytes=8 coherent=1
+GRAPH_PLAN_BUFFER index=6 label=download type=1 heap=1 bytes=32 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=64 declared=64
+GRAPH_PLAN_HEAP index=1 reserved=40 declared=64
+PASS_GRAPH_VARIABLE count=7 gpu=5 mapped=2
+GRAPH_PLAN_BUFFER index=0 label=input type=1 heap=1 bytes=8 coherent=1
+GRAPH_PLAN_BUFFER index=1 label=a type=0 heap=0 bytes=8 coherent=0
+GRAPH_PLAN_BUFFER index=2 label=b type=0 heap=0 bytes=8 coherent=0
+GRAPH_PLAN_BUFFER index=3 label=output type=0 heap=0 bytes=32 coherent=0
+GRAPH_PLAN_BUFFER index=4 label=upload type=1 heap=1 bytes=8 coherent=1
+GRAPH_PLAN_BUFFER index=5 label=download type=1 heap=1 bytes=32 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=48 declared=48
+GRAPH_PLAN_HEAP index=1 reserved=48 declared=48
+PASS_GRAPH_BACKTRACK six_buffers_exact_heap_capacity
+GRAPH_PLAN_BUFFER index=0 label=input type=0 heap=0 bytes=8 coherent=0
+GRAPH_PLAN_BUFFER index=1 label=output type=0 heap=0 bytes=8 coherent=0
+GRAPH_PLAN_BUFFER index=2 label=upload type=2 heap=1 bytes=8 coherent=0
+GRAPH_PLAN_BUFFER index=3 label=download type=2 heap=1 bytes=8 coherent=0
+GRAPH_PLAN_HEAP index=0 reserved=16 declared=64
+GRAPH_PLAN_HEAP index=1 reserved=16 declared=64
+GRAPH_REJECT_MEMORY_TYPE index=2 role=1 bits=0x00000002 forbidden=0x00000004
+PASS_GRAPH_NONCOHERENT valid_and_explicit_type_rejection
+GRAPH_REJECT_ALLOCATION_COUNT requested=4 existing=1 limit=4
+GRAPH_REJECT_REQUIREMENTS index=0
+GRAPH_REJECT_HEAP_CAPACITY requested=4 reason=no_joint_placement
+GRAPH_REJECT_HEAP_INDEX memory_type=0 heap=2
+PASS_GRAPH_NEGATIVE allocation_limit_alignment_capacity_heap_zero_count
+PASS_GRAPH_MEMORY_POLICY dynamic_4_5_6_7 no_vulkan_driver

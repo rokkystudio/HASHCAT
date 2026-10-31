@@ -1,0 +1,43 @@
+TEST=vulkan-core10-dynamic-graph
+STAGES=1
+MODE=required11
+OPTIMIZATION=O0
+ABI=arm64-v8a
+ADB_EXIT_CODE=0
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.1 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.1 reported_minor=4 instance_minor=1 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.1 effective_api=1.1 stages=1 descriptors=2 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=1 buffers=4 descriptors=2 mapped=2 output_bytes=8192 requested_noncoherent=0
+GRAPH_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=2 label=staging-upload size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=3 label=staging-download size=8192 alignment=64 bits=0x00000003
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=2 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=staging-download type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=32768 declared=16101965824
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
+GRAPH_MAPPED index=2 type=0 coherent=1
+GRAPH_MAPPED index=3 type=0 coherent=1
+GRAPH_READY acquisitions=20 buffers=4 descriptors=2 stages=1 maps=2 core=1.0
+GRAPH_SYNC index=2 operation=flush coherent=1 driver_call=0 atom=64 result=0
+GRAPH_SUBMIT completed=1 reused=0 result=0
+GRAPH_SYNC index=3 operation=invalidate coherent=1 driver_call=0 atom=64 result=0
+GRAPH_PASS stages=1 submission=0 verified_words=2048 stageA=de56d6d0aa66c6ec stageB=cbf29ce484222325 output=de56d6d0aa66c6ec
+GRAPH_SYNC index=2 operation=flush coherent=1 driver_call=0 atom=64 result=0
+GRAPH_SUBMIT completed=2 reused=1 result=0
+GRAPH_SYNC index=3 operation=invalidate coherent=1 driver_call=0 atom=64 result=0
+GRAPH_PASS stages=1 submission=1 verified_words=2048 stageA=66ee1b4b1385e0e3 stageB=cbf29ce484222325 output=66ee1b4b1385e0e3
+GRAPH_SYNC index=2 operation=flush coherent=1 driver_call=0 atom=64 result=0
+GRAPH_SUBMIT completed=3 reused=1 result=0
+GRAPH_SYNC index=3 operation=invalidate coherent=1 driver_call=0 atom=64 result=0
+GRAPH_PASS stages=1 submission=2 verified_words=2048 stageA=69b8f65ae2e8be72 stageB=cbf29ce484222325 output=69b8f65ae2e8be72
+GRAPH_SYNC index=2 operation=flush coherent=1 driver_call=0 atom=64 result=0
+GRAPH_SUBMIT completed=4 reused=1 result=0
+GRAPH_SYNC index=3 operation=invalidate coherent=1 driver_call=0 atom=64 result=0
+GRAPH_PASS stages=1 submission=3 verified_words=2048 stageA=8fb63465a93a5631 stageB=cbf29ce484222325 output=8fb63465a93a5631
+GRAPH_DESTROY acquisitions=20 buffers=4 memories=4 maps=2 shaders=1 pipelines=1 submissions=4 idle_result=0

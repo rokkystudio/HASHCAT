@@ -36,3 +36,7 @@ tests/fixtures/android-gpu/vulkan-core-multistage-20261031/manifest.json text eo
 # Preserve standalone Vulkan 1.0 reusable runtime GPU/fault evidence.
 tests/fixtures/android-gpu/vulkan-runtime-20261031/*.log text eol=lf
 tests/fixtures/android-gpu/vulkan-runtime-20261031/manifest.json text eol=lf
+
+# Preserve original Vulkan 1.0 variable-size Compute graph GPU and C host observations.
+tests/fixtures/android-gpu/vulkan-dynamic-graph-20261031/*.log text eol=lf
+tests/fixtures/android-gpu/vulkan-dynamic-graph-20261031/manifest.json text eol=lf

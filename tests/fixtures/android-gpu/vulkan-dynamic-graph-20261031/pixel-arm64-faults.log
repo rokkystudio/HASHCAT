@@ -1,0 +1,1627 @@
+TEST=vulkan-core10-dynamic-graph-faults
+ABI=arm64-v8a
+STAGE_COUNTS=1,2,3
+FAULT_CASE stages=1 point=1 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=1
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=1 descriptors=2 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=1 buffers=4 descriptors=2 mapped=2 output_bytes=8192 requested_noncoherent=0
+GRAPH_FAULT acquisition=1 resource=device
+GRAPH_DESTROY acquisitions=1 buffers=0 memories=0 maps=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE stages=1 point=2 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=2
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=1 descriptors=2 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=1 buffers=4 descriptors=2 mapped=2 output_bytes=8192 requested_noncoherent=0
+GRAPH_FAULT acquisition=2 resource=buffer
+GRAPH_DESTROY acquisitions=2 buffers=1 memories=0 maps=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE stages=1 point=3 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=3
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=1 descriptors=2 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=1 buffers=4 descriptors=2 mapped=2 output_bytes=8192 requested_noncoherent=0
+GRAPH_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+GRAPH_FAULT acquisition=3 resource=buffer
+GRAPH_DESTROY acquisitions=3 buffers=2 memories=0 maps=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE stages=1 point=4 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=4
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=1 descriptors=2 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=1 buffers=4 descriptors=2 mapped=2 output_bytes=8192 requested_noncoherent=0
+GRAPH_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+GRAPH_FAULT acquisition=4 resource=buffer
+GRAPH_DESTROY acquisitions=4 buffers=3 memories=0 maps=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE stages=1 point=5 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=5
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=1 descriptors=2 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=1 buffers=4 descriptors=2 mapped=2 output_bytes=8192 requested_noncoherent=0
+GRAPH_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=2 label=staging-upload size=8192 alignment=64 bits=0x00000003
+GRAPH_FAULT acquisition=5 resource=buffer
+GRAPH_DESTROY acquisitions=5 buffers=4 memories=0 maps=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE stages=1 point=6 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=6
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=1 descriptors=2 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=1 buffers=4 descriptors=2 mapped=2 output_bytes=8192 requested_noncoherent=0
+GRAPH_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=2 label=staging-upload size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=3 label=staging-download size=8192 alignment=64 bits=0x00000003
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=2 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=staging-download type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=32768 declared=16101965824
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
+GRAPH_FAULT acquisition=6 resource=memory
+GRAPH_DESTROY acquisitions=6 buffers=4 memories=1 maps=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE stages=1 point=7 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=7
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=1 descriptors=2 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=1 buffers=4 descriptors=2 mapped=2 output_bytes=8192 requested_noncoherent=0
+GRAPH_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=2 label=staging-upload size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=3 label=staging-download size=8192 alignment=64 bits=0x00000003
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=2 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=staging-download type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=32768 declared=16101965824
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
+GRAPH_FAULT acquisition=7 resource=memory
+GRAPH_DESTROY acquisitions=7 buffers=4 memories=2 maps=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE stages=1 point=8 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=8
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=1 descriptors=2 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=1 buffers=4 descriptors=2 mapped=2 output_bytes=8192 requested_noncoherent=0
+GRAPH_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=2 label=staging-upload size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=3 label=staging-download size=8192 alignment=64 bits=0x00000003
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=2 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=staging-download type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=32768 declared=16101965824
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
+GRAPH_FAULT acquisition=8 resource=memory
+GRAPH_DESTROY acquisitions=8 buffers=4 memories=3 maps=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE stages=1 point=9 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=9
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=1 descriptors=2 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=1 buffers=4 descriptors=2 mapped=2 output_bytes=8192 requested_noncoherent=0
+GRAPH_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=2 label=staging-upload size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=3 label=staging-download size=8192 alignment=64 bits=0x00000003
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=2 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=staging-download type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=32768 declared=16101965824
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
+GRAPH_FAULT acquisition=9 resource=memory
+GRAPH_DESTROY acquisitions=9 buffers=4 memories=4 maps=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE stages=1 point=10 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=10
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=1 descriptors=2 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=1 buffers=4 descriptors=2 mapped=2 output_bytes=8192 requested_noncoherent=0
+GRAPH_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=2 label=staging-upload size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=3 label=staging-download size=8192 alignment=64 bits=0x00000003
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=2 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=staging-download type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=32768 declared=16101965824
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
+GRAPH_FAULT acquisition=10 resource=mapped-buffer
+GRAPH_DESTROY acquisitions=10 buffers=4 memories=4 maps=1 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE stages=1 point=11 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=11
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=1 descriptors=2 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=1 buffers=4 descriptors=2 mapped=2 output_bytes=8192 requested_noncoherent=0
+GRAPH_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=2 label=staging-upload size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=3 label=staging-download size=8192 alignment=64 bits=0x00000003
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=2 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=staging-download type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=32768 declared=16101965824
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
+GRAPH_MAPPED index=2 type=0 coherent=1
+GRAPH_FAULT acquisition=11 resource=mapped-buffer
+GRAPH_DESTROY acquisitions=11 buffers=4 memories=4 maps=2 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE stages=1 point=12 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=12
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=1 descriptors=2 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=1 buffers=4 descriptors=2 mapped=2 output_bytes=8192 requested_noncoherent=0
+GRAPH_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=2 label=staging-upload size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=3 label=staging-download size=8192 alignment=64 bits=0x00000003
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=2 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=staging-download type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=32768 declared=16101965824
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
+GRAPH_MAPPED index=2 type=0 coherent=1
+GRAPH_MAPPED index=3 type=0 coherent=1
+GRAPH_FAULT acquisition=12 resource=descriptor-layout
+GRAPH_DESTROY acquisitions=12 buffers=4 memories=4 maps=2 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE stages=1 point=13 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=13
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=1 descriptors=2 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=1 buffers=4 descriptors=2 mapped=2 output_bytes=8192 requested_noncoherent=0
+GRAPH_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=2 label=staging-upload size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=3 label=staging-download size=8192 alignment=64 bits=0x00000003
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=2 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=staging-download type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=32768 declared=16101965824
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
+GRAPH_MAPPED index=2 type=0 coherent=1
+GRAPH_MAPPED index=3 type=0 coherent=1
+GRAPH_FAULT acquisition=13 resource=pipeline-layout
+GRAPH_DESTROY acquisitions=13 buffers=4 memories=4 maps=2 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE stages=1 point=14 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=14
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=1 descriptors=2 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=1 buffers=4 descriptors=2 mapped=2 output_bytes=8192 requested_noncoherent=0
+GRAPH_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=2 label=staging-upload size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=3 label=staging-download size=8192 alignment=64 bits=0x00000003
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=2 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=staging-download type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=32768 declared=16101965824
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
+GRAPH_MAPPED index=2 type=0 coherent=1
+GRAPH_MAPPED index=3 type=0 coherent=1
+GRAPH_FAULT acquisition=14 resource=shader-module
+GRAPH_DESTROY acquisitions=14 buffers=4 memories=4 maps=2 shaders=1 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE stages=1 point=15 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=15
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=1 descriptors=2 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=1 buffers=4 descriptors=2 mapped=2 output_bytes=8192 requested_noncoherent=0
+GRAPH_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=2 label=staging-upload size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=3 label=staging-download size=8192 alignment=64 bits=0x00000003
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=2 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=staging-download type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=32768 declared=16101965824
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
+GRAPH_MAPPED index=2 type=0 coherent=1
+GRAPH_MAPPED index=3 type=0 coherent=1
+GRAPH_FAULT acquisition=15 resource=compute-pipeline
+GRAPH_DESTROY acquisitions=15 buffers=4 memories=4 maps=2 shaders=1 pipelines=1 submissions=0 idle_result=0
+FAULT_CASE stages=1 point=16 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=16
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=1 descriptors=2 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=1 buffers=4 descriptors=2 mapped=2 output_bytes=8192 requested_noncoherent=0
+GRAPH_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=2 label=staging-upload size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=3 label=staging-download size=8192 alignment=64 bits=0x00000003
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=2 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=staging-download type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=32768 declared=16101965824
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
+GRAPH_MAPPED index=2 type=0 coherent=1
+GRAPH_MAPPED index=3 type=0 coherent=1
+GRAPH_FAULT acquisition=16 resource=descriptor-pool
+GRAPH_DESTROY acquisitions=16 buffers=4 memories=4 maps=2 shaders=1 pipelines=1 submissions=0 idle_result=0
+FAULT_CASE stages=1 point=17 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=17
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=1 descriptors=2 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=1 buffers=4 descriptors=2 mapped=2 output_bytes=8192 requested_noncoherent=0
+GRAPH_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=2 label=staging-upload size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=3 label=staging-download size=8192 alignment=64 bits=0x00000003
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=2 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=staging-download type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=32768 declared=16101965824
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
+GRAPH_MAPPED index=2 type=0 coherent=1
+GRAPH_MAPPED index=3 type=0 coherent=1
+GRAPH_FAULT acquisition=17 resource=descriptor-set
+GRAPH_DESTROY acquisitions=17 buffers=4 memories=4 maps=2 shaders=1 pipelines=1 submissions=0 idle_result=0
+FAULT_CASE stages=1 point=18 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=18
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=1 descriptors=2 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=1 buffers=4 descriptors=2 mapped=2 output_bytes=8192 requested_noncoherent=0
+GRAPH_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=2 label=staging-upload size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=3 label=staging-download size=8192 alignment=64 bits=0x00000003
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=2 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=staging-download type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=32768 declared=16101965824
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
+GRAPH_MAPPED index=2 type=0 coherent=1
+GRAPH_MAPPED index=3 type=0 coherent=1
+GRAPH_FAULT acquisition=18 resource=command-pool
+GRAPH_DESTROY acquisitions=18 buffers=4 memories=4 maps=2 shaders=1 pipelines=1 submissions=0 idle_result=0
+FAULT_CASE stages=1 point=19 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=19
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=1 descriptors=2 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=1 buffers=4 descriptors=2 mapped=2 output_bytes=8192 requested_noncoherent=0
+GRAPH_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=2 label=staging-upload size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=3 label=staging-download size=8192 alignment=64 bits=0x00000003
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=2 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=staging-download type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=32768 declared=16101965824
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
+GRAPH_MAPPED index=2 type=0 coherent=1
+GRAPH_MAPPED index=3 type=0 coherent=1
+GRAPH_FAULT acquisition=19 resource=command-buffer
+GRAPH_DESTROY acquisitions=19 buffers=4 memories=4 maps=2 shaders=1 pipelines=1 submissions=0 idle_result=0
+FAULT_CASE stages=1 point=20 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=20
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=1 descriptors=2 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=1 buffers=4 descriptors=2 mapped=2 output_bytes=8192 requested_noncoherent=0
+GRAPH_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=2 label=staging-upload size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=3 label=staging-download size=8192 alignment=64 bits=0x00000003
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=2 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=staging-download type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=32768 declared=16101965824
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
+GRAPH_MAPPED index=2 type=0 coherent=1
+GRAPH_MAPPED index=3 type=0 coherent=1
+GRAPH_FAULT acquisition=20 resource=fence
+GRAPH_DESTROY acquisitions=20 buffers=4 memories=4 maps=2 shaders=1 pipelines=1 submissions=0 idle_result=0
+FAULT_CASE stages=2 point=1 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=1
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=2 descriptors=3 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=2 buffers=5 descriptors=3 mapped=2 output_bytes=8192 requested_noncoherent=0
+GRAPH_FAULT acquisition=1 resource=device
+GRAPH_DESTROY acquisitions=1 buffers=0 memories=0 maps=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE stages=2 point=2 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=2
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=2 descriptors=3 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=2 buffers=5 descriptors=3 mapped=2 output_bytes=8192 requested_noncoherent=0
+GRAPH_FAULT acquisition=2 resource=buffer
+GRAPH_DESTROY acquisitions=2 buffers=1 memories=0 maps=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE stages=2 point=3 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=3
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=2 descriptors=3 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=2 buffers=5 descriptors=3 mapped=2 output_bytes=8192 requested_noncoherent=0
+GRAPH_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+GRAPH_FAULT acquisition=3 resource=buffer
+GRAPH_DESTROY acquisitions=3 buffers=2 memories=0 maps=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE stages=2 point=4 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=4
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=2 descriptors=3 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=2 buffers=5 descriptors=3 mapped=2 output_bytes=8192 requested_noncoherent=0
+GRAPH_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+GRAPH_FAULT acquisition=4 resource=buffer
+GRAPH_DESTROY acquisitions=4 buffers=3 memories=0 maps=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE stages=2 point=5 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=5
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=2 descriptors=3 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=2 buffers=5 descriptors=3 mapped=2 output_bytes=8192 requested_noncoherent=0
+GRAPH_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=2 label=stage-b size=8192 alignment=64 bits=0x00000003
+GRAPH_FAULT acquisition=5 resource=buffer
+GRAPH_DESTROY acquisitions=5 buffers=4 memories=0 maps=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE stages=2 point=6 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=6
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=2 descriptors=3 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=2 buffers=5 descriptors=3 mapped=2 output_bytes=8192 requested_noncoherent=0
+GRAPH_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=2 label=stage-b size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=3 label=staging-upload size=8192 alignment=64 bits=0x00000003
+GRAPH_FAULT acquisition=6 resource=buffer
+GRAPH_DESTROY acquisitions=6 buffers=5 memories=0 maps=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE stages=2 point=7 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=7
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=2 descriptors=3 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=2 buffers=5 descriptors=3 mapped=2 output_bytes=8192 requested_noncoherent=0
+GRAPH_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=2 label=stage-b size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=3 label=staging-upload size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=4 label=staging-download size=8192 alignment=64 bits=0x00000003
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=2 label=stage-b type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=staging-download type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=40960 declared=16101965824
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
+GRAPH_FAULT acquisition=7 resource=memory
+GRAPH_DESTROY acquisitions=7 buffers=5 memories=1 maps=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE stages=2 point=8 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=8
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=2 descriptors=3 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=2 buffers=5 descriptors=3 mapped=2 output_bytes=8192 requested_noncoherent=0
+GRAPH_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=2 label=stage-b size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=3 label=staging-upload size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=4 label=staging-download size=8192 alignment=64 bits=0x00000003
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=2 label=stage-b type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=staging-download type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=40960 declared=16101965824
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
+GRAPH_FAULT acquisition=8 resource=memory
+GRAPH_DESTROY acquisitions=8 buffers=5 memories=2 maps=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE stages=2 point=9 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=9
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=2 descriptors=3 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=2 buffers=5 descriptors=3 mapped=2 output_bytes=8192 requested_noncoherent=0
+GRAPH_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=2 label=stage-b size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=3 label=staging-upload size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=4 label=staging-download size=8192 alignment=64 bits=0x00000003
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=2 label=stage-b type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=staging-download type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=40960 declared=16101965824
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
+GRAPH_FAULT acquisition=9 resource=memory
+GRAPH_DESTROY acquisitions=9 buffers=5 memories=3 maps=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE stages=2 point=10 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=10
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=2 descriptors=3 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=2 buffers=5 descriptors=3 mapped=2 output_bytes=8192 requested_noncoherent=0
+GRAPH_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=2 label=stage-b size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=3 label=staging-upload size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=4 label=staging-download size=8192 alignment=64 bits=0x00000003
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=2 label=stage-b type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=staging-download type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=40960 declared=16101965824
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
+GRAPH_FAULT acquisition=10 resource=memory
+GRAPH_DESTROY acquisitions=10 buffers=5 memories=4 maps=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE stages=2 point=11 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=11
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=2 descriptors=3 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=2 buffers=5 descriptors=3 mapped=2 output_bytes=8192 requested_noncoherent=0
+GRAPH_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=2 label=stage-b size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=3 label=staging-upload size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=4 label=staging-download size=8192 alignment=64 bits=0x00000003
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=2 label=stage-b type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=staging-download type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=40960 declared=16101965824
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
+GRAPH_FAULT acquisition=11 resource=memory
+GRAPH_DESTROY acquisitions=11 buffers=5 memories=5 maps=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE stages=2 point=12 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=12
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=2 descriptors=3 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=2 buffers=5 descriptors=3 mapped=2 output_bytes=8192 requested_noncoherent=0
+GRAPH_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=2 label=stage-b size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=3 label=staging-upload size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=4 label=staging-download size=8192 alignment=64 bits=0x00000003
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=2 label=stage-b type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=staging-download type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=40960 declared=16101965824
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
+GRAPH_FAULT acquisition=12 resource=mapped-buffer
+GRAPH_DESTROY acquisitions=12 buffers=5 memories=5 maps=1 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE stages=2 point=13 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=13
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=2 descriptors=3 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=2 buffers=5 descriptors=3 mapped=2 output_bytes=8192 requested_noncoherent=0
+GRAPH_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=2 label=stage-b size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=3 label=staging-upload size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=4 label=staging-download size=8192 alignment=64 bits=0x00000003
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=2 label=stage-b type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=staging-download type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=40960 declared=16101965824
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
+GRAPH_MAPPED index=3 type=0 coherent=1
+GRAPH_FAULT acquisition=13 resource=mapped-buffer
+GRAPH_DESTROY acquisitions=13 buffers=5 memories=5 maps=2 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE stages=2 point=14 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=14
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=2 descriptors=3 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=2 buffers=5 descriptors=3 mapped=2 output_bytes=8192 requested_noncoherent=0
+GRAPH_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=2 label=stage-b size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=3 label=staging-upload size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=4 label=staging-download size=8192 alignment=64 bits=0x00000003
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=2 label=stage-b type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=staging-download type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=40960 declared=16101965824
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
+GRAPH_MAPPED index=3 type=0 coherent=1
+GRAPH_MAPPED index=4 type=0 coherent=1
+GRAPH_FAULT acquisition=14 resource=descriptor-layout
+GRAPH_DESTROY acquisitions=14 buffers=5 memories=5 maps=2 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE stages=2 point=15 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=15
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=2 descriptors=3 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=2 buffers=5 descriptors=3 mapped=2 output_bytes=8192 requested_noncoherent=0
+GRAPH_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=2 label=stage-b size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=3 label=staging-upload size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=4 label=staging-download size=8192 alignment=64 bits=0x00000003
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=2 label=stage-b type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=staging-download type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=40960 declared=16101965824
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
+GRAPH_MAPPED index=3 type=0 coherent=1
+GRAPH_MAPPED index=4 type=0 coherent=1
+GRAPH_FAULT acquisition=15 resource=pipeline-layout
+GRAPH_DESTROY acquisitions=15 buffers=5 memories=5 maps=2 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE stages=2 point=16 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=16
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=2 descriptors=3 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=2 buffers=5 descriptors=3 mapped=2 output_bytes=8192 requested_noncoherent=0
+GRAPH_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=2 label=stage-b size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=3 label=staging-upload size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=4 label=staging-download size=8192 alignment=64 bits=0x00000003
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=2 label=stage-b type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=staging-download type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=40960 declared=16101965824
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
+GRAPH_MAPPED index=3 type=0 coherent=1
+GRAPH_MAPPED index=4 type=0 coherent=1
+GRAPH_FAULT acquisition=16 resource=shader-module
+GRAPH_DESTROY acquisitions=16 buffers=5 memories=5 maps=2 shaders=1 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE stages=2 point=17 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=17
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=2 descriptors=3 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=2 buffers=5 descriptors=3 mapped=2 output_bytes=8192 requested_noncoherent=0
+GRAPH_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=2 label=stage-b size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=3 label=staging-upload size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=4 label=staging-download size=8192 alignment=64 bits=0x00000003
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=2 label=stage-b type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=staging-download type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=40960 declared=16101965824
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
+GRAPH_MAPPED index=3 type=0 coherent=1
+GRAPH_MAPPED index=4 type=0 coherent=1
+GRAPH_FAULT acquisition=17 resource=compute-pipeline
+GRAPH_DESTROY acquisitions=17 buffers=5 memories=5 maps=2 shaders=1 pipelines=1 submissions=0 idle_result=0
+FAULT_CASE stages=2 point=18 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=18
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=2 descriptors=3 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=2 buffers=5 descriptors=3 mapped=2 output_bytes=8192 requested_noncoherent=0
+GRAPH_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=2 label=stage-b size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=3 label=staging-upload size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=4 label=staging-download size=8192 alignment=64 bits=0x00000003
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=2 label=stage-b type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=staging-download type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=40960 declared=16101965824
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
+GRAPH_MAPPED index=3 type=0 coherent=1
+GRAPH_MAPPED index=4 type=0 coherent=1
+GRAPH_FAULT acquisition=18 resource=shader-module
+GRAPH_DESTROY acquisitions=18 buffers=5 memories=5 maps=2 shaders=2 pipelines=1 submissions=0 idle_result=0
+FAULT_CASE stages=2 point=19 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=19
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=2 descriptors=3 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=2 buffers=5 descriptors=3 mapped=2 output_bytes=8192 requested_noncoherent=0
+GRAPH_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=2 label=stage-b size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=3 label=staging-upload size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=4 label=staging-download size=8192 alignment=64 bits=0x00000003
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=2 label=stage-b type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=staging-download type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=40960 declared=16101965824
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
+GRAPH_MAPPED index=3 type=0 coherent=1
+GRAPH_MAPPED index=4 type=0 coherent=1
+GRAPH_FAULT acquisition=19 resource=compute-pipeline
+GRAPH_DESTROY acquisitions=19 buffers=5 memories=5 maps=2 shaders=2 pipelines=2 submissions=0 idle_result=0
+FAULT_CASE stages=2 point=20 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=20
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=2 descriptors=3 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=2 buffers=5 descriptors=3 mapped=2 output_bytes=8192 requested_noncoherent=0
+GRAPH_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=2 label=stage-b size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=3 label=staging-upload size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=4 label=staging-download size=8192 alignment=64 bits=0x00000003
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=2 label=stage-b type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=staging-download type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=40960 declared=16101965824
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
+GRAPH_MAPPED index=3 type=0 coherent=1
+GRAPH_MAPPED index=4 type=0 coherent=1
+GRAPH_FAULT acquisition=20 resource=descriptor-pool
+GRAPH_DESTROY acquisitions=20 buffers=5 memories=5 maps=2 shaders=2 pipelines=2 submissions=0 idle_result=0
+FAULT_CASE stages=2 point=21 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=21
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=2 descriptors=3 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=2 buffers=5 descriptors=3 mapped=2 output_bytes=8192 requested_noncoherent=0
+GRAPH_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=2 label=stage-b size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=3 label=staging-upload size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=4 label=staging-download size=8192 alignment=64 bits=0x00000003
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=2 label=stage-b type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=staging-download type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=40960 declared=16101965824
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
+GRAPH_MAPPED index=3 type=0 coherent=1
+GRAPH_MAPPED index=4 type=0 coherent=1
+GRAPH_FAULT acquisition=21 resource=descriptor-set
+GRAPH_DESTROY acquisitions=21 buffers=5 memories=5 maps=2 shaders=2 pipelines=2 submissions=0 idle_result=0
+FAULT_CASE stages=2 point=22 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=22
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=2 descriptors=3 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=2 buffers=5 descriptors=3 mapped=2 output_bytes=8192 requested_noncoherent=0
+GRAPH_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=2 label=stage-b size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=3 label=staging-upload size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=4 label=staging-download size=8192 alignment=64 bits=0x00000003
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=2 label=stage-b type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=staging-download type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=40960 declared=16101965824
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
+GRAPH_MAPPED index=3 type=0 coherent=1
+GRAPH_MAPPED index=4 type=0 coherent=1
+GRAPH_FAULT acquisition=22 resource=command-pool
+GRAPH_DESTROY acquisitions=22 buffers=5 memories=5 maps=2 shaders=2 pipelines=2 submissions=0 idle_result=0
+FAULT_CASE stages=2 point=23 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=23
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=2 descriptors=3 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=2 buffers=5 descriptors=3 mapped=2 output_bytes=8192 requested_noncoherent=0
+GRAPH_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=2 label=stage-b size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=3 label=staging-upload size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=4 label=staging-download size=8192 alignment=64 bits=0x00000003
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=2 label=stage-b type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=staging-download type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=40960 declared=16101965824
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
+GRAPH_MAPPED index=3 type=0 coherent=1
+GRAPH_MAPPED index=4 type=0 coherent=1
+GRAPH_FAULT acquisition=23 resource=command-buffer
+GRAPH_DESTROY acquisitions=23 buffers=5 memories=5 maps=2 shaders=2 pipelines=2 submissions=0 idle_result=0
+FAULT_CASE stages=2 point=24 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=24
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=2 descriptors=3 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=2 buffers=5 descriptors=3 mapped=2 output_bytes=8192 requested_noncoherent=0
+GRAPH_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=2 label=stage-b size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=3 label=staging-upload size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=4 label=staging-download size=8192 alignment=64 bits=0x00000003
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=2 label=stage-b type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=staging-download type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=40960 declared=16101965824
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
+GRAPH_MAPPED index=3 type=0 coherent=1
+GRAPH_MAPPED index=4 type=0 coherent=1
+GRAPH_FAULT acquisition=24 resource=fence
+GRAPH_DESTROY acquisitions=24 buffers=5 memories=5 maps=2 shaders=2 pipelines=2 submissions=0 idle_result=0
+FAULT_CASE stages=3 point=1 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=1
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=3 descriptors=4 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=3 buffers=6 descriptors=4 mapped=2 output_bytes=32768 requested_noncoherent=0
+GRAPH_FAULT acquisition=1 resource=device
+GRAPH_DESTROY acquisitions=1 buffers=0 memories=0 maps=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE stages=3 point=2 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=2
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=3 descriptors=4 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=3 buffers=6 descriptors=4 mapped=2 output_bytes=32768 requested_noncoherent=0
+GRAPH_FAULT acquisition=2 resource=buffer
+GRAPH_DESTROY acquisitions=2 buffers=1 memories=0 maps=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE stages=3 point=3 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=3
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=3 descriptors=4 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=3 buffers=6 descriptors=4 mapped=2 output_bytes=32768 requested_noncoherent=0
+GRAPH_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+GRAPH_FAULT acquisition=3 resource=buffer
+GRAPH_DESTROY acquisitions=3 buffers=2 memories=0 maps=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE stages=3 point=4 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=4
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=3 descriptors=4 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=3 buffers=6 descriptors=4 mapped=2 output_bytes=32768 requested_noncoherent=0
+GRAPH_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+GRAPH_FAULT acquisition=4 resource=buffer
+GRAPH_DESTROY acquisitions=4 buffers=3 memories=0 maps=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE stages=3 point=5 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=5
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=3 descriptors=4 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=3 buffers=6 descriptors=4 mapped=2 output_bytes=32768 requested_noncoherent=0
+GRAPH_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=2 label=stage-b size=8192 alignment=64 bits=0x00000003
+GRAPH_FAULT acquisition=5 resource=buffer
+GRAPH_DESTROY acquisitions=5 buffers=4 memories=0 maps=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE stages=3 point=6 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=6
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=3 descriptors=4 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=3 buffers=6 descriptors=4 mapped=2 output_bytes=32768 requested_noncoherent=0
+GRAPH_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=2 label=stage-b size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=3 label=stage-c size=32768 alignment=64 bits=0x00000003
+GRAPH_FAULT acquisition=6 resource=buffer
+GRAPH_DESTROY acquisitions=6 buffers=5 memories=0 maps=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE stages=3 point=7 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=7
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=3 descriptors=4 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=3 buffers=6 descriptors=4 mapped=2 output_bytes=32768 requested_noncoherent=0
+GRAPH_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=2 label=stage-b size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=3 label=stage-c size=32768 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=4 label=staging-upload size=8192 alignment=64 bits=0x00000003
+GRAPH_FAULT acquisition=7 resource=buffer
+GRAPH_DESTROY acquisitions=7 buffers=6 memories=0 maps=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE stages=3 point=8 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=8
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=3 descriptors=4 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=3 buffers=6 descriptors=4 mapped=2 output_bytes=32768 requested_noncoherent=0
+GRAPH_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=2 label=stage-b size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=3 label=stage-c size=32768 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=4 label=staging-upload size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=5 label=staging-download size=32768 alignment=64 bits=0x00000003
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=2 label=stage-b type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=stage-c type=0 heap=0 bytes=32768 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=5 label=staging-download type=0 heap=0 bytes=32768 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=98304 declared=16101965824
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
+GRAPH_FAULT acquisition=8 resource=memory
+GRAPH_DESTROY acquisitions=8 buffers=6 memories=1 maps=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE stages=3 point=9 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=9
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=3 descriptors=4 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=3 buffers=6 descriptors=4 mapped=2 output_bytes=32768 requested_noncoherent=0
+GRAPH_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=2 label=stage-b size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=3 label=stage-c size=32768 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=4 label=staging-upload size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=5 label=staging-download size=32768 alignment=64 bits=0x00000003
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=2 label=stage-b type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=stage-c type=0 heap=0 bytes=32768 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=5 label=staging-download type=0 heap=0 bytes=32768 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=98304 declared=16101965824
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
+GRAPH_FAULT acquisition=9 resource=memory
+GRAPH_DESTROY acquisitions=9 buffers=6 memories=2 maps=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE stages=3 point=10 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=10
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=3 descriptors=4 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=3 buffers=6 descriptors=4 mapped=2 output_bytes=32768 requested_noncoherent=0
+GRAPH_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=2 label=stage-b size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=3 label=stage-c size=32768 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=4 label=staging-upload size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=5 label=staging-download size=32768 alignment=64 bits=0x00000003
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=2 label=stage-b type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=stage-c type=0 heap=0 bytes=32768 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=5 label=staging-download type=0 heap=0 bytes=32768 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=98304 declared=16101965824
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
+GRAPH_FAULT acquisition=10 resource=memory
+GRAPH_DESTROY acquisitions=10 buffers=6 memories=3 maps=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE stages=3 point=11 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=11
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=3 descriptors=4 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=3 buffers=6 descriptors=4 mapped=2 output_bytes=32768 requested_noncoherent=0
+GRAPH_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=2 label=stage-b size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=3 label=stage-c size=32768 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=4 label=staging-upload size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=5 label=staging-download size=32768 alignment=64 bits=0x00000003
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=2 label=stage-b type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=stage-c type=0 heap=0 bytes=32768 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=5 label=staging-download type=0 heap=0 bytes=32768 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=98304 declared=16101965824
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
+GRAPH_FAULT acquisition=11 resource=memory
+GRAPH_DESTROY acquisitions=11 buffers=6 memories=4 maps=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE stages=3 point=12 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=12
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=3 descriptors=4 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=3 buffers=6 descriptors=4 mapped=2 output_bytes=32768 requested_noncoherent=0
+GRAPH_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=2 label=stage-b size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=3 label=stage-c size=32768 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=4 label=staging-upload size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=5 label=staging-download size=32768 alignment=64 bits=0x00000003
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=2 label=stage-b type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=stage-c type=0 heap=0 bytes=32768 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=5 label=staging-download type=0 heap=0 bytes=32768 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=98304 declared=16101965824
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
+GRAPH_FAULT acquisition=12 resource=memory
+GRAPH_DESTROY acquisitions=12 buffers=6 memories=5 maps=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE stages=3 point=13 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=13
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=3 descriptors=4 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=3 buffers=6 descriptors=4 mapped=2 output_bytes=32768 requested_noncoherent=0
+GRAPH_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=2 label=stage-b size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=3 label=stage-c size=32768 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=4 label=staging-upload size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=5 label=staging-download size=32768 alignment=64 bits=0x00000003
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=2 label=stage-b type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=stage-c type=0 heap=0 bytes=32768 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=5 label=staging-download type=0 heap=0 bytes=32768 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=98304 declared=16101965824
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
+GRAPH_FAULT acquisition=13 resource=memory
+GRAPH_DESTROY acquisitions=13 buffers=6 memories=6 maps=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE stages=3 point=14 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=14
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=3 descriptors=4 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=3 buffers=6 descriptors=4 mapped=2 output_bytes=32768 requested_noncoherent=0
+GRAPH_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=2 label=stage-b size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=3 label=stage-c size=32768 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=4 label=staging-upload size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=5 label=staging-download size=32768 alignment=64 bits=0x00000003
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=2 label=stage-b type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=stage-c type=0 heap=0 bytes=32768 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=5 label=staging-download type=0 heap=0 bytes=32768 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=98304 declared=16101965824
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
+GRAPH_FAULT acquisition=14 resource=mapped-buffer
+GRAPH_DESTROY acquisitions=14 buffers=6 memories=6 maps=1 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE stages=3 point=15 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=15
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=3 descriptors=4 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=3 buffers=6 descriptors=4 mapped=2 output_bytes=32768 requested_noncoherent=0
+GRAPH_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=2 label=stage-b size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=3 label=stage-c size=32768 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=4 label=staging-upload size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=5 label=staging-download size=32768 alignment=64 bits=0x00000003
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=2 label=stage-b type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=stage-c type=0 heap=0 bytes=32768 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=5 label=staging-download type=0 heap=0 bytes=32768 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=98304 declared=16101965824
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
+GRAPH_MAPPED index=4 type=0 coherent=1
+GRAPH_FAULT acquisition=15 resource=mapped-buffer
+GRAPH_DESTROY acquisitions=15 buffers=6 memories=6 maps=2 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE stages=3 point=16 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=16
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=3 descriptors=4 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=3 buffers=6 descriptors=4 mapped=2 output_bytes=32768 requested_noncoherent=0
+GRAPH_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=2 label=stage-b size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=3 label=stage-c size=32768 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=4 label=staging-upload size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=5 label=staging-download size=32768 alignment=64 bits=0x00000003
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=2 label=stage-b type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=stage-c type=0 heap=0 bytes=32768 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=5 label=staging-download type=0 heap=0 bytes=32768 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=98304 declared=16101965824
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
+GRAPH_MAPPED index=4 type=0 coherent=1
+GRAPH_MAPPED index=5 type=0 coherent=1
+GRAPH_FAULT acquisition=16 resource=descriptor-layout
+GRAPH_DESTROY acquisitions=16 buffers=6 memories=6 maps=2 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE stages=3 point=17 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=17
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=3 descriptors=4 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=3 buffers=6 descriptors=4 mapped=2 output_bytes=32768 requested_noncoherent=0
+GRAPH_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=2 label=stage-b size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=3 label=stage-c size=32768 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=4 label=staging-upload size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=5 label=staging-download size=32768 alignment=64 bits=0x00000003
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=2 label=stage-b type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=stage-c type=0 heap=0 bytes=32768 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=5 label=staging-download type=0 heap=0 bytes=32768 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=98304 declared=16101965824
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
+GRAPH_MAPPED index=4 type=0 coherent=1
+GRAPH_MAPPED index=5 type=0 coherent=1
+GRAPH_FAULT acquisition=17 resource=pipeline-layout
+GRAPH_DESTROY acquisitions=17 buffers=6 memories=6 maps=2 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE stages=3 point=18 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=18
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=3 descriptors=4 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=3 buffers=6 descriptors=4 mapped=2 output_bytes=32768 requested_noncoherent=0
+GRAPH_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=2 label=stage-b size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=3 label=stage-c size=32768 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=4 label=staging-upload size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=5 label=staging-download size=32768 alignment=64 bits=0x00000003
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=2 label=stage-b type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=stage-c type=0 heap=0 bytes=32768 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=5 label=staging-download type=0 heap=0 bytes=32768 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=98304 declared=16101965824
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
+GRAPH_MAPPED index=4 type=0 coherent=1
+GRAPH_MAPPED index=5 type=0 coherent=1
+GRAPH_FAULT acquisition=18 resource=shader-module
+GRAPH_DESTROY acquisitions=18 buffers=6 memories=6 maps=2 shaders=1 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE stages=3 point=19 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=19
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=3 descriptors=4 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=3 buffers=6 descriptors=4 mapped=2 output_bytes=32768 requested_noncoherent=0
+GRAPH_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=2 label=stage-b size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=3 label=stage-c size=32768 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=4 label=staging-upload size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=5 label=staging-download size=32768 alignment=64 bits=0x00000003
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=2 label=stage-b type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=stage-c type=0 heap=0 bytes=32768 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=5 label=staging-download type=0 heap=0 bytes=32768 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=98304 declared=16101965824
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
+GRAPH_MAPPED index=4 type=0 coherent=1
+GRAPH_MAPPED index=5 type=0 coherent=1
+GRAPH_FAULT acquisition=19 resource=compute-pipeline
+GRAPH_DESTROY acquisitions=19 buffers=6 memories=6 maps=2 shaders=1 pipelines=1 submissions=0 idle_result=0
+FAULT_CASE stages=3 point=20 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=20
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=3 descriptors=4 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=3 buffers=6 descriptors=4 mapped=2 output_bytes=32768 requested_noncoherent=0
+GRAPH_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=2 label=stage-b size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=3 label=stage-c size=32768 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=4 label=staging-upload size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=5 label=staging-download size=32768 alignment=64 bits=0x00000003
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=2 label=stage-b type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=stage-c type=0 heap=0 bytes=32768 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=5 label=staging-download type=0 heap=0 bytes=32768 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=98304 declared=16101965824
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
+GRAPH_MAPPED index=4 type=0 coherent=1
+GRAPH_MAPPED index=5 type=0 coherent=1
+GRAPH_FAULT acquisition=20 resource=shader-module
+GRAPH_DESTROY acquisitions=20 buffers=6 memories=6 maps=2 shaders=2 pipelines=1 submissions=0 idle_result=0
+FAULT_CASE stages=3 point=21 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=21
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=3 descriptors=4 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=3 buffers=6 descriptors=4 mapped=2 output_bytes=32768 requested_noncoherent=0
+GRAPH_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=2 label=stage-b size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=3 label=stage-c size=32768 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=4 label=staging-upload size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=5 label=staging-download size=32768 alignment=64 bits=0x00000003
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=2 label=stage-b type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=stage-c type=0 heap=0 bytes=32768 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=5 label=staging-download type=0 heap=0 bytes=32768 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=98304 declared=16101965824
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
+GRAPH_MAPPED index=4 type=0 coherent=1
+GRAPH_MAPPED index=5 type=0 coherent=1
+GRAPH_FAULT acquisition=21 resource=compute-pipeline
+GRAPH_DESTROY acquisitions=21 buffers=6 memories=6 maps=2 shaders=2 pipelines=2 submissions=0 idle_result=0
+FAULT_CASE stages=3 point=22 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=22
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=3 descriptors=4 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=3 buffers=6 descriptors=4 mapped=2 output_bytes=32768 requested_noncoherent=0
+GRAPH_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=2 label=stage-b size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=3 label=stage-c size=32768 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=4 label=staging-upload size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=5 label=staging-download size=32768 alignment=64 bits=0x00000003
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=2 label=stage-b type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=stage-c type=0 heap=0 bytes=32768 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=5 label=staging-download type=0 heap=0 bytes=32768 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=98304 declared=16101965824
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
+GRAPH_MAPPED index=4 type=0 coherent=1
+GRAPH_MAPPED index=5 type=0 coherent=1
+GRAPH_FAULT acquisition=22 resource=shader-module
+GRAPH_DESTROY acquisitions=22 buffers=6 memories=6 maps=2 shaders=3 pipelines=2 submissions=0 idle_result=0
+FAULT_CASE stages=3 point=23 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=23
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=3 descriptors=4 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=3 buffers=6 descriptors=4 mapped=2 output_bytes=32768 requested_noncoherent=0
+GRAPH_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=2 label=stage-b size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=3 label=stage-c size=32768 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=4 label=staging-upload size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=5 label=staging-download size=32768 alignment=64 bits=0x00000003
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=2 label=stage-b type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=stage-c type=0 heap=0 bytes=32768 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=5 label=staging-download type=0 heap=0 bytes=32768 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=98304 declared=16101965824
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
+GRAPH_MAPPED index=4 type=0 coherent=1
+GRAPH_MAPPED index=5 type=0 coherent=1
+GRAPH_FAULT acquisition=23 resource=compute-pipeline
+GRAPH_DESTROY acquisitions=23 buffers=6 memories=6 maps=2 shaders=3 pipelines=3 submissions=0 idle_result=0
+FAULT_CASE stages=3 point=24 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=24
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=3 descriptors=4 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=3 buffers=6 descriptors=4 mapped=2 output_bytes=32768 requested_noncoherent=0
+GRAPH_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=2 label=stage-b size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=3 label=stage-c size=32768 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=4 label=staging-upload size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=5 label=staging-download size=32768 alignment=64 bits=0x00000003
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=2 label=stage-b type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=stage-c type=0 heap=0 bytes=32768 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=5 label=staging-download type=0 heap=0 bytes=32768 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=98304 declared=16101965824
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
+GRAPH_MAPPED index=4 type=0 coherent=1
+GRAPH_MAPPED index=5 type=0 coherent=1
+GRAPH_FAULT acquisition=24 resource=descriptor-pool
+GRAPH_DESTROY acquisitions=24 buffers=6 memories=6 maps=2 shaders=3 pipelines=3 submissions=0 idle_result=0
+FAULT_CASE stages=3 point=25 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=25
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=3 descriptors=4 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=3 buffers=6 descriptors=4 mapped=2 output_bytes=32768 requested_noncoherent=0
+GRAPH_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=2 label=stage-b size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=3 label=stage-c size=32768 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=4 label=staging-upload size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=5 label=staging-download size=32768 alignment=64 bits=0x00000003
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=2 label=stage-b type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=stage-c type=0 heap=0 bytes=32768 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=5 label=staging-download type=0 heap=0 bytes=32768 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=98304 declared=16101965824
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
+GRAPH_MAPPED index=4 type=0 coherent=1
+GRAPH_MAPPED index=5 type=0 coherent=1
+GRAPH_FAULT acquisition=25 resource=descriptor-set
+GRAPH_DESTROY acquisitions=25 buffers=6 memories=6 maps=2 shaders=3 pipelines=3 submissions=0 idle_result=0
+FAULT_CASE stages=3 point=26 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=26
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=3 descriptors=4 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=3 buffers=6 descriptors=4 mapped=2 output_bytes=32768 requested_noncoherent=0
+GRAPH_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=2 label=stage-b size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=3 label=stage-c size=32768 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=4 label=staging-upload size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=5 label=staging-download size=32768 alignment=64 bits=0x00000003
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=2 label=stage-b type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=stage-c type=0 heap=0 bytes=32768 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=5 label=staging-download type=0 heap=0 bytes=32768 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=98304 declared=16101965824
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
+GRAPH_MAPPED index=4 type=0 coherent=1
+GRAPH_MAPPED index=5 type=0 coherent=1
+GRAPH_FAULT acquisition=26 resource=command-pool
+GRAPH_DESTROY acquisitions=26 buffers=6 memories=6 maps=2 shaders=3 pipelines=3 submissions=0 idle_result=0
+FAULT_CASE stages=3 point=27 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=27
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=3 descriptors=4 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=3 buffers=6 descriptors=4 mapped=2 output_bytes=32768 requested_noncoherent=0
+GRAPH_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=2 label=stage-b size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=3 label=stage-c size=32768 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=4 label=staging-upload size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=5 label=staging-download size=32768 alignment=64 bits=0x00000003
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=2 label=stage-b type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=stage-c type=0 heap=0 bytes=32768 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=5 label=staging-download type=0 heap=0 bytes=32768 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=98304 declared=16101965824
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
+GRAPH_MAPPED index=4 type=0 coherent=1
+GRAPH_MAPPED index=5 type=0 coherent=1
+GRAPH_FAULT acquisition=27 resource=command-buffer
+GRAPH_DESTROY acquisitions=27 buffers=6 memories=6 maps=2 shaders=3 pipelines=3 submissions=0 idle_result=0
+FAULT_CASE stages=3 point=28 exit=42
+GRAPH_CREATE_FAILED result=-3 fail_after=28
+GRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+GRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 stages=3 descriptors=4 workgroup=32 groups=64 features=0 extensions=0
+GRAPH_REQUEST stages=3 buffers=6 descriptors=4 mapped=2 output_bytes=32768 requested_noncoherent=0
+GRAPH_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=1 label=stage-a size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=2 label=stage-b size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=3 label=stage-c size=32768 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=4 label=staging-upload size=8192 alignment=64 bits=0x00000003
+GRAPH_REQUIREMENTS index=5 label=staging-download size=32768 alignment=64 bits=0x00000003
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=1 label=stage-a type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=2 label=stage-b type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=stage-c type=0 heap=0 bytes=32768 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=5 label=staging-download type=0 heap=0 bytes=32768 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=98304 declared=16101965824
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
+GRAPH_MAPPED index=4 type=0 coherent=1
+GRAPH_MAPPED index=5 type=0 coherent=1
+GRAPH_FAULT acquisition=28 resource=fence
+GRAPH_DESTROY acquisitions=28 buffers=6 memories=6 maps=2 shaders=3 pipelines=3 submissions=0 idle_result=0

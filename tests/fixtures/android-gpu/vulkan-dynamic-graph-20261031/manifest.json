@@ -1,0 +1,887 @@
+{
+  "date": "2026-10-31",
+  "scope": "variable-size public synthetic Vulkan 1.0 Compute graph, one to three GPU stages with capability-driven memory",
+  "source_hash_policy": "UTF-8 with CRLF normalized to LF",
+  "android_minimum_api": 24,
+  "compiled_abis": [
+    "arm64-v8a",
+    "armeabi-v7a"
+  ],
+  "physical_vulkan10_only_device_tested": false,
+  "device_stage_topology": {
+    "1": {
+      "buffers": 4,
+      "descriptors": 2,
+      "pipelines": 1,
+      "mapped_staging": 2,
+      "acquisition_points": 20,
+      "verified_words_per_submission": 2048
+    },
+    "2": {
+      "buffers": 5,
+      "descriptors": 3,
+      "pipelines": 2,
+      "mapped_staging": 2,
+      "acquisition_points": 24,
+      "verified_words_per_submission": 2048
+    },
+    "3": {
+      "buffers": 6,
+      "descriptors": 4,
+      "pipelines": 3,
+      "mapped_staging": 2,
+      "acquisition_points": 28,
+      "verified_words_per_submission": 12288
+    }
+  },
+  "submissions_per_run": 4,
+  "shader_optimizations": [
+    "O0",
+    "O"
+  ],
+  "modes": [
+    "default10",
+    "explicit10",
+    "required11",
+    "noncoherent10"
+  ],
+  "source_sha256": {
+    "tools/vulkan-core10-graph-memory.h": "2958b61912f3cceb37a5327abed747bc901f646a2a9e349cab2921fdeff5e717",
+    "tools/vulkan-core10-graph-memory.c": "cf223ccf23144888126b6f467fd830e0b907e0c11213f34550ec4b2feb980bff",
+    "tools/vulkan-core10-graph.h": "0e4fff4c85e00cc05b07a36fd9348d85e02c549df58d499b8844ed6cee5b69ab",
+    "tools/vulkan-core10-graph.c": "d541094173cfc8fbcfe4b893ef7d8c8d367a6c03df67b2dcddd0fcd9fc560401",
+    "tools/vulkan-core10-graph-diagnostic.c": "5b7a285d6f3844b0754548e557327dd6463cee4b80e9a8d481871056ab8babac",
+    "tools/test-vulkan-core10-graph-memory-host.c": "a8ebdb10ead1523e95e48f9f7041e8b7e474aec2898857a803e4b9be88a68f03",
+    "tools/build-vulkan-core10-graph.ps1": "37d131500d338ed80b11d215e284d7f5dca0a194865578808d609d0185917b99",
+    "tools/run-vulkan-core10-graph.ps1": "d2ef09cebe5642394d31e2278a6c6c9cbe7aefda685cc1f303c12a27b70c840c",
+    "tools/archive-vulkan-core10-graph-evidence.py": "5c7de51734b12d8cfb98801083c023a535fc0b089e0e3a34a5c760570d3e3982",
+    "tools/test-vulkan-core10-graph-evidence.py": "9c55455ad1d9cf741d7e12f3b2e73fb15e64c66c67925adeb35f313761b4545b",
+    "tools/vulkan-auto-config.c": "7dda45d969c6fd092c31821cc8022f69a4dd8b748e852fcb7a2bd23552a571dd",
+    "tools/vulkan-auto-config.h": "1329f5b833bd8a0ffed9e3eadddead210665a1e8fba2f051e6f4259d63385086",
+    "tools/vulkan-core11-policy.c": "ac4fd1bf17a4e61d801de94ee51f6df920e9ce1b9285168e94f2ea412305ede8",
+    "tools/vulkan-core11-policy.h": "e56989252c758b7e8289067540b7d04b9e534d85ae56a05e3f3a4d465662b0fa",
+    "tools/vulkan-memory-heap-policy.h": "8f04b683784511a03e16a1e681385ccca8d70db2ad29c94e059203d85ba78d6c",
+    "tools/vulkan-pipeline-stage-a.comp": "e9c8ba8d1502a0120ad05043096cc02400221f3099d7c8432307c6cef2caeec8",
+    "tools/vulkan-pipeline-stage-b.comp": "d79344b2d4c22514da50bbf716c20e5b3bba413d88b21d2a166fdee19e39aca4",
+    "tools/vulkan-pipeline-stage-c.comp": "800ac35354741e9dd01b7e8d2f2922e3f9f62f8e7e0f99095f63e2bbd1ee26c1"
+  },
+  "artifact_sha256": {
+    "vulkan-dynamic-graph-arm64": "80deec15c2deaab9ea7075f42cf1a943aeebc3770a9c5d32ec9bcb72527d2ff8",
+    "vulkan-dynamic-graph-armv7": "bfda444141df672930b2df3039a9478a529eeb2727912584a8562523fc0e73f4",
+    "vulkan-graph-host-O0.exe": "ac626b07f166643685bcbc829d601b7e9e6c8291219434c746dd277e25b36073",
+    "vulkan-graph-host-O2.exe": "48cd71a1c6a0526310c72bce4c74dd4cc28aaa28d6454cbaadcb28eb29c4aac7",
+    "stage-a-O0-vk1.0.spv": "b597688dc435d15816557aaa098602ef60b2f084d924633af64e89767ba819f1",
+    "stage-b-O0-vk1.0.spv": "2780dfaac1317884617be534e339982bd862d1a8884f455d1f64d69470bb2ba0",
+    "stage-c-O0-vk1.0.spv": "8311c92f2c8f4f2f6eb61ebfed7e41864b353535123998109e14f067bdcfd648",
+    "stage-a-O-vk1.0.spv": "244700759a984dc12dc89b6b5aa58191f75345532af5daea18c03357dfef8a28",
+    "stage-b-O-vk1.0.spv": "ec0fa6f18e07c75c5cce4235b9b0d681c7b4016e5ecb519563c3395b48975378",
+    "stage-c-O-vk1.0.spv": "fd311a3f826a204d0dd70d62b1fa6ebd23eea44efe7e8b122247d0a65519cf3d"
+  },
+  "heap_reference_sha256": {
+    "redmagic-arm64": {
+      "file": "tests/fixtures/android-gpu/vulkan-heap-20261031/redmagic-allocation.log",
+      "sha256": "15db0fe20ad7883755bcbd8b71c3be4940cf8af397de77786c790796a3c85992"
+    },
+    "redmagic-armv7": {
+      "file": "tests/fixtures/android-gpu/vulkan-core-baseline-20261031/redmagic-armv7-memory-properties.log",
+      "sha256": "44c8786370cfc36bc5c07f114edad01fb4288cbbae24a07287e6fa5c7ae3ef90"
+    },
+    "pixel-arm64": {
+      "file": "tests/fixtures/android-gpu/vulkan-heap-20261031/pixel-allocation.log",
+      "sha256": "6dc6d54aa65c234008c90efc3ffcbf7bafbc5c5c9a180c12177d410d0586ecc0"
+    }
+  },
+  "device_runs": [
+    {
+      "device": "redmagic-arm64",
+      "abi": "arm64-v8a",
+      "stages": 1,
+      "mode": "default10",
+      "optimization": "O0",
+      "file": "redmagic-arm64-stage1-default10-O0.log",
+      "exit_code": 0,
+      "sha256": "b1d453e9146b543dc1d8e166ab6be2904115ff216ad8419b666eac9b4cdf46ec"
+    },
+    {
+      "device": "redmagic-arm64",
+      "abi": "arm64-v8a",
+      "stages": 1,
+      "mode": "default10",
+      "optimization": "O",
+      "file": "redmagic-arm64-stage1-default10-O.log",
+      "exit_code": 0,
+      "sha256": "cbd2f1143deaa8dc3e75b10e4b280b15398fa4961594215ff16942d8d6af6f17"
+    },
+    {
+      "device": "redmagic-arm64",
+      "abi": "arm64-v8a",
+      "stages": 1,
+      "mode": "explicit10",
+      "optimization": "O0",
+      "file": "redmagic-arm64-stage1-explicit10-O0.log",
+      "exit_code": 0,
+      "sha256": "e9ff2f2ae40d6fc7d862c5967157cb6e8dc56af70e36f91d4f15a39dbe5b0d92"
+    },
+    {
+      "device": "redmagic-arm64",
+      "abi": "arm64-v8a",
+      "stages": 1,
+      "mode": "explicit10",
+      "optimization": "O",
+      "file": "redmagic-arm64-stage1-explicit10-O.log",
+      "exit_code": 0,
+      "sha256": "6575590916b8364cf78ea4ce28430260fb7c78527da2d04fe2b9e92606f4beb2"
+    },
+    {
+      "device": "redmagic-arm64",
+      "abi": "arm64-v8a",
+      "stages": 1,
+      "mode": "required11",
+      "optimization": "O0",
+      "file": "redmagic-arm64-stage1-required11-O0.log",
+      "exit_code": 0,
+      "sha256": "a5ea9c89aa65c1ba9de18319c1419cff9f05f2be6bab41cf6e8d951d11d71ec1"
+    },
+    {
+      "device": "redmagic-arm64",
+      "abi": "arm64-v8a",
+      "stages": 1,
+      "mode": "required11",
+      "optimization": "O",
+      "file": "redmagic-arm64-stage1-required11-O.log",
+      "exit_code": 0,
+      "sha256": "7a67524b181eed5a3555c0e86eea6c797340c5fa6993b27c43703ecb1f11b735"
+    },
+    {
+      "device": "redmagic-arm64",
+      "abi": "arm64-v8a",
+      "stages": 1,
+      "mode": "noncoherent10",
+      "optimization": "O0",
+      "file": "redmagic-arm64-stage1-noncoherent10-O0.log",
+      "exit_code": 1,
+      "sha256": "402fa978b0493084b51a6b479d366b5ed29daae77eddde4df79593b9c8f93e82"
+    },
+    {
+      "device": "redmagic-arm64",
+      "abi": "arm64-v8a",
+      "stages": 1,
+      "mode": "noncoherent10",
+      "optimization": "O",
+      "file": "redmagic-arm64-stage1-noncoherent10-O.log",
+      "exit_code": 1,
+      "sha256": "03d2bf2cddc06e90f467d278987a43bdd4728eb613ff3929844fdff5f7d6b61b"
+    },
+    {
+      "device": "redmagic-arm64",
+      "abi": "arm64-v8a",
+      "stages": 2,
+      "mode": "default10",
+      "optimization": "O0",
+      "file": "redmagic-arm64-stage2-default10-O0.log",
+      "exit_code": 0,
+      "sha256": "0df76ae552a3ee840c03d734716d4be7279feff23937b7c7d4d1c8c93794ae9f"
+    },
+    {
+      "device": "redmagic-arm64",
+      "abi": "arm64-v8a",
+      "stages": 2,
+      "mode": "default10",
+      "optimization": "O",
+      "file": "redmagic-arm64-stage2-default10-O.log",
+      "exit_code": 0,
+      "sha256": "f5b079670b0743475dbc0edd324a558a88c2784cf2057eae2e182e8312c1701f"
+    },
+    {
+      "device": "redmagic-arm64",
+      "abi": "arm64-v8a",
+      "stages": 2,
+      "mode": "explicit10",
+      "optimization": "O0",
+      "file": "redmagic-arm64-stage2-explicit10-O0.log",
+      "exit_code": 0,
+      "sha256": "6f78e3385cbfd7a47c4332790e1b07d736dc53deafc1506b148ef29f5363045d"
+    },
+    {
+      "device": "redmagic-arm64",
+      "abi": "arm64-v8a",
+      "stages": 2,
+      "mode": "explicit10",
+      "optimization": "O",
+      "file": "redmagic-arm64-stage2-explicit10-O.log",
+      "exit_code": 0,
+      "sha256": "661fef9c216a442674916b14dfc88378cd616c6361392daf54cd9a4ba603e632"
+    },
+    {
+      "device": "redmagic-arm64",
+      "abi": "arm64-v8a",
+      "stages": 2,
+      "mode": "required11",
+      "optimization": "O0",
+      "file": "redmagic-arm64-stage2-required11-O0.log",
+      "exit_code": 0,
+      "sha256": "52e62a46a070426436acaaac5ebe56ce0466ac5b5863f738ad32b4f24486535a"
+    },
+    {
+      "device": "redmagic-arm64",
+      "abi": "arm64-v8a",
+      "stages": 2,
+      "mode": "required11",
+      "optimization": "O",
+      "file": "redmagic-arm64-stage2-required11-O.log",
+      "exit_code": 0,
+      "sha256": "6b1f05c4470fbfd3f6468c76c810ea69d2223ada0dac1dbe1416cd706d3a5e39"
+    },
+    {
+      "device": "redmagic-arm64",
+      "abi": "arm64-v8a",
+      "stages": 2,
+      "mode": "noncoherent10",
+      "optimization": "O0",
+      "file": "redmagic-arm64-stage2-noncoherent10-O0.log",
+      "exit_code": 1,
+      "sha256": "a89965a68d99d7d1d71f9c934691b23463b29296b4acb69731f3412031020a66"
+    },
+    {
+      "device": "redmagic-arm64",
+      "abi": "arm64-v8a",
+      "stages": 2,
+      "mode": "noncoherent10",
+      "optimization": "O",
+      "file": "redmagic-arm64-stage2-noncoherent10-O.log",
+      "exit_code": 1,
+      "sha256": "5acd7c987cf0ff1b0723ee53017be966f96ea8fc4feda9670c3519ecdbb48461"
+    },
+    {
+      "device": "redmagic-arm64",
+      "abi": "arm64-v8a",
+      "stages": 3,
+      "mode": "default10",
+      "optimization": "O0",
+      "file": "redmagic-arm64-stage3-default10-O0.log",
+      "exit_code": 0,
+      "sha256": "3c20e41a0d9431cf7ff444b9c4546cef7bb70742876d7f1de600ffe092133f02"
+    },
+    {
+      "device": "redmagic-arm64",
+      "abi": "arm64-v8a",
+      "stages": 3,
+      "mode": "default10",
+      "optimization": "O",
+      "file": "redmagic-arm64-stage3-default10-O.log",
+      "exit_code": 0,
+      "sha256": "99365076aae777788ca86bd04c94a50846a426f666673622ec5d01b185d1f594"
+    },
+    {
+      "device": "redmagic-arm64",
+      "abi": "arm64-v8a",
+      "stages": 3,
+      "mode": "explicit10",
+      "optimization": "O0",
+      "file": "redmagic-arm64-stage3-explicit10-O0.log",
+      "exit_code": 0,
+      "sha256": "81ca9239611e5e8345000d454b176b12170741b58c2fffe1275577c4b900d337"
+    },
+    {
+      "device": "redmagic-arm64",
+      "abi": "arm64-v8a",
+      "stages": 3,
+      "mode": "explicit10",
+      "optimization": "O",
+      "file": "redmagic-arm64-stage3-explicit10-O.log",
+      "exit_code": 0,
+      "sha256": "9c0b149471579c50bd64ad128ee7ab35deb49a2247350cbbf60431bec66e30f1"
+    },
+    {
+      "device": "redmagic-arm64",
+      "abi": "arm64-v8a",
+      "stages": 3,
+      "mode": "required11",
+      "optimization": "O0",
+      "file": "redmagic-arm64-stage3-required11-O0.log",
+      "exit_code": 0,
+      "sha256": "7b54e7f55aefb52637a45953456caa5c270c10956a887602830304c27f963b3a"
+    },
+    {
+      "device": "redmagic-arm64",
+      "abi": "arm64-v8a",
+      "stages": 3,
+      "mode": "required11",
+      "optimization": "O",
+      "file": "redmagic-arm64-stage3-required11-O.log",
+      "exit_code": 0,
+      "sha256": "eb28af7088f14bf6ea2b05dfcd3711958574ff266ca3540004edd9db0e4e2e23"
+    },
+    {
+      "device": "redmagic-arm64",
+      "abi": "arm64-v8a",
+      "stages": 3,
+      "mode": "noncoherent10",
+      "optimization": "O0",
+      "file": "redmagic-arm64-stage3-noncoherent10-O0.log",
+      "exit_code": 1,
+      "sha256": "4f3595331b6a5bf095a8bbd8e1fafc4c9c279b003f8182b41669f16064c4ed61"
+    },
+    {
+      "device": "redmagic-arm64",
+      "abi": "arm64-v8a",
+      "stages": 3,
+      "mode": "noncoherent10",
+      "optimization": "O",
+      "file": "redmagic-arm64-stage3-noncoherent10-O.log",
+      "exit_code": 1,
+      "sha256": "264f7a68c99db98fb77c9b21da176bd982cd896c4c244c0d75721256608aff80"
+    },
+    {
+      "device": "redmagic-armv7",
+      "abi": "armeabi-v7a",
+      "stages": 1,
+      "mode": "default10",
+      "optimization": "O0",
+      "file": "redmagic-armv7-stage1-default10-O0.log",
+      "exit_code": 0,
+      "sha256": "b646a2687933b35a89c341d299c72740b96ad355a6745f656f3e084b8ef87642"
+    },
+    {
+      "device": "redmagic-armv7",
+      "abi": "armeabi-v7a",
+      "stages": 1,
+      "mode": "default10",
+      "optimization": "O",
+      "file": "redmagic-armv7-stage1-default10-O.log",
+      "exit_code": 0,
+      "sha256": "ddca2e4c29cf1a2ab5dda612ce89ff3913084a1dd20af72344008bbed90a2914"
+    },
+    {
+      "device": "redmagic-armv7",
+      "abi": "armeabi-v7a",
+      "stages": 1,
+      "mode": "explicit10",
+      "optimization": "O0",
+      "file": "redmagic-armv7-stage1-explicit10-O0.log",
+      "exit_code": 0,
+      "sha256": "e68f6be4bdd643c1cd6a6cddaeb111bada937e0d2083f193a585cf47e8048c9a"
+    },
+    {
+      "device": "redmagic-armv7",
+      "abi": "armeabi-v7a",
+      "stages": 1,
+      "mode": "explicit10",
+      "optimization": "O",
+      "file": "redmagic-armv7-stage1-explicit10-O.log",
+      "exit_code": 0,
+      "sha256": "7286472ae481764e8ee31f0c73f17fffd6ccd5602e9d89ef588808859facb220"
+    },
+    {
+      "device": "redmagic-armv7",
+      "abi": "armeabi-v7a",
+      "stages": 1,
+      "mode": "required11",
+      "optimization": "O0",
+      "file": "redmagic-armv7-stage1-required11-O0.log",
+      "exit_code": 0,
+      "sha256": "a9985da2e6ff0727d09b7f10b8fcf1a377dab1d59f15491979c232613b96707b"
+    },
+    {
+      "device": "redmagic-armv7",
+      "abi": "armeabi-v7a",
+      "stages": 1,
+      "mode": "required11",
+      "optimization": "O",
+      "file": "redmagic-armv7-stage1-required11-O.log",
+      "exit_code": 0,
+      "sha256": "bebf9d15ba7b3b910b8dfd3c612545378323137fd28adb736663000580763941"
+    },
+    {
+      "device": "redmagic-armv7",
+      "abi": "armeabi-v7a",
+      "stages": 1,
+      "mode": "noncoherent10",
+      "optimization": "O0",
+      "file": "redmagic-armv7-stage1-noncoherent10-O0.log",
+      "exit_code": 1,
+      "sha256": "b0dd1b4bac739f8ab37b5a058cc47d4c361af064c8f869af64ea8e5ccf2109ab"
+    },
+    {
+      "device": "redmagic-armv7",
+      "abi": "armeabi-v7a",
+      "stages": 1,
+      "mode": "noncoherent10",
+      "optimization": "O",
+      "file": "redmagic-armv7-stage1-noncoherent10-O.log",
+      "exit_code": 1,
+      "sha256": "2634878937d4b6213756377d79568244ffa28d92b84ee05ab299ad726aea5208"
+    },
+    {
+      "device": "redmagic-armv7",
+      "abi": "armeabi-v7a",
+      "stages": 2,
+      "mode": "default10",
+      "optimization": "O0",
+      "file": "redmagic-armv7-stage2-default10-O0.log",
+      "exit_code": 0,
+      "sha256": "adc1cd39a29182e78ac4cecd5e7103b9c3e3c1364c0661f61d473cd292281309"
+    },
+    {
+      "device": "redmagic-armv7",
+      "abi": "armeabi-v7a",
+      "stages": 2,
+      "mode": "default10",
+      "optimization": "O",
+      "file": "redmagic-armv7-stage2-default10-O.log",
+      "exit_code": 0,
+      "sha256": "c7ea614f182035beb76bd1d811e9b00b82d512bb0fcf05a64bfdbf240779c90c"
+    },
+    {
+      "device": "redmagic-armv7",
+      "abi": "armeabi-v7a",
+      "stages": 2,
+      "mode": "explicit10",
+      "optimization": "O0",
+      "file": "redmagic-armv7-stage2-explicit10-O0.log",
+      "exit_code": 0,
+      "sha256": "4de155249eddbe1946333f7d756d8e176688542c7751fa72d5aa74342b29b82f"
+    },
+    {
+      "device": "redmagic-armv7",
+      "abi": "armeabi-v7a",
+      "stages": 2,
+      "mode": "explicit10",
+      "optimization": "O",
+      "file": "redmagic-armv7-stage2-explicit10-O.log",
+      "exit_code": 0,
+      "sha256": "df65ab628e84616785f7f15d621f47b8095064cfa1c391f2c829e9c962a2ba15"
+    },
+    {
+      "device": "redmagic-armv7",
+      "abi": "armeabi-v7a",
+      "stages": 2,
+      "mode": "required11",
+      "optimization": "O0",
+      "file": "redmagic-armv7-stage2-required11-O0.log",
+      "exit_code": 0,
+      "sha256": "45feb1cee9be0dbe278df25fcc86985e0a0c79ce7f467ca4564fab68880a1d3f"
+    },
+    {
+      "device": "redmagic-armv7",
+      "abi": "armeabi-v7a",
+      "stages": 2,
+      "mode": "required11",
+      "optimization": "O",
+      "file": "redmagic-armv7-stage2-required11-O.log",
+      "exit_code": 0,
+      "sha256": "5c789c5e93dbbb7551824e9efc3fd0df37fa55b0e93f5d6abc8854346099b490"
+    },
+    {
+      "device": "redmagic-armv7",
+      "abi": "armeabi-v7a",
+      "stages": 2,
+      "mode": "noncoherent10",
+      "optimization": "O0",
+      "file": "redmagic-armv7-stage2-noncoherent10-O0.log",
+      "exit_code": 1,
+      "sha256": "703c1faf2b76edbf2f4320733531cbcac4242370908579f53601805ac2136b30"
+    },
+    {
+      "device": "redmagic-armv7",
+      "abi": "armeabi-v7a",
+      "stages": 2,
+      "mode": "noncoherent10",
+      "optimization": "O",
+      "file": "redmagic-armv7-stage2-noncoherent10-O.log",
+      "exit_code": 1,
+      "sha256": "59fb7dc09de38e8fff01fdb92c579daf3edb1f800c7e69e5a33b325fb122b751"
+    },
+    {
+      "device": "redmagic-armv7",
+      "abi": "armeabi-v7a",
+      "stages": 3,
+      "mode": "default10",
+      "optimization": "O0",
+      "file": "redmagic-armv7-stage3-default10-O0.log",
+      "exit_code": 0,
+      "sha256": "e56e02f30d02f42938333e4ee7a1d841c14b5057fe89639d35f243763c7713c8"
+    },
+    {
+      "device": "redmagic-armv7",
+      "abi": "armeabi-v7a",
+      "stages": 3,
+      "mode": "default10",
+      "optimization": "O",
+      "file": "redmagic-armv7-stage3-default10-O.log",
+      "exit_code": 0,
+      "sha256": "ed70ce99f96eb173e107887c16963bb82ab743de4a58b8eb5aa8d5d566aa413f"
+    },
+    {
+      "device": "redmagic-armv7",
+      "abi": "armeabi-v7a",
+      "stages": 3,
+      "mode": "explicit10",
+      "optimization": "O0",
+      "file": "redmagic-armv7-stage3-explicit10-O0.log",
+      "exit_code": 0,
+      "sha256": "6072e74db042a0b39f5a292b5fe90dd557036805e8c6f7749f2ccb9a6515eb7a"
+    },
+    {
+      "device": "redmagic-armv7",
+      "abi": "armeabi-v7a",
+      "stages": 3,
+      "mode": "explicit10",
+      "optimization": "O",
+      "file": "redmagic-armv7-stage3-explicit10-O.log",
+      "exit_code": 0,
+      "sha256": "52df28d9e7d2b6cf290a9a113540fbc06ea932848ac04a61b6e27c371923670c"
+    },
+    {
+      "device": "redmagic-armv7",
+      "abi": "armeabi-v7a",
+      "stages": 3,
+      "mode": "required11",
+      "optimization": "O0",
+      "file": "redmagic-armv7-stage3-required11-O0.log",
+      "exit_code": 0,
+      "sha256": "02d4a8ea8fe3bc084e36b51fb38942987b46729cf5c9699297654e16856f8ddb"
+    },
+    {
+      "device": "redmagic-armv7",
+      "abi": "armeabi-v7a",
+      "stages": 3,
+      "mode": "required11",
+      "optimization": "O",
+      "file": "redmagic-armv7-stage3-required11-O.log",
+      "exit_code": 0,
+      "sha256": "9e0d25df84c1c03b36eebdc793a9eca119703b137a072031da46b7ab58dc6e48"
+    },
+    {
+      "device": "redmagic-armv7",
+      "abi": "armeabi-v7a",
+      "stages": 3,
+      "mode": "noncoherent10",
+      "optimization": "O0",
+      "file": "redmagic-armv7-stage3-noncoherent10-O0.log",
+      "exit_code": 1,
+      "sha256": "667b8d83af4e9d76d40f228f47456a9b7e8b6d19ae3a334eef1f923e75cd19dd"
+    },
+    {
+      "device": "redmagic-armv7",
+      "abi": "armeabi-v7a",
+      "stages": 3,
+      "mode": "noncoherent10",
+      "optimization": "O",
+      "file": "redmagic-armv7-stage3-noncoherent10-O.log",
+      "exit_code": 1,
+      "sha256": "ca6ce166682702752106591db2be96575b8ea846318515034e07af02420eedb7"
+    },
+    {
+      "device": "pixel-arm64",
+      "abi": "arm64-v8a",
+      "stages": 1,
+      "mode": "default10",
+      "optimization": "O0",
+      "file": "pixel-arm64-stage1-default10-O0.log",
+      "exit_code": 0,
+      "sha256": "87d71bc475158172345a318bf50ee469ebf20a5ad4170c726f206619d620f767"
+    },
+    {
+      "device": "pixel-arm64",
+      "abi": "arm64-v8a",
+      "stages": 1,
+      "mode": "default10",
+      "optimization": "O",
+      "file": "pixel-arm64-stage1-default10-O.log",
+      "exit_code": 0,
+      "sha256": "2cdb75475a78664795bd15e93af645cc6fef9d3825e3e24bd5f3b25d76a1cc8f"
+    },
+    {
+      "device": "pixel-arm64",
+      "abi": "arm64-v8a",
+      "stages": 1,
+      "mode": "explicit10",
+      "optimization": "O0",
+      "file": "pixel-arm64-stage1-explicit10-O0.log",
+      "exit_code": 0,
+      "sha256": "89778208a4728edfebb25deb1c4f3aaa705a6f99dffe3e325a8848d9f81fe440"
+    },
+    {
+      "device": "pixel-arm64",
+      "abi": "arm64-v8a",
+      "stages": 1,
+      "mode": "explicit10",
+      "optimization": "O",
+      "file": "pixel-arm64-stage1-explicit10-O.log",
+      "exit_code": 0,
+      "sha256": "7167f8e5365a77e44bf2dd6b373b690cc48e49aa1e3d68b69064b19617cc8350"
+    },
+    {
+      "device": "pixel-arm64",
+      "abi": "arm64-v8a",
+      "stages": 1,
+      "mode": "required11",
+      "optimization": "O0",
+      "file": "pixel-arm64-stage1-required11-O0.log",
+      "exit_code": 0,
+      "sha256": "95e378fdd80f99317d35d61cc7c00a1b6950170223ca492b4c24ae67971c959f"
+    },
+    {
+      "device": "pixel-arm64",
+      "abi": "arm64-v8a",
+      "stages": 1,
+      "mode": "required11",
+      "optimization": "O",
+      "file": "pixel-arm64-stage1-required11-O.log",
+      "exit_code": 0,
+      "sha256": "25c6636d0e4313f997d8586a64b6eace4910d7f16a571ebb37da020498940be9"
+    },
+    {
+      "device": "pixel-arm64",
+      "abi": "arm64-v8a",
+      "stages": 1,
+      "mode": "noncoherent10",
+      "optimization": "O0",
+      "file": "pixel-arm64-stage1-noncoherent10-O0.log",
+      "exit_code": 0,
+      "sha256": "cf60a74cc5d9501d5e9b2c2b40e1f3f7b30f5bfb8723bdd8bd7552d271250bc9"
+    },
+    {
+      "device": "pixel-arm64",
+      "abi": "arm64-v8a",
+      "stages": 1,
+      "mode": "noncoherent10",
+      "optimization": "O",
+      "file": "pixel-arm64-stage1-noncoherent10-O.log",
+      "exit_code": 0,
+      "sha256": "f8db08e7e7e3845d064fd0a6bbaeca8cc7b363ec9ba687ad4a4530a44669fdfe"
+    },
+    {
+      "device": "pixel-arm64",
+      "abi": "arm64-v8a",
+      "stages": 2,
+      "mode": "default10",
+      "optimization": "O0",
+      "file": "pixel-arm64-stage2-default10-O0.log",
+      "exit_code": 0,
+      "sha256": "5c66125743fa73ba022589be29bc8f0562407dee6a6e9fd1077f5674e3b3528e"
+    },
+    {
+      "device": "pixel-arm64",
+      "abi": "arm64-v8a",
+      "stages": 2,
+      "mode": "default10",
+      "optimization": "O",
+      "file": "pixel-arm64-stage2-default10-O.log",
+      "exit_code": 0,
+      "sha256": "75528d13b21e8299905bd1064cd0651643d2a815aa70c1c9e5fbf83a4bb34ee4"
+    },
+    {
+      "device": "pixel-arm64",
+      "abi": "arm64-v8a",
+      "stages": 2,
+      "mode": "explicit10",
+      "optimization": "O0",
+      "file": "pixel-arm64-stage2-explicit10-O0.log",
+      "exit_code": 0,
+      "sha256": "e36d70d83183d038fcfffad9af8e110315922ffb26f5bf6e5c9bbfbc7f79e8e7"
+    },
+    {
+      "device": "pixel-arm64",
+      "abi": "arm64-v8a",
+      "stages": 2,
+      "mode": "explicit10",
+      "optimization": "O",
+      "file": "pixel-arm64-stage2-explicit10-O.log",
+      "exit_code": 0,
+      "sha256": "b23af76563026c960a7c95efddc37ddb0533ca7e55d77bf72d8b957db5971eda"
+    },
+    {
+      "device": "pixel-arm64",
+      "abi": "arm64-v8a",
+      "stages": 2,
+      "mode": "required11",
+      "optimization": "O0",
+      "file": "pixel-arm64-stage2-required11-O0.log",
+      "exit_code": 0,
+      "sha256": "a2e19346d5346cc8f85f95d10174b50017040a40aa21bea6c7e4f68dbff7c0b0"
+    },
+    {
+      "device": "pixel-arm64",
+      "abi": "arm64-v8a",
+      "stages": 2,
+      "mode": "required11",
+      "optimization": "O",
+      "file": "pixel-arm64-stage2-required11-O.log",
+      "exit_code": 0,
+      "sha256": "8b90949eb4750e7914cffb0ced8cc9f5f6585d360a4a689fb26e400c6a1fe579"
+    },
+    {
+      "device": "pixel-arm64",
+      "abi": "arm64-v8a",
+      "stages": 2,
+      "mode": "noncoherent10",
+      "optimization": "O0",
+      "file": "pixel-arm64-stage2-noncoherent10-O0.log",
+      "exit_code": 0,
+      "sha256": "788d4878cbdfb55935fa61a56981f2e958341eb66b9726eac9f692b5712e29ad"
+    },
+    {
+      "device": "pixel-arm64",
+      "abi": "arm64-v8a",
+      "stages": 2,
+      "mode": "noncoherent10",
+      "optimization": "O",
+      "file": "pixel-arm64-stage2-noncoherent10-O.log",
+      "exit_code": 0,
+      "sha256": "6bb378e5ab0587329833b223d83a9a37b05593e02d34247942c412b15d3ad67c"
+    },
+    {
+      "device": "pixel-arm64",
+      "abi": "arm64-v8a",
+      "stages": 3,
+      "mode": "default10",
+      "optimization": "O0",
+      "file": "pixel-arm64-stage3-default10-O0.log",
+      "exit_code": 0,
+      "sha256": "79e61678f805c3421baa5dcc46145b4434029ee54a606f4eef80373f418d9e0b"
+    },
+    {
+      "device": "pixel-arm64",
+      "abi": "arm64-v8a",
+      "stages": 3,
+      "mode": "default10",
+      "optimization": "O",
+      "file": "pixel-arm64-stage3-default10-O.log",
+      "exit_code": 0,
+      "sha256": "5ae1c9aaee4f264204e9693deef00707dfa589847f0d22d08aa6084c7c2f2dd8"
+    },
+    {
+      "device": "pixel-arm64",
+      "abi": "arm64-v8a",
+      "stages": 3,
+      "mode": "explicit10",
+      "optimization": "O0",
+      "file": "pixel-arm64-stage3-explicit10-O0.log",
+      "exit_code": 0,
+      "sha256": "1a70e956c2a037c67bfc27c6728987ab8aa45d7b8a7cc70555ab0d374b7c9de9"
+    },
+    {
+      "device": "pixel-arm64",
+      "abi": "arm64-v8a",
+      "stages": 3,
+      "mode": "explicit10",
+      "optimization": "O",
+      "file": "pixel-arm64-stage3-explicit10-O.log",
+      "exit_code": 0,
+      "sha256": "cdc9c876da5192730b521bd92d6418c1b9e5481afa7682c06d05fd853513f5dd"
+    },
+    {
+      "device": "pixel-arm64",
+      "abi": "arm64-v8a",
+      "stages": 3,
+      "mode": "required11",
+      "optimization": "O0",
+      "file": "pixel-arm64-stage3-required11-O0.log",
+      "exit_code": 0,
+      "sha256": "82ff6538d9f2d47133ec099a4c7c78e5c87b56f8123c1c9486f0532ff5fcde27"
+    },
+    {
+      "device": "pixel-arm64",
+      "abi": "arm64-v8a",
+      "stages": 3,
+      "mode": "required11",
+      "optimization": "O",
+      "file": "pixel-arm64-stage3-required11-O.log",
+      "exit_code": 0,
+      "sha256": "ecf4cd18f8c399820e2c92cf5c5e6e64ca9137de7412e072ce205be01d384439"
+    },
+    {
+      "device": "pixel-arm64",
+      "abi": "arm64-v8a",
+      "stages": 3,
+      "mode": "noncoherent10",
+      "optimization": "O0",
+      "file": "pixel-arm64-stage3-noncoherent10-O0.log",
+      "exit_code": 0,
+      "sha256": "287e382a8eb4662a149baf664d2b6edf055389d36ff6257dc7e70422746cc1d9"
+    },
+    {
+      "device": "pixel-arm64",
+      "abi": "arm64-v8a",
+      "stages": 3,
+      "mode": "noncoherent10",
+      "optimization": "O",
+      "file": "pixel-arm64-stage3-noncoherent10-O.log",
+      "exit_code": 0,
+      "sha256": "ef46f63f07dc063cc966333ce6cbb4580c5bb0153046f6dc567a346216dbed3b"
+    }
+  ],
+  "fault_runs": [
+    {
+      "device": "redmagic-arm64",
+      "abi": "arm64-v8a",
+      "file": "redmagic-arm64-faults.log",
+      "sha256": "339d79b0cc661fd56bb0ec6b7eb5c7b16d5e793337baaeae3c5eff5b55fe2b53",
+      "fault_points": 72
+    },
+    {
+      "device": "redmagic-armv7",
+      "abi": "armeabi-v7a",
+      "file": "redmagic-armv7-faults.log",
+      "sha256": "0798c27a887a325e6b35b206010fddfb8f5d66c1c8e42ab4e6b67370f2654e8d",
+      "fault_points": 72
+    },
+    {
+      "device": "pixel-arm64",
+      "abi": "arm64-v8a",
+      "file": "pixel-arm64-faults.log",
+      "sha256": "57c20e5ff17470d7677c742ec42a53382989d8e91a006144c4675131a258a6f2",
+      "fault_points": 72
+    }
+  ],
+  "invalid_runs": [
+    {
+      "device": "redmagic-arm64",
+      "abi": "arm64-v8a",
+      "file": "redmagic-arm64-negative-controls.log",
+      "sha256": "3151f7b07a86ddc1a0551bf598160591b474e039ac1074730be420ca68e1df89",
+      "invalid_cases": 9
+    },
+    {
+      "device": "redmagic-armv7",
+      "abi": "armeabi-v7a",
+      "file": "redmagic-armv7-negative-controls.log",
+      "sha256": "c7ab0e732c8a8aa7872872d7e4bcda403f744d4d982d8c7de8489d0bc50409e1",
+      "invalid_cases": 9
+    },
+    {
+      "device": "pixel-arm64",
+      "abi": "arm64-v8a",
+      "file": "pixel-arm64-negative-controls.log",
+      "sha256": "3151f7b07a86ddc1a0551bf598160591b474e039ac1074730be420ca68e1df89",
+      "invalid_cases": 9
+    }
+  ],
+  "native_runs": [
+    {
+      "optimization": "O0",
+      "file": "vulkan-graph-host-O0.log",
+      "sha256": "bbe0f4d22df219980d5e113ebdfd18c2713ee81963dd5174d02f0a38edff2ca9",
+      "exit_code": 0
+    },
+    {
+      "optimization": "O2",
+      "file": "vulkan-graph-host-O2.log",
+      "sha256": "f5ac8b79918fd2e39ceae7445bd514559c88e11710cde284783c825ff8bbdfc3",
+      "exit_code": 0
+    }
+  ],
+  "limitations": [
+    "Tests run under a core Vulkan 1.0 instance on physically newer Vulkan 1.1/1.4 GPUs; physical Vulkan-1.0-only devices were unavailable.",
+    "Executables target Android API 24, not a tested Android 7.0 phone.",
+    "This graph handles any caller-supplied nonzero number of buffers, storage descriptors and Compute pipeline stages, but these three public shaders specifically exercise stage counts one to three.",
+    "Descriptor binding and shader interfaces are explicit contracts; no SPIR-V reflection or automatic algorithm transformation occurs.",
+    "Stage A/B GPU state is read through the final shader output in the three-stage case; one- and two-stage layouts verify their direct last-stage output only.",
+    "Each buffer uses independent VkDeviceMemory, not packed suballocations.",
+    "Resource acquisition fault injection occurs after a real Vulkan object is created, not by forcing an actual device-loss/driver allocation failure.",
+    "Resource cleanup counts are application-level evidence, not a validation-layer proof against driver-internal leaks.",
+    "This is standalone noncryptographic Vulkan infrastructure, not a hashcat backend or a bcrypt implementation."
+  ]
+}

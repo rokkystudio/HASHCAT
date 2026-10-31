@@ -124,6 +124,12 @@ python -B tools/test-vulkan-core10-runtime-evidence.py --artifacts build/diagnos
 
 The optional `--artifacts` argument verifies ten exact Android/host/SPIR-V build hashes; without it the original logs and source identities are still audited. `tools/archive-vulkan-core10-runtime-evidence.py` collects the finished local evidence without executing GPU programs or altering the original log bytes.
 
+## Dynamic-count Vulkan Compute graph
+
+A separate `tools/vulkan-core10-graph.c` resource owner and `tools/vulkan-core10-graph-memory.c` joint memory planner now accept explicit nonzero buffer, STORAGE_BUFFER descriptor and Compute pipeline counts, instead of allocating fixed arrays for one three-stage workload. The independent diagnostic executes the public integer shaders as one-, two- and three-stage graphs requiring four, five and six buffers, with two, three and four descriptors. A native CPU-only planner test additionally validates seven-buffer placement and heap backtracking.
+
+On actual RedMagic ARM64, RedMagic ARMv7 and Pixel ARM64 processes, **60 real GPU runs** (240 sequential submissions) passed exact CPU output verification. Pixel exercised actual noncoherent flush/invalidate for all three graph sizes. Another **216 post-acquisition fault-injection cases** checked cleanup at every one of the 20, 24 and 28 owned-resource states per graph configuration. Original source/binary/device SHA-256 records and limitations are in `docs/vulkan-core10-dynamic-graph-portability.md` and `tests/fixtures/android-gpu/vulkan-dynamic-graph-20261031/`. This remains synthetic Vulkan infrastructure, without hashcat GPU algorithm integration.
+
 ## Not established
 
 This is a fixed six-buffer/four-descriptor/three-pipeline resource owner for the current tested synthetic workload, not yet a runtime supporting arbitrary shader descriptor layouts or variable buffer counts. A future runtime must have explicit workload ABI contracts rather than inferred shader requirements.
