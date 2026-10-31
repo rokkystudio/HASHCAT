@@ -487,6 +487,19 @@ NATIVE_OBJS             := $(foreach OBJ,$(OBJS_ALL),obj/$(OBJ).NATIVE.o)
 LINUX_OBJS              := $(foreach OBJ,$(OBJS_ALL),obj/$(OBJ).LINUX.o)
 WIN_OBJS                := $(foreach OBJ,$(OBJS_ALL),obj/$(OBJ).WIN.o)
 
+ifeq ($(ENABLE_VULKAN_DISCOVERY),1)
+ifeq ($(UNAME),Android)
+CFLAGS_NATIVE           += -DWITH_VULKAN_DISCOVERY -I../tools
+LFLAGS_NATIVE           += -lvulkan
+NATIVE_OBJS             += obj/backend_vulkan.NATIVE.o
+NATIVE_OBJS             += obj/vulkan-auto-config.NATIVE.o
+NATIVE_OBJS             += obj/vulkan-core11-policy.NATIVE.o
+NATIVE_OBJS             += obj/vulkan-core10-device-catalog.NATIVE.o
+else
+$(error ENABLE_VULKAN_DISCOVERY=1 requires the Android build target)
+endif
+endif
+
 ifeq ($(UNAME),Darwin)
 OBJS_METAL              := ext_metal ext_iokit
 
@@ -713,6 +726,11 @@ uninstall:
 
 obj/%.NATIVE.o: src/%.c
 	$(CC) -c $(CCFLAGS) $(CFLAGS_NATIVE) $< -o $@ -fpic
+
+ifeq ($(ENABLE_VULKAN_DISCOVERY),1)
+obj/vulkan-%.NATIVE.o: ../tools/vulkan-%.c
+	$(CC) -c $(CCFLAGS) $(CFLAGS_NATIVE) $< -o $@ -fpic
+endif
 
 ifeq ($(UNAME),Darwin)
 obj/%.METAL.NATIVE.o: src/%.m

@@ -2133,6 +2133,12 @@ typedef struct backend_ctx
 
   cl_device_type      opencl_device_types_filter;
 
+  // Vulkan discovery owns a catalogue but does not register kernel devices.
+
+  struct vulkan_core10_device_catalog *vulkan_catalog;
+  u32                 vulkan_devices_cnt;
+  int                 rc_vulkan_init;
+
 } backend_ctx_t;
 
 typedef enum kernel_workload

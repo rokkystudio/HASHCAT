@@ -215,23 +215,31 @@ heap, cache atom, stage barrier, acquisition-fault and fence events.
 Relevant existing host-side lifecycle functions in
 `source/src/backend.c` and `source/include/backend.h` are:
 
-| Production owner | Conceptual future Vulkan responsibility |
+| Production owner | Vulkan lifecycle contract |
 | --- | --- |
-| `backend_ctx_init` | Load and validate Vulkan backend availability |
-| `backend_ctx_devices_init` | Open a device catalogue, enumerate suitable Vulkan physical devices and identify compute queues |
-| `backend_session_begin` | Establish device-owned Vulkan resources and a validated Compute session |
-| `backend_session_destroy` | Close the active job port before releasing the device and instance |
-| `backend_ctx_devices_destroy` | Close the Vulkan device catalogue after releasing dependent VkDevices, then release cross-backend discovery state |
+| `backend_ctx_init` | With `ENABLE_VULKAN_DISCOVERY=1` on Android, opens a Vulkan 1.0 catalogue after the ordinary backend initialization and stores it in `backend_ctx_t` |
+| `backend_ctx_destroy` | Closes the optional Vulkan catalogue and VkInstance before clearing the context |
+| `backend_ctx_devices_init` | Registers only CUDA/HIP/Metal/OpenCL kernel devices; Vulkan does not enter the active GPU list |
+| `backend_session_begin` | Future per-device Vulkan Compute session and buffer ownership |
+| `backend_session_destroy` | Future closing of active Vulkan jobs before logical-device destruction |
+| `backend_ctx_devices_destroy` | Future release of Vulkan per-device session resources |
 
-These are **integration targets, not active call sites**. No production
-hashcat source file links to the new port yet. The port does not accept
-`hashcat_ctx_t`, `hc_device_param_t`, password candidates or hashes.
+The first two rows are **actual opt-in production call sites**.
+`source/src/backend_vulkan.c` and `source/include/backend_vulkan.h`
+provide the backend-facing Vulkan catalogue API. Both Android API 24
+ABIs compile the actual production `backend.c` with this integration,
+and the real `backend_ctx_t` is tested with the Vulkan driver on
+RedMagic ARM64, RedMagic ARMv7 and Pixel ARM64.
 
-A production backend still needs explicit device discovery and selection
-alongside CUDA/HIP/Metal/OpenCL, per-device ownership in hashcat's
-`backend_ctx_t`, a dedicated kernel interface, scheduler integration,
-error reporting, event accounting, autotuning, Android packaging and
-runtime selection. Those steps must be implemented and tested separately.
+See `docs/vulkan-backend-ctx-discovery.md` for the build flag,
+full method contracts and hardware evidence.
+
+The job port remains an independent noncryptographic module. No
+production hashcat source file schedules jobs through it, and the
+catalogue never registers a Vulkan hashing device in `devices_param`.
+A complete backend still requires a native release build, Vulkan
+session/resource ownership, scheduler integration, kernel interfaces,
+task status/event accounting and Android package deployment.
 
 ## Limits
 

@@ -48,3 +48,7 @@ tests/fixtures/android-gpu/vulkan-multiset-20261031/manifest.json text eol=lf
 # Preserve public Vulkan 1.0 sequential multi-stage descriptor graph GPU evidence.
 tests/fixtures/android-gpu/vulkan-multiset-graph-20261031/*.log text eol=lf
 tests/fixtures/android-gpu/vulkan-multiset-graph-20261031/manifest.json text eol=lf
+
+# Preserve original hashcat backend_ctx Vulkan discovery and API validation transcripts.
+tests/fixtures/android-gpu/vulkan-backend-catalog-20261031/*.log text eol=lf
+tests/fixtures/android-gpu/vulkan-backend-catalog-20261031/manifest.json text eol=lf

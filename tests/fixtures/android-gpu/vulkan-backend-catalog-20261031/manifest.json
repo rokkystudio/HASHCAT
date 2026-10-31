@@ -1,0 +1,161 @@
+{
+  "date": "2026-10-31",
+  "scope": "Android hashcat backend_ctx ownership of an unscheduled Vulkan 1.0 physical-device catalogue",
+  "build_flag": "ENABLE_VULKAN_DISCOVERY=1",
+  "default_vulkan_api": "1.0",
+  "minimum_android_api": 24,
+  "vulkan10_only_physical_gpu_tested": false,
+  "android_api24_os_tested": false,
+  "hashcat_vulkan_password_scheduler_enabled": false,
+  "backend_device_list_unchanged": true,
+  "tested_device_abis": {
+    "redmagic-arm64": "arm64-v8a",
+    "redmagic-armv7": "armeabi-v7a",
+    "pixel-arm64": "arm64-v8a"
+  },
+  "tested_apis": [
+    "1.0",
+    "1.1"
+  ],
+  "source_hash_policy": "CRLF normalized to LF",
+  "source_sha256": {
+    "source/include/types.h": "4b6801630b0c1199f35fcc976f6cf072c108e45a8ba029508c341f3bd4a0b270",
+    "source/include/backend_vulkan.h": "fafdddc159e2e92aac85668c193ce818fab49b6b949bb7e3dc336c9570cf9557",
+    "source/src/backend.c": "fe55d7f02ed0b096bcf6737f7560eea992340b71ece4590cd4be5440d517fb1a",
+    "source/src/backend_vulkan.c": "200c425874152a663031a9383331a80220fd8fb19fe63c2f3bef5f5da6d7d269",
+    "source/src/Makefile": "b028fc4bdfb57aa887ef1308c9920f9dcaad6e8d5f3bb7470224f6264b42b2fa",
+    "tools/vulkan-auto-config.c": "7dda45d969c6fd092c31821cc8022f69a4dd8b748e852fcb7a2bd23552a571dd",
+    "tools/vulkan-auto-config.h": "1329f5b833bd8a0ffed9e3eadddead210665a1e8fba2f051e6f4259d63385086",
+    "tools/vulkan-core11-policy.c": "ac4fd1bf17a4e61d801de94ee51f6df920e9ce1b9285168e94f2ea412305ede8",
+    "tools/vulkan-core11-policy.h": "e56989252c758b7e8289067540b7d04b9e534d85ae56a05e3f3a4d465662b0fa",
+    "tools/vulkan-core10-device-catalog.c": "7e454956b965356b1418e8730913b92304b78bab20b1cd3d510a90e19cc6ef6b",
+    "tools/vulkan-core10-device-catalog.h": "8c963d3b6dfaee7137a2d4269114448ec0521d8ee548e7daa83f273e2dde9c05",
+    "tools/vulkan-backend-catalog-diagnostic.c": "deb7f5bdff27f1b2c83c000a56f0db631b382ad2ac3c65f4a5542774bdfad6a8",
+    "tools/build-vulkan-backend-catalog.ps1": "c9b6276c85ce6822a5d303f83d196c0a6b4552e6b0e96145865dcee96c68182e",
+    "tools/run-vulkan-backend-catalog.ps1": "349f0a29ba07e1c7c4562303b28a88f7d1c338e7d584e775cb507b3fe4e4bee7",
+    "tools/archive-vulkan-backend-catalog-evidence.py": "6517edc3d1dd5ac0e3bc5843a0d1e54346e24d8a10f1843bfe9296ab59cb1e13",
+    "tools/test-vulkan-backend-catalog-evidence.py": "3a9c5fc6e29330c913cd108d448ebb1c118e34b90c121449a1cde069a4f5fe27"
+  },
+  "artifact_sha256": {
+    "hashcat-backend-vulkan-arm64.o": "30b328d6ae816de2d4cd503ab34b41a3488c0376a9162eb06b97cde1be422225",
+    "hashcat-backend-vulkan-armv7.o": "0af6c548015215ab23b4101f452738fb5209ad38564d53164c0d6648e929d991",
+    "vulkan-backend-catalog-arm64": "da34896da7a81988ee76160f1880af09d3eb9535f153d3327f15e3e706107d30",
+    "vulkan-backend-catalog-armv7": "a47a3622f492646415742c47f308a65402d838e875dcb0ca8515eb9b7aee6fad"
+  },
+  "runs": [
+    {
+      "device": "redmagic-arm64",
+      "abi": "arm64-v8a",
+      "mode": "1.0",
+      "file": "redmagic-arm64-1.0.log",
+      "sha256": "d442585bf3f7ac913c80453eca9404c8059ed0e7da6a83eae4f1bf8607e3e871",
+      "physical_devices": [
+        1,
+        1
+      ],
+      "lifecycles": 2,
+      "invalid_backend_requests": 12,
+      "unsupported_compute_workloads": 2
+    },
+    {
+      "device": "redmagic-arm64",
+      "abi": "arm64-v8a",
+      "mode": "1.1",
+      "file": "redmagic-arm64-1.1.log",
+      "sha256": "43651c1028d169156ff526f569027dd39c599b58863a6c3cfb659d4fa424cf8e",
+      "physical_devices": [
+        1,
+        1
+      ],
+      "lifecycles": 2,
+      "invalid_backend_requests": 12,
+      "unsupported_compute_workloads": 2
+    },
+    {
+      "device": "redmagic-armv7",
+      "abi": "armeabi-v7a",
+      "mode": "1.0",
+      "file": "redmagic-armv7-1.0.log",
+      "sha256": "dd9217f155cdc418cbeef8b3d9066e000e70dc7350c76783750d8303420bc438",
+      "physical_devices": [
+        1,
+        1
+      ],
+      "lifecycles": 2,
+      "invalid_backend_requests": 12,
+      "unsupported_compute_workloads": 2
+    },
+    {
+      "device": "redmagic-armv7",
+      "abi": "armeabi-v7a",
+      "mode": "1.1",
+      "file": "redmagic-armv7-1.1.log",
+      "sha256": "e7167aefde0ad45cb4d4a10e5d1d27405521299698b3b6cf38c87de115126d65",
+      "physical_devices": [
+        1,
+        1
+      ],
+      "lifecycles": 2,
+      "invalid_backend_requests": 12,
+      "unsupported_compute_workloads": 2
+    },
+    {
+      "device": "pixel-arm64",
+      "abi": "arm64-v8a",
+      "mode": "1.0",
+      "file": "pixel-arm64-1.0.log",
+      "sha256": "e2cb1478415e6f6de9a6802b108946123518e24b06761e3141bd717175f83b09",
+      "physical_devices": [
+        1,
+        1
+      ],
+      "lifecycles": 2,
+      "invalid_backend_requests": 12,
+      "unsupported_compute_workloads": 2
+    },
+    {
+      "device": "pixel-arm64",
+      "abi": "arm64-v8a",
+      "mode": "1.1",
+      "file": "pixel-arm64-1.1.log",
+      "sha256": "062aeba72c8368a8f669c0ac33960068c86152cc3d8f3ce2c0c8e3e4c36c9ca3",
+      "physical_devices": [
+        1,
+        1
+      ],
+      "lifecycles": 2,
+      "invalid_backend_requests": 12,
+      "unsupported_compute_workloads": 2
+    }
+  ],
+  "invalid_cli_runs": [
+    {
+      "device": "redmagic-arm64",
+      "abi": "arm64-v8a",
+      "file": "redmagic-arm64-negative-controls.log",
+      "sha256": "af4ee7ee4a96ec18fbab0663d941acf8c366a9a6a9dfc0cedf5ed862645b6454",
+      "cases": 3
+    },
+    {
+      "device": "redmagic-armv7",
+      "abi": "armeabi-v7a",
+      "file": "redmagic-armv7-negative-controls.log",
+      "sha256": "72947ee6be6559bd9fe7fbc5a30de287927c6391684e1692e4fda5539f430d47",
+      "cases": 3
+    },
+    {
+      "device": "pixel-arm64",
+      "abi": "arm64-v8a",
+      "file": "pixel-arm64-negative-controls.log",
+      "sha256": "af4ee7ee4a96ec18fbab0663d941acf8c366a9a6a9dfc0cedf5ed862645b6454",
+      "cases": 3
+    }
+  ],
+  "limitations": [
+    "The Android native diagnostic uses the actual backend_ctx_t and backend_vulkan_* methods; it does not invoke the complete hashcat executable.",
+    "backend.c was compiled for Android ARM64 and ARMv7 with WITH_VULKAN_DISCOVERY; the full production frontend and external modules were not linked in this fixture.",
+    "Vulkan physical devices are enumerated but not inserted into hashcat's password-processing backend device list.",
+    "Device discovery and Compute capability checks do not execute a Vulkan GPU workload, unlike the separately archived public multiset graph evidence.",
+    "No physical Vulkan-1.0-only GPU or Android 7.0 system was tested."
+  ]
+}

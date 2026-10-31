@@ -27,6 +27,10 @@
 #include "hwmon.h"
 #include "autotune.h"
 
+#if defined (WITH_VULKAN_DISCOVERY)
+#include "backend_vulkan.h"
+#endif
+
 #if defined (__linux__)
 static const char *const  dri_card0_path = "/dev/dri/card0";
 
@@ -5541,6 +5545,29 @@ int backend_ctx_init (hashcat_ctx_t *hashcat_ctx)
 
   backend_ctx->enabled = true;
 
+  #if defined (WITH_VULKAN_DISCOVERY)
+  const VkResult vulkan_result = backend_vulkan_catalog_open (
+    backend_ctx, VK_API_VERSION_1_0, stderr
+  );
+
+  if (vulkan_result != VK_SUCCESS)
+  {
+    event_log_warning (
+      hashcat_ctx,
+      "Vulkan 1.0 discovery failed with VkResult %d; Vulkan devices are not scheduled.",
+      vulkan_result
+    );
+  }
+  else
+  {
+    event_log_info (
+      hashcat_ctx,
+      "Vulkan 1.0 discovery found %u physical device(s); Vulkan Compute scheduling is not enabled.",
+      backend_ctx->vulkan_devices_cnt
+    );
+  }
+  #endif
+
   return 0;
 }
 
@@ -5549,6 +5576,19 @@ void backend_ctx_destroy (hashcat_ctx_t *hashcat_ctx)
   backend_ctx_t *backend_ctx = hashcat_ctx->backend_ctx;
 
   if (backend_ctx->enabled == false) return;
+
+  #if defined (WITH_VULKAN_DISCOVERY)
+  const VkResult vulkan_result = backend_vulkan_catalog_close (backend_ctx);
+
+  if (vulkan_result != VK_SUCCESS)
+  {
+    event_log_warning (
+      hashcat_ctx,
+      "Vulkan 1.0 catalogue close failed with VkResult %d.",
+      vulkan_result
+    );
+  }
+  #endif
 
   hcfree (backend_ctx->devices_param);
 

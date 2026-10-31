@@ -198,10 +198,13 @@ python -B tools/test-vulkan-core10-multiset-graph-evidence.py --artifacts build/
 - Native binaries target Android **API 24**, and work on tested newer
   Android OS versions. Neither a physical Vulkan 1.0-only GPU nor an
   Android 7.0/API-24 OS device was available for these tests.
-- The catalogue currently owns instance/device discovery only. It does
-  not hold production hashcat `backend_ctx_t`/`hc_device_param_t`
-  records, attach to hashcat's device list, manage a persistent hashcat
-  session or select/execute cryptographic kernels.
+- The catalogue owns Vulkan instance/device discovery. When
+  `ENABLE_VULKAN_DISCOVERY=1` is selected for Android, the production
+  `backend_ctx_t` owns a catalogue pointer and records the enumerated
+  physical-device count. It does not register Vulkan hashing devices in
+  `hc_device_param_t`, manage persistent Vulkan Compute jobs or execute
+  cryptographic kernels. See `docs/vulkan-backend-ctx-discovery.md`
+  for the actual opt-in production integration and hardware tests.
 - The GPU runtime synchronously submits one reusable command buffer;
   multi-queue scheduling, interrupted GPU/device loss, validation-layer
   tracking and concurrent sessions are not implemented or verified.
