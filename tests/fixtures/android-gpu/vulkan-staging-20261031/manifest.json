@@ -1,0 +1,235 @@
+{
+  "date": "2026-10-31",
+  "scope": "synthetic Vulkan 1.0 direct and staging GPU transfers; historical live results and separately compiled modular source",
+  "toolchain": {
+    "ndk": "29.0.14206865",
+    "clang": "21.0.0",
+    "target": "aarch64-linux-android26",
+    "shader": "vulkan1.0"
+  },
+  "device_profiles": {
+    "redmagic": {
+      "model": "RedMagic NX709S",
+      "gpu": "Adreno (TM) 730",
+      "vendor_id": "0x5143",
+      "device_id": "0x7030002",
+      "driver_version": "0x80267000",
+      "vulkan_api_version": "1.1.128",
+      "queue_family": 0,
+      "shared_memory_limit": 32768
+    },
+    "pixel": {
+      "model": "Pixel 9 Pro XL",
+      "gpu": "Mali-G715",
+      "vendor_id": "0x13b5",
+      "device_id": "0xb8a20000",
+      "driver_version": "0x0d802000",
+      "vulkan_api_version": "1.4.305",
+      "queue_family": 0,
+      "shared_memory_limit": 32768
+    }
+  },
+  "elements": 2048,
+  "bytes_per_buffer": 8192,
+  "expected_output_fnv1a64": "00d6d6e4837edebc",
+  "sources_sha256": {
+    "tools/vulkan-auto-config.c": "7dda45d969c6fd092c31821cc8022f69a4dd8b748e852fcb7a2bd23552a571dd",
+    "tools/vulkan-auto-config.h": "1329f5b833bd8a0ffed9e3eadddead210665a1e8fba2f051e6f4259d63385086",
+    "tools/vulkan-staging-memory.c": "bd1436e668d34a1a65060fac75b02593df835ea576b6eb4b3422f239ff9ff89a",
+    "tools/vulkan-staging-memory.h": "628bc9299fd8da05112940b418c4fde6ceb88effa6567884bb5a195af6cb78cd",
+    "tools/vulkan-staging-diagnostic.c": "b5d2ec3012ccc26f33c5151fe7167645bb6e3e209d58bfd7f51443aac5dd3fa1",
+    "tools/build-vulkan-staging.ps1": "c38616eaa51175c42ed46dac49a4fc7bee83d4ffc8027d6fe65dee7a4930c9f5",
+    "tools/run-vulkan-staging.ps1": "8714e5311afda6bb5926d1f8dbd7483666a823c01655ad3e3732524dcae4a9f9",
+    "tools/vulkan-pipeline-stage-a.comp": "e9c8ba8d1502a0120ad05043096cc02400221f3099d7c8432307c6cef2caeec8"
+  },
+  "historical_device_executable": {
+    "sha256": "8127abccf5beb7368877f1db2fef1b857b495e655ceac17e3c19738c5ff52f90",
+    "bytes": 30368,
+    "compiled_library_layout": "combined-universal-config-and-staging",
+    "device_tested": true
+  },
+  "modular_build_sha256": {
+    "vulkan-staging-arm64": "104110b5d176c1eb43e79b00b1e9ace5fccb912a481d97d997c593cb0073dfa3",
+    "stage-a-O0-vk1.0.spv": "b597688dc435d15816557aaa098602ef60b2f084d924633af64e89767ba819f1",
+    "stage-a-O-vk1.0.spv": "244700759a984dc12dc89b6b5aa58191f75345532af5daea18c03357dfef8a28"
+  },
+  "current_modular_build_hardware_tested": false,
+  "historical_gpu_runs": [
+    {
+      "device": "redmagic",
+      "requested_mode": "auto",
+      "selected_mode": "direct",
+      "optimization": "O0",
+      "file": "redmagic-auto-O0.log",
+      "exit_code": 0,
+      "sha256": "f0dc2b0ba305fb8ff8110ddbb2b419593509e65df441087e314710cde6cccad2"
+    },
+    {
+      "device": "redmagic",
+      "requested_mode": "auto",
+      "selected_mode": "direct",
+      "optimization": "O",
+      "file": "redmagic-auto-O.log",
+      "exit_code": 0,
+      "sha256": "a6a5b0088fdb8cf9da1b9e7f5abe2576f0f9d7078e1f2d75277b6317bb88f768"
+    },
+    {
+      "device": "redmagic",
+      "requested_mode": "staging",
+      "selected_mode": "staging",
+      "optimization": "O0",
+      "file": "redmagic-staging-O0.log",
+      "exit_code": 0,
+      "sha256": "ba83a216a5884f6da9a7b474751d0716f94364868fff443cb17743943a048792"
+    },
+    {
+      "device": "redmagic",
+      "requested_mode": "staging",
+      "selected_mode": "staging",
+      "optimization": "O",
+      "file": "redmagic-staging-O.log",
+      "exit_code": 0,
+      "sha256": "6e18fed8797724e6a00b1de783b932d87a55599c5c8f5540bd2441a267a97580"
+    },
+    {
+      "device": "pixel",
+      "requested_mode": "auto",
+      "selected_mode": "direct",
+      "optimization": "O0",
+      "file": "pixel-auto-O0.log",
+      "exit_code": 0,
+      "sha256": "d76a069af510a29087929b5d5532eec9af27a932ac225f50a7decd6ac9b62587"
+    },
+    {
+      "device": "pixel",
+      "requested_mode": "auto",
+      "selected_mode": "direct",
+      "optimization": "O",
+      "file": "pixel-auto-O.log",
+      "exit_code": 0,
+      "sha256": "3c5531471b44efeae005408e220fc401243ba4e836349c8ed8c560f69c1c5efb"
+    },
+    {
+      "device": "pixel",
+      "requested_mode": "staging",
+      "selected_mode": "staging",
+      "optimization": "O0",
+      "file": "pixel-staging-O0.log",
+      "exit_code": 0,
+      "sha256": "367c99bf2807bf2fe7ec822ae40acac8b7b5caeb324fab82977cb096deb9551d"
+    },
+    {
+      "device": "pixel",
+      "requested_mode": "staging",
+      "selected_mode": "staging",
+      "optimization": "O",
+      "file": "pixel-staging-O.log",
+      "exit_code": 0,
+      "sha256": "aa3f8f03be2795f85fc8a7161b6a2fad70a7e817afac78c2ceed6efc6fc9a950"
+    }
+  ],
+  "negative_controls": [
+    {
+      "device": "redmagic",
+      "file": "redmagic-negative-controls.log",
+      "controls": 4,
+      "sha256": "8815936fb8987e83ff60461e0ddc98b1a2ae003375bb5d0273dbf69fcb2d1c31"
+    },
+    {
+      "device": "pixel",
+      "file": "pixel-negative-controls.log",
+      "controls": 4,
+      "sha256": "8815936fb8987e83ff60461e0ddc98b1a2ae003375bb5d0273dbf69fcb2d1c31"
+    }
+  ],
+  "historical_memory_allocations": {
+    "redmagic-auto": {
+      "gpu-input": {
+        "memory_type": 6,
+        "cpu_mapped": 1,
+        "coherent": 1,
+        "bytes": 8192
+      },
+      "gpu-output": {
+        "memory_type": 6,
+        "cpu_mapped": 1,
+        "coherent": 1,
+        "bytes": 8192
+      }
+    },
+    "redmagic-staging": {
+      "gpu-input": {
+        "memory_type": 0,
+        "cpu_mapped": 0,
+        "coherent": 0,
+        "bytes": 8192
+      },
+      "gpu-output": {
+        "memory_type": 0,
+        "cpu_mapped": 0,
+        "coherent": 0,
+        "bytes": 8192
+      },
+      "staging-upload": {
+        "memory_type": 6,
+        "cpu_mapped": 1,
+        "coherent": 1,
+        "bytes": 8192
+      },
+      "staging-download": {
+        "memory_type": 6,
+        "cpu_mapped": 1,
+        "coherent": 1,
+        "bytes": 8192
+      }
+    },
+    "pixel-auto": {
+      "gpu-input": {
+        "memory_type": 0,
+        "cpu_mapped": 1,
+        "coherent": 1,
+        "bytes": 8192
+      },
+      "gpu-output": {
+        "memory_type": 0,
+        "cpu_mapped": 1,
+        "coherent": 1,
+        "bytes": 8192
+      }
+    },
+    "pixel-staging": {
+      "gpu-input": {
+        "memory_type": 0,
+        "cpu_mapped": 0,
+        "coherent": 0,
+        "bytes": 8192
+      },
+      "gpu-output": {
+        "memory_type": 0,
+        "cpu_mapped": 0,
+        "coherent": 0,
+        "bytes": 8192
+      },
+      "staging-upload": {
+        "memory_type": 0,
+        "cpu_mapped": 1,
+        "coherent": 1,
+        "bytes": 8192
+      },
+      "staging-download": {
+        "memory_type": 0,
+        "cpu_mapped": 1,
+        "coherent": 1,
+        "bytes": 8192
+      }
+    }
+  },
+  "limitations": [
+    "Actual device logs were obtained with the previous combined-source standalone executable, SHA-256 8127abccf5beb7368877f1db2fef1b857b495e655ceac17e3c19738c5ff52f90; do not treat them as an execution of the new modular binary",
+    "The new standalone header and policy source compile with strict warnings but its binary has not been run on devices after modular separation",
+    "Both tested devices have directly mappable GPU storage; automatic fallback to staging on a GPU with no host-visible storage remains a mock-property check",
+    "The real forced-staging GPU transfer path completed on Adreno and Mali in the earlier binary",
+    "Noncoherent host-visible memory flush/invalidate has CPU-only policy tests, not real noncoherent memory GPU validation",
+    "No hashcat GPU backend or cryptographic shader is used; OpenCL bcrypt 3200 self-test error 245 remains unresolved"
+  ]
+}

@@ -122,3 +122,9 @@ The intended defaults for an application using this module are:
 The module does **not** translate arbitrary shaders, guarantee every Vulkan GPU supports a given workload, implement staging buffers, guarantee low-memory success, or measure hardware performance. Portability and available memory budgets remain constrained by each driver and runtime environment.
 
 It is also **not a Vulkan hashcat backend**, and the archived RedMagic OpenCL bcrypt mode-3200 self-test exit code **245** remains unresolved.
+
+## Follow-up: separate portable staging policy
+
+The independent `tools/vulkan-staging-memory.h` and `tools/vulkan-staging-memory.c` module now determines direct-vs-staging transfers using the actual memory-type compatibility of two storage buffers. When both permit host-visible memory, direct mapping is selected; otherwise the staging path allocates independent CPU upload/download transfer buffers, selects compatible GPU memory and copies data using Vulkan 1.0 `vkCmdCopyBuffer` with explicit barriers.
+
+The earlier combined-source staging implementation **actually passed both paths on RedMagic and Pixel** with the original noncryptographic stage-A shader at both `-O0` and `-O`. The separate modular source builds and its historical archive identity checks pass offline; its new binary has not been executed on either device after the separation. See `docs/vulkan-portable-staging.md` and `tests/fixtures/android-gpu/vulkan-staging-20261031/`. The existing universal source and original GPU results remain unchanged.

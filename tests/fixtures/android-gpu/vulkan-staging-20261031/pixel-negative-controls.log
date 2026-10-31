@@ -1,0 +1,6 @@
+TEST=portable-vulkan1.0-staging
+INVALID_INPUT_CONTROLS=4
+INVALID no-arguments exit=2
+INVALID missing-shader exit=2
+INVALID unknown-mode exit=2
+INVALID wrong-flag exit=2

@@ -1,0 +1,25 @@
+TEST=portable-vulkan1.0-staging
+REQUESTED_MODE=auto
+OPTIMIZATION=O
+ADB_EXIT_CODE=0
+PASS_POLICY gpu_local_preference=0
+PASS_POLICY compatible_nonlocal_type=1
+PASS_POLICY noncoherent_staging_memory_type=1
+PASS_POLICY no_host_visible_staging_result=-8
+PASS_POLICY incompatible_gpu_memory_result=-8
+AUTO_TRANSFER mode=direct input_memory_type=2 output_memory_type=2 input_coherent=1 output_coherent=1
+PASS_POLICY supported_direct_mapping=1
+AUTO_TRANSFER mode=staging input_gpu_type=0 output_gpu_type=0 input_visible=0 output_visible=0 forced=0
+PASS_POLICY device_local_only_selects_staging=1
+AUTO_TRANSFER mode=staging input_gpu_type=0 output_gpu_type=1 input_visible=1 output_visible=1 forced=1
+PASS_POLICY explicit_staging=1
+REJECT_STORAGE_MEMORY input_bits=0x00000000 output_bits=0x00000001 input_result=-8 output_result=0
+PASS_POLICY no_gpu_storage_type_result=-8
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+BUFFER_REQUIREMENTS role=gpu-input required=8192 alignment=64 memory_bits=0x00000003
+BUFFER_REQUIREMENTS role=gpu-output required=8192 alignment=64 memory_bits=0x00000003
+AUTO_TRANSFER mode=direct input_memory_type=0 output_memory_type=0 input_coherent=1 output_coherent=1
+BUFFER_ALLOCATION role=gpu-input memory_type=0 cpu_mapped=1 coherent=1 bytes=8192
+BUFFER_ALLOCATION role=gpu-output memory_type=0 cpu_mapped=1 coherent=1 bytes=8192
+PASS_VULKAN_TRANSFER mode=direct device=0 queue=0 words=2048 checksum=00d6d6e4837edebc uploads=0 downloads=0 gpu_dispatches=1
