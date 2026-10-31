@@ -152,11 +152,11 @@ The 2026-10-30 Windows MinGW GCC test passes: one deliberate overflow is trapped
 
 ## SPIR64 kernel interface and local S-box allocation
 
-tools/test-m03200-opencl-abi.py compiles the unchanged source/OpenCL/m03200-pure.cl with Clang's SPIR64 target for OpenCL 1.2 and 3.0, using FIXED_LOCAL_SIZE=1 and FIXED_LOCAL_SIZE=8. It verifies the emitted LLVM IR for the real m03200_init, m03200_loop, and m03200_comp entrypoints and checks the OpenCL argument bindings in source/src/backend.c and the self-test buffer substitutions in source/src/selftest.c.
+tools/test-m03200-opencl-abi.py compiles the unchanged source/OpenCL/m03200-pure.cl with Clang's SPIR64 target for OpenCL 1.2 and 3.0, using FIXED_LOCAL_SIZE=1 and FIXED_LOCAL_SIZE=8 and independent -O0/-O2 optimization settings. It verifies the emitted LLVM IR for the real m03200_init, m03200_loop, and m03200_comp entrypoints and checks the OpenCL argument bindings in source/src/backend.c and the self-test buffer substitutions in source/src/selftest.c.
 
 Each entrypoint declares exactly 25 arguments, in the same order and with the same OpenCL address spaces and type qualifiers as the original host binding map. Argument 3 is a constant-address-space pointer; the others are global pointers. The host sets all 25 arguments as cl_mem objects, binds the password, temporary, and hooks buffers before use, and substitutes the built-in self-test digest/salt buffers at indices 15, 17, and 18. The shared kernel_param_t input is argument 24.
 
-The regression compiles the original shared kernel_param_t, pw_t and salt_t declarations on the native Windows x86-64 host using GCC and for Android AArch64 API 28 using Android NDK Clang. The test requires the 72-byte kernel_param_t, 260-byte pw_t and 572-byte salt_t layouts and checks all 31 explicit field offsets. The generated SPIR64 IR must contain the same struct field types for all three, plus the stock bcrypt_tmp_t layout of two 18-word arrays and four 256-word S-box arrays (4240 bytes). Both host and OpenCL representations use the same inc_types.h declaration.
+The regression compiles the original shared kernel_param_t, pw_t and salt_t declarations on the native Windows x86-64 host using GCC and for Android AArch64 API 28 using Android NDK Clang. The test requires the 72-byte kernel_param_t, 260-byte pw_t and 572-byte salt_t layouts and checks all 31 explicit field offsets. The unoptimized SPIR64 IR must contain matching named struct fields for all three, plus the stock bcrypt_tmp_t layout of two 18-word arrays and four 256-word S-box arrays (4240 bytes). Optimized LLVM may eliminate unused named struct declarations; the optimized audit instead requires the original kernel argument type and address-space metadata. Both host and OpenCL representations use the same inc_types.h declaration.
 
 Each of the three kernels declares four distinct S-box arrays in SPIR64 local address space 3. Every array has 256 unsigned 32-bit words per local work-item. The total statically declared S-box storage per workgroup and kernel is therefore:
 
@@ -165,15 +165,38 @@ Each of the three kernels declares four distinct S-box arrays in SPIR64 local ad
 | 1 | 4096 bytes (4 KiB) | (1, 1, 1) |
 | 8 | 32768 bytes (32 KiB) | (8, 1, 1) |
 
-The verification includes a negative control: relocating the first S-box declaration to global address space 1 must be rejected by the IR checker. The production source checks use the same archived SHA-256 hashes as the earlier stage tests.
+The verification includes negative controls under both -O0 and -O2: relocating the first S-box declaration of either m03200_init or m03200_comp to global address space 1 must be rejected by the IR checker. The production source checks use the same archived SHA-256 hashes as the earlier stage tests.
 
 Reproduce with an explicitly selected Clang supporting the SPIR64 target:
 
     python -B tools/test-m03200-opencl-abi.py --clang D:\ANDROID\SDK\ndk\29.0.14206865\toolchains\llvm\prebuilt\windows-x86_64\bin\clang.exe --android-sysroot D:\ANDROID\SDK\ndk\29.0.14206865\toolchains\llvm\prebuilt\windows-x86_64\sysroot
 
-Results using native GCC and Android NDK Clang 21.0.0: both Windows x86-64 and Android ARM64 host structure checks passed, and all four SPIR64 combinations passed, including all three kernel entrypoints, local arrays, the static host buffer map, and the negative address-space control.
+Results using native GCC and Android NDK Clang 21.0.0: both Windows x86-64 and Android ARM64 host structure checks passed, and all eight SPIR64 combinations passed, including all three kernel entrypoints, local arrays, the static host buffer map, and four negative address-space controls.
 
 The check does not query Qualcomm's actual available local memory, validate Adreno's code generation, measure dynamic driver allocations, or execute any OpenCL kernel. The archived RedMagic one-thread attempt already returned self-test exit 245; the 32 KiB eight-thread allocation alone cannot explain that separate one-thread failure. The first GPU divergence remains unidentified.
+
+## Optimized LLVM IR diagnostics and backend choices (2026-10-31)
+
+The same original bcrypt OpenCL source is independently compiled into SPIR64 LLVM IR with both -O0 and -O2 for OpenCL 1.2 and 3.0, and for workgroup sizes 1 and 8. All eight configurations pass the exact 25-argument metadata, type qualifier, address-space and workgroup-size checks for all three entrypoints. All twelve original per-stage S-box declarations still have local address space 3 and retain kernel references; static allocations remain 4096 bytes at group size 1 and 32768 bytes at group size 8.
+
+One compiler transformation is reproducible in the independent Android NDK Clang 21 output:
+
+| SPIR64 configuration | m03200_init S-box declarations | m03200_loop S-box declarations | m03200_comp S-box declarations |
+| --- | --- | --- | --- |
+| -O0, both OpenCL standards | Four local arrays | Four local arrays | Four local arrays |
+| -O2, both OpenCL standards | Four local arrays | Four local arrays | Four local arrays marked unnamed_addr |
+
+The LLVM unnamed_addr attribute does not relocate the arrays out of address space 3. The checker explicitly accepts these qualifiers only with the correct S-box layout, and rejects deliberately corrupted local-to-global declarations in both m03200_init and m03200_comp at both optimization levels. The optimized LLVM pass also need not preserve unused named typedef structures, so the checker relies on kernel metadata for their externally visible signatures.
+
+Reproduce the compilation audit and write an independently inspectable per-stage JSON report (all arguments, local arrays, LLVM IR SHA-256 hashes, reported optimization attributes):
+
+    python -B tools/test-m03200-opencl-abi.py --clang D:\ANDROID\SDK\ndk\29.0.14206865\toolchains\llvm\prebuilt\windows-x86_64\bin\clang.exe --android-sysroot D:\ANDROID\SDK\ndk\29.0.14206865\toolchains\llvm\prebuilt\windows-x86_64\sysroot --report build/diagnostic-multimode/bcrypt-optimizer-report-20261031.json
+
+The generated JSON contains eight configurations and is stored in the ignored local build directory. This is a compiler-structure comparison, **not evidence that Qualcomm's LLVM performs identical optimizations**. The observed -O2 unnamed_addr attribute does not prove a code-generation defect and is not an explanation of the RedMagic self-test exit 245.
+
+Replacing Android NDK Clang affects native module compilation and offline SPIR64 analysis, not Qualcomm's proprietary OpenCL JIT in /vendor/lib64/libllvm-qcom.so. An alternate CPU OpenCL implementation such as PoCL can check portable semantics separately, but cannot establish correct execution on Adreno. The stock hashcat project exposes CUDA, HIP, OpenCL and Metal compute backends; it does not provide a drop-in Vulkan execution backend for the existing mode-3200 kernel (https://hashcat.net/hashcat/). Sending SPIR-V through clCreateProgramWithIL requires the device to advertise a compatible IL version through CL_DEVICE_IL_VERSION or CL_DEVICE_ILS_WITH_VERSION (https://registry.khronos.org/OpenCL/specs/3.0-unified/pdf/OpenCL_API.pdf). No such device capability has been verified here. A substitute NDK build cannot be assumed to replace the Adreno OpenCL compiler.
+
+The next conclusive diagnostic remains driver-supported intermediate state visibility or a verified Qualcomm OpenCL compiler result, without bypassing the normal self-test.
 
 ## Android ARM64 bcrypt 3200 rebuild (2026-10-31)
 

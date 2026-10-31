@@ -9,6 +9,8 @@ metadata, workgroup-size requirements and four local S-box arrays per stage.
 It also checks host OpenCL argument bindings, self-test/restore assignments,
 and the original shared kernel_param_t, pw_t, and salt_t declarations using
 native C compilation on Windows and cross-compilation for Android ARM64.
+Optimized SPIR64 compilation is audited for the same kernel interface,
+per-stage local S-box storage and compiler-added address qualifiers.
 
 The regression uses no Android driver, OpenCL ICD, GPU, hashcat runtime,
 credential material or device execution. SPIR64 metadata is not evidence
@@ -31,6 +33,7 @@ STAGES = ("m03200_init", "m03200_loop", "m03200_comp")
 SBOXES = ("S0", "S1", "S2", "S3")
 LOCAL_SIZES = (1, 8)
 OPENCL_STANDARDS = ("CL1.2", "CL3.0")
+OPTIMIZATIONS = ("O0", "O2")
 ARG_TYPES = (
     "pw_t*",
     "kernel_rule_t*",
@@ -328,40 +331,45 @@ def require_metadata(metadata_record: str, values: tuple, kind: str) -> None:
     )
 
 
-def verify_spir_ir(ir: str, local_size: int) -> None:
-    """Check the exact kernel type metadata, memory regions and group size."""
+def verify_spir_ir(ir: str, local_size: int, optimization: str) -> dict:
+    """Check unoptimized or optimized SPIR64 kernel metadata and S-box storage."""
+    assert optimization in OPTIMIZATIONS
     assert 'target triple = "spir64"' in ir
 
-    expected_kernel_param = (
-        "%struct.kernel_param = type { "
-        "i32, i32, i32, i32, i64, i64, i64, "
-        "i32, i32, i32, i32, i64, i64 }"
-    )
-    expected_bcrypt_tmp = (
-        "%struct.bcrypt_tmp = type { [18 x i32], [18 x i32], "
-        "[256 x i32], [256 x i32], [256 x i32], [256 x i32] }"
-    )
-    expected_pw = "%struct.pw = type { [64 x i32], i32 }"
-    expected_salt = (
-        "%struct.salt = type { [64 x i32], [64 x i32], "
-        "i32, i32, i32, i32, i32, [2 x i32], "
-        "i32, i32, i32, i32, i32, i32, i32, i32 }"
-    )
+    expected_types = {
+        "%struct.kernel_param": (
+            "%struct.kernel_param = type { "
+            "i32, i32, i32, i32, i64, i64, i64, "
+            "i32, i32, i32, i32, i64, i64 }"
+        ),
+        "%struct.bcrypt_tmp": (
+            "%struct.bcrypt_tmp = type { [18 x i32], [18 x i32], "
+            "[256 x i32], [256 x i32], [256 x i32], [256 x i32] }"
+        ),
+        "%struct.pw": "%struct.pw = type { [64 x i32], i32 }",
+        "%struct.salt": (
+            "%struct.salt = type { [64 x i32], [64 x i32], "
+            "i32, i32, i32, i32, i32, [2 x i32], "
+            "i32, i32, i32, i32, i32, i32, i32, i32 }"
+        ),
+    }
 
-    assert expected_kernel_param in ir, "SPIR64 kernel_param_t layout differs"
-    assert expected_bcrypt_tmp in ir, "SPIR64 bcrypt_tmp_t layout differs"
-    assert expected_pw in ir, "SPIR64 pw_t layout differs"
-    assert expected_salt in ir, "SPIR64 salt_t layout differs"
+    for type_name, definition in expected_types.items():
+        if optimization == "O0" or f"{type_name} = type " in ir:
+            assert definition in ir, (
+                f"SPIR64 {type_name} layout differs under -{optimization}"
+            )
 
     expected_type_quals = tuple(
         "const" if index in (1, 2, 3, *range(6, 14), 15, 17, 18, 24) else ""
         for index in range(25)
     )
+    stages = {}
 
     for stage in STAGES:
         entry = re.search(
             rf"^define [^\n]*\bspir_kernel void @{stage}"
-            r"\((.*)\) #\d+ "
+            r"\((.*)\) (?:local_unnamed_addr )?#\d+ "
             r"!kernel_arg_addr_space !(\d+) "
             r"!kernel_arg_access_qual !\d+ "
             r"!kernel_arg_type !(\d+) "
@@ -371,7 +379,9 @@ def verify_spir_ir(ir: str, local_size: int) -> None:
             ir,
             re.MULTILINE,
         )
-        assert entry is not None, f"Missing SPIR64 kernel signature: {stage}"
+        assert entry is not None, (
+            f"Missing SPIR64 kernel signature under -{optimization}: {stage}"
+        )
         signature, address_id, type_id, qual_id, group_id = entry.groups()
 
         actual_pointer_spaces = tuple(
@@ -379,7 +389,7 @@ def verify_spir_ir(ir: str, local_size: int) -> None:
             for item in re.findall(r"\bptr addrspace\((\d+)\)", signature)
         )
         assert actual_pointer_spaces == ARG_ADDRESSES, (
-            f"SPIR64 pointer arguments differ in {stage}"
+            f"SPIR64 pointer arguments differ in {stage} under -{optimization}"
         )
         require_metadata(metadata(ir, int(address_id)), ARG_ADDRESSES, "integer")
         require_metadata(metadata(ir, int(type_id)), ARG_TYPES, "string")
@@ -390,55 +400,103 @@ def verify_spir_ir(ir: str, local_size: int) -> None:
             metadata(ir, int(group_id)), (local_size, 1, 1), "integer",
         )
 
+        sbox_address_attributes = {}
+
         for box in SBOXES:
-            storage = (
-                f"@{stage}.{box}_all = internal addrspace(3) global "
-                f"[{local_size} x [256 x i32]] undef, align 4"
+            pattern = (
+                rf"^@{stage}\.{box}_all = internal "
+                r"(?P<unnamed>unnamed_addr )?"
+                rf"addrspace\(3\) global "
+                rf"\[{local_size} x \[256 x i32\]\] undef, align 4$"
             )
-            assert storage in ir, (
+            storage = re.search(pattern, ir, re.MULTILINE)
+            assert storage is not None, (
                 f"Expected 256-word per-work-item local {box} array "
-                f"in stage {stage} at group size {local_size}"
+                f"in stage {stage} with -{optimization}, group {local_size}"
             )
 
+            symbol = f"@{stage}.{box}_all"
+            assert ir.count(symbol) >= 2, (
+                f"Local {box} array is not referenced in {stage} "
+                f"under -{optimization}"
+            )
+            sbox_address_attributes[box] = (
+                "unnamed_addr" if storage.group("unnamed") else "default"
+            )
+
+        stages[stage] = {
+            "argument_count": 25,
+            "argument_address_spaces": list(ARG_ADDRESSES),
+            "required_work_group_size": [local_size, 1, 1],
+            "local_sbox_bytes": local_size * 4096,
+            "sbox_address_attributes": sbox_address_attributes,
+        }
+
+    unnamed = {
+        stage: [
+            box for box, attr in details["sbox_address_attributes"].items()
+            if attr == "unnamed_addr"
+        ]
+        for stage, details in stages.items()
+    }
     print(
-        f"PASS SPIR64 25-argument ABI, 12 local S-box arrays, "
-        f"workgroup size {local_size}, local bytes per stage {local_size * 4096}"
+        f"PASS -{optimization} SPIR64 ABI: 25 arguments per stage, "
+        f"12 referenced local S-box arrays, {local_size * 4096} bytes "
+        f"per stage, unnamed_addr={unnamed}"
     )
 
+    return stages
 
-def verify_negative_control(ir: str, local_size: int) -> None:
-    """Require rejection when a local S-box is declared in global memory."""
-    actual = (
-        f"@m03200_init.S0_all = internal addrspace(3) global "
-        f"[{local_size} x [256 x i32]] undef, align 4"
-    )
-    incorrect = actual.replace("addrspace(3)", "addrspace(1)")
 
-    assert actual in ir
-    assert incorrect not in ir
-
-    mutated = ir.replace(actual, incorrect, 1)
-
-    try:
-        verify_spir_ir(mutated, local_size)
-    except AssertionError:
-        print("PASS SPIR64 negative control: wrong S-box address space rejected")
-    else:
-        raise AssertionError(
-            "SPIR64 ABI audit did not reject a misplaced S-box buffer"
+def verify_negative_control(ir: str, local_size: int, optimization: str) -> None:
+    """Reject incorrect local-memory address spaces in two kernel stages."""
+    for stage in ("m03200_init", "m03200_comp"):
+        pattern = (
+            rf"^@{stage}\.S0_all = internal "
+            r"(?:unnamed_addr )?addrspace\(3\) global "
+            rf"\[{local_size} x \[256 x i32\]\] undef, align 4$"
         )
+        match = re.search(pattern, ir, re.MULTILINE)
+        assert match is not None, (
+            f"Missing local S-box negative-control target in {stage}"
+        )
+
+        actual = match.group(0)
+        incorrect = actual.replace("addrspace(3)", "addrspace(1)")
+        mutated = ir.replace(actual, incorrect, 1)
+
+        assert actual != incorrect
+        assert mutated != ir
+
+        try:
+            verify_spir_ir(mutated, local_size, optimization)
+        except AssertionError:
+            print(
+                f"PASS -{optimization} SPIR64 negative control: "
+                f"{stage} global-memory S-box rejected"
+            )
+        else:
+            raise AssertionError(
+                f"SPIR64 ABI audit accepted a global-memory S-box in {stage}"
+            )
 
 
 def compile_spir(
-    clang: Path, wrapper: Path, standard: str, local_size: int, output: Path,
+    clang: Path, wrapper: Path, standard: str, local_size: int,
+    optimization: str, output: Path,
 ) -> str:
-    """Compile the original OpenCL code into SPIR64 LLVM IR without execution."""
+    """Compile stock OpenCL into SPIR64 LLVM IR with an explicit optimization."""
+    assert standard in OPENCL_STANDARDS
+    assert local_size in LOCAL_SIZES
+    assert optimization in OPTIMIZATIONS
+
     command = [
         str(clang),
         "-target", "spir64",
         "-x", "cl",
         f"-cl-std={standard}",
-        "-O0",
+        f"-{optimization}",
+        "-Werror",
         "-S",
         "-emit-llvm",
         "-o", str(output),
@@ -463,7 +521,8 @@ def compile_spir(
         command, cwd=ROOT, capture_output=True, text=True, timeout=120,
     )
     assert process.returncode == 0, (
-        f"SPIR64 compilation failed: {standard} / {local_size}\n"
+        f"SPIR64 compilation failed: {standard} / {local_size} "
+        f"/ -{optimization}\n"
         f"{process.stderr[-8000:]}"
     )
     assert not process.stderr.strip(), process.stderr
@@ -472,7 +531,7 @@ def compile_spir(
 
 
 def main() -> None:
-    """Verify SPIR64 kernels and original host layouts on two architectures."""
+    """Audit native host ABI and both unoptimized and optimized SPIR64 kernels."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--clang", type=Path, required=True,
@@ -486,6 +545,10 @@ def main() -> None:
         "--android-sysroot", type=Path, required=True,
         help="Explicit Android NDK sysroot directory for AArch64 compilation",
     )
+    parser.add_argument(
+        "--report", type=Path,
+        help="Optional path for a machine-readable, offline-only JSON IR report",
+    )
     options = parser.parse_args()
 
     clang = options.clang.resolve(strict=True)
@@ -494,8 +557,19 @@ def main() -> None:
     assert clang.is_file()
     assert android_sysroot.is_dir()
 
+    compiler_version = subprocess.run(
+        [str(clang), "--version"],
+        cwd=ROOT, capture_output=True, text=True, timeout=20,
+    )
+    assert compiler_version.returncode == 0, compiler_version.stderr
+    assert compiler_version.stdout.strip()
+
     verify_source_identity()
     verify_host_bindings()
+
+    source = ROOT / "source" / "OpenCL" / "m03200-pure.cl"
+    helper = ROOT / "source" / "OpenCL" / "inc_cipher_blowfish.cl"
+    configurations = []
 
     with tempfile.TemporaryDirectory(prefix="bcrypt-spir64-contract-") as tmp:
         directory = Path(tmp)
@@ -518,23 +592,67 @@ def main() -> None:
 
         for standard in OPENCL_STANDARDS:
             for local_size in LOCAL_SIZES:
-                spir = compile_spir(
-                    clang,
-                    wrapper,
-                    standard,
-                    local_size,
-                    directory / "m03200.ll",
-                )
-                verify_spir_ir(spir, local_size)
+                for optimization in OPTIMIZATIONS:
+                    spir = compile_spir(
+                        clang, wrapper, standard, local_size, optimization,
+                        directory / "m03200.ll",
+                    )
+                    stages = verify_spir_ir(
+                        spir, local_size, optimization,
+                    )
 
-                if standard == "CL1.2" and local_size == 1:
-                    verify_negative_control(spir, local_size)
+                    if standard == "CL1.2" and local_size == 1:
+                        verify_negative_control(
+                            spir, local_size, optimization,
+                        )
 
-                print(f"PASS OpenCL {standard} SPIR64 ABI, group size {local_size}")
+                    configurations.append({
+                        "opencl_standard": standard,
+                        "optimization": optimization,
+                        "local_size": local_size,
+                        "llvm_ir_sha256": hashlib.sha256(
+                            spir.encode("utf-8"),
+                        ).hexdigest(),
+                        "llvm_ir_bytes": len(spir.encode("utf-8")),
+                        "stages": stages,
+                    })
 
-    print("PASS four SPIR64 configurations and Windows/Android host ABI checks")
+                    print(
+                        f"PASS OpenCL {standard} SPIR64 -{optimization} "
+                        f"ABI, group size {local_size}"
+                    )
+
+    if options.report is not None:
+        report = options.report.resolve()
+        report.parent.mkdir(parents=True, exist_ok=True)
+        report.write_text(
+            json.dumps(
+                {
+                    "scope": "offline Clang SPIR64 LLVM IR; no GPU execution",
+                    "clang_version": compiler_version.stdout.splitlines()[0],
+                    "stock_kernel_sha256": hashlib.sha256(
+                        source.read_bytes(),
+                    ).hexdigest(),
+                    "blowfish_helper_sha256": hashlib.sha256(
+                        helper.read_bytes(),
+                    ).hexdigest(),
+                    "configurations": configurations,
+                },
+                indent=2,
+            ) + "\n",
+            encoding="utf-8",
+        )
+        print(f"PASS offline optimizer diagnostic report: {report}")
+
+    assert len(configurations) == (
+        len(OPENCL_STANDARDS) * len(LOCAL_SIZES) * len(OPTIMIZATIONS)
+    )
+
+    print(
+        f"PASS {len(configurations)} SPIR64 configurations and "
+        "unchanged Windows/Android host binding contract"
+    )
     print("NO GPU OR QUALCOMM DRIVER EXECUTION PERFORMED")
-
 
 if __name__ == "__main__":
     main()

@@ -65,7 +65,7 @@ Corresponding files include m03200-pure-failure.log, m03200-threads1-failure.log
 - The stock bcrypt pure kernel matches the official hashcat source bytes.
 - Native CPU emulation of the original m03200_init, m03200_loop and m03200_comp matches independently verified Blowfish stages and positive and negative public test candidates.
 - GCC -O1 undefined-behavior traps detect a deliberately invalid positive control but not the two known bcrypt CPU test candidates.
-- Independent Clang 21 accepts the stock OpenCL source in OpenCL C 1.2 and 3.0. SPIR64 IR reports 25 kernel arguments in the expected address spaces, with four local S-box arrays per kernel: 4096 bytes at local size 1 and 32768 bytes at local size 8.
+- Independent Clang 21 compiles the stock OpenCL source at both -O0 and -O2 in OpenCL C 1.2 and 3.0 with local sizes 1 and 8 (eight configurations). SPIR64 LLVM IR retains 25 arguments in the expected address spaces and all 12 per-stage local S-box arrays: 4096 bytes per stage at local size 1 and 32768 bytes at local size 8. At -O2 the four m03200_comp arrays acquire unnamed_addr while remaining local, and four deliberately corrupted address-space declarations are detected. This Clang transformation is not evidence of Qualcomm compiler equivalence or the root cause of the RedMagic GPU error.
 - Windows x86-64 GCC and Android AArch64 API 28 NDK Clang produce matching statically verified host structures: kernel_param_t 72 bytes (13 checked fields), pw_t 260 bytes (2 checked fields), salt_t 572 bytes (16 checked fields).
 - Archived Pixel 9 Pro XL / Mali public bcrypt pure self-test succeeds. This is not a claim about Qualcomm's code generation.
 
