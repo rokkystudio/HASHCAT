@@ -1,0 +1,9 @@
+TEST=shared-allocation
+SIMULATED_ERRORS=3
+INVALID_INPUTS=3
+SIMULATED memory-type exit=42 vkresult=-8 allocations_freed=0 buffers_bound=0
+SIMULATED allocation exit=43 vkresult=-2 allocations_freed=0 buffers_bound=0
+SIMULATED device-lost exit=44 vkresult=-4 allocations_freed=1 buffers_bound=4
+INVALID invalid-simulation exit=2
+INVALID missing-shader exit=2
+INVALID missing-simulate-flag exit=2

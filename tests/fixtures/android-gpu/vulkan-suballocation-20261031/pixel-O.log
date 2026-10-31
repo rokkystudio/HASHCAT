@@ -1,0 +1,13 @@
+TEST=shared-allocation
+OPTIMIZATION=O
+ADB_EXIT_CODE=0
+VULKAN_DEVICE name=Mali-G715 vendor=0x13b5 device=0xb8a20000 driver=0x0d802000 api=1.4.305 queue_family=0
+VULKAN_LIMITS workgroup_x=1024 invocations=1024 shared_bytes=32768
+BUFFER_LAYOUT name=input bytes=8192 required=8192 alignment=64 offset=0 end=8192 memory_type_bits=0x00000003
+BUFFER_LAYOUT name=stage-a bytes=8192 required=8192 alignment=64 offset=8192 end=16384 memory_type_bits=0x00000003
+BUFFER_LAYOUT name=stage-b bytes=8192 required=8192 alignment=64 offset=16384 end=24576 memory_type_bits=0x00000003
+BUFFER_LAYOUT name=output bytes=32768 required=32768 alignment=64 offset=24576 end=57344 memory_type_bits=0x00000003
+MEMORY_PLAN bytes=57344 memory_type=0 buffers=4 compatible_bits=0x00000003
+MEMORY_ALLOCATION allocations=1 bytes=57344 bound_buffers=4 memory_type=0
+PASS Vulkan 3-stage pipeline: 2048 elements, 12288 correct 32-bit words; stageA=de56d6d0aa66c6ec stageB=c1259ad4f024499a output=05de70c62f8d7cfd
+CLEANUP_SHARED_MEMORY allocations_freed=1 buffers_bound=4 simulated_device_lost=0 final_status=0

@@ -91,3 +91,9 @@ The manifest includes the original library vendor/driver IDs and reported Vulkan
 The observed Vulkan 1.1 API on Adreno and Mali supports the tested generic pipeline/resource creation path and emits successful cleanup for early exits at each explicit checkpoint. Together with the previous independent multi-stage execution and command-buffer replay tests, this is useful evidence for a separate general-purpose compute runtime.
 
 This does **not** implement a hashcat Vulkan backend, validate arbitrary concurrent GPU workloads, diagnose a Qualcomm driver-internal memory leak, or demonstrate a working Vulkan bcrypt implementation. The archived RedMagic OpenCL mode-3200 self-test exit **245** remains unresolved.
+
+## Follow-up: real Vulkan suballocation and simulated device-loss handling
+
+A separate Vulkan 1.1 compute diagnostic now binds **four distinct storage buffers to one aligned `VkDeviceMemory` allocation** using each buffer's actual `VkMemoryRequirements`. Unlike this resource-lifetime test, that program executes all three original synthetic GPU stages and verifies the two intermediate and final buffers against an independent CPU reference on RedMagic and Pixel, both `-O0` and `-O`.
+
+The measured allocation was 57,344 bytes on both devices, but the selected memory type differs (Adreno type 6, Mali type 0). Three controlled application-side error paths (`VK_ERROR_FEATURE_NOT_PRESENT`, `VK_ERROR_OUT_OF_DEVICE_MEMORY` and **simulated**, not actual, `VK_ERROR_DEVICE_LOST`) each passed their expected cleanup checks. See `docs/vulkan-suballocation-redmagic.md` and `tests/fixtures/android-gpu/vulkan-suballocation-20261031/` for the exact source, hardware logs and reproducible validation.

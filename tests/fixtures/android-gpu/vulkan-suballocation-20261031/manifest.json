@@ -1,0 +1,169 @@
+{
+  "observation_date": "2026-10-31",
+  "scope": "real 3-stage Vulkan arithmetic with four storage buffers bound into one allocation; three simulated host error paths; no hashcat, password or cryptographic GPU work",
+  "toolchain": {
+    "android_ndk": "29.0.14206865",
+    "native_compiler": "Clang 21.0.0",
+    "shader_compiler": "glslc shaderc v2022.3",
+    "target": "aarch64-linux-android26",
+    "spirv_target": "vulkan1.1"
+  },
+  "device_profiles": {
+    "redmagic": {
+      "model": "RedMagic NX709S",
+      "gpu": "Adreno (TM) 730",
+      "vendor_id": "0x5143",
+      "device_id": "0x7030002",
+      "driver_version": "0x80267000",
+      "vulkan_api_version": "1.1.128",
+      "queue_family": 0,
+      "shared_memory_limit": 32768
+    },
+    "pixel": {
+      "model": "Pixel 9 Pro XL",
+      "gpu": "Mali-G715",
+      "vendor_id": "0x13b5",
+      "device_id": "0xb8a20000",
+      "driver_version": "0x0d802000",
+      "vulkan_api_version": "1.4.305",
+      "queue_family": 0,
+      "shared_memory_limit": 32768
+    }
+  },
+  "memory_profiles": {
+    "redmagic": {
+      "required_alignment_bytes": 64,
+      "memory_type_bits": "0x00000041",
+      "selected_memory_type": 6,
+      "memory_allocation_bytes": 57344
+    },
+    "pixel": {
+      "required_alignment_bytes": 64,
+      "memory_type_bits": "0x00000003",
+      "selected_memory_type": 0,
+      "memory_allocation_bytes": 57344
+    }
+  },
+  "workload": {
+    "elements": 2048,
+    "workgroups": 64,
+    "local_size": 32,
+    "compute_stages": 3,
+    "number_of_buffers": 4,
+    "number_of_vk_device_memory_allocations": 1,
+    "one_allocation_limit_bytes": 1048576,
+    "buffer_sizes_bytes": [
+      8192,
+      8192,
+      8192,
+      32768
+    ],
+    "expected_buffer_offsets_bytes": [
+      0,
+      8192,
+      16384,
+      24576
+    ],
+    "expected_buffer_ends_bytes": [
+      8192,
+      16384,
+      24576,
+      57344
+    ],
+    "expected_checksums": {
+      "stage_a": "de56d6d0aa66c6ec",
+      "stage_b": "c1259ad4f024499a",
+      "output": "05de70c62f8d7cfd"
+    },
+    "gpu_words_checked_per_run": 12288
+  },
+  "error_handling": {
+    "simulated_failure_codes": {
+      "memory-type": 42,
+      "allocation": 43,
+      "device-lost": 44
+    },
+    "simulated_vkresults": {
+      "memory-type": -8,
+      "allocation": -2,
+      "device-lost": -4
+    },
+    "actual_device_loss_caused": false,
+    "device_lost_injection_after_successful_fence_wait": true,
+    "invalid_argument_codes": {
+      "invalid-simulation": 2,
+      "missing-shader": 2,
+      "missing-simulate-flag": 2
+    }
+  },
+  "source_sha256": {
+    "tools/vulkan-suballocation-diagnostic.c": "7a5b74f6717d907fda247ad0037b058be13bfdbe7ade46aed999b678e1302bce",
+    "tools/build-vulkan-suballocation-diagnostic.ps1": "ce5bf3cc6662578f14d2424c84a03be0b7463c40e7a1479217a836f70772813c",
+    "tools/run-vulkan-suballocation-diagnostic.ps1": "3d8d28448e385f7d1aff362201f544d775fa5f93f52d561a3a27a4081a172f02",
+    "tools/test-vulkan-multistage-reference.py": "a8c2b36586b07f709cfe4952e67d61cdc8dbed9c3717ad26cf0d5459c35f7489",
+    "tools/vulkan-pipeline-stage-a.comp": "e9c8ba8d1502a0120ad05043096cc02400221f3099d7c8432307c6cef2caeec8",
+    "tools/vulkan-pipeline-stage-b.comp": "d79344b2d4c22514da50bbf716c20e5b3bba413d88b21d2a166fdee19e39aca4",
+    "tools/vulkan-pipeline-stage-c.comp": "800ac35354741e9dd01b7e8d2f2922e3f9f62f8e7e0f99095f63e2bbd1ee26c1"
+  },
+  "build_artifact_sha256": {
+    "vulkan-suballocation-arm64": "4c99c1e9ebdb02ec6f0a65c4dd7f065c2977aac742a409001725cbec8ee3c231",
+    "stage-a-O0.spv": "c391fa1c7af20b012719c282f5589c48eb0652adc2f78c1491defb7e25999ff0",
+    "stage-a-O.spv": "2d04ccfa7d801f15ecd42c4bf76a4582c9490366ec8a21039ca0e38ef1901706",
+    "stage-b-O0.spv": "73178264dc42364dce6ab6c2de21417e86e35e8e3dfd4852d94a808a6b5c3dab",
+    "stage-b-O.spv": "7406e64670e925ed395b882544814b39606bb79bc612ca18d87b882ca5ffa589",
+    "stage-c-O0.spv": "2f893613ee640cc0045089f3b55761ef6eb20eaffd956b6388828e4fdfa5fc1c",
+    "stage-c-O.spv": "6b9cbb6bf9f1845e1e63749e11f7d1c745e965b9dfda424183cf8090d2efc379"
+  },
+  "gpu_runs": [
+    {
+      "device": "redmagic",
+      "optimization": "O0",
+      "file": "redmagic-O0.log",
+      "exit_code": 0,
+      "sha256": "bd6d454c4a327c3099e912b2778fcb0324d45ee5b471d533d5729a245cbfbcc7"
+    },
+    {
+      "device": "redmagic",
+      "optimization": "O",
+      "file": "redmagic-O.log",
+      "exit_code": 0,
+      "sha256": "85cc126e0d25fbef6b7f603dd766db98fae60995a780ed781906c5dc463b8f0b"
+    },
+    {
+      "device": "pixel",
+      "optimization": "O0",
+      "file": "pixel-O0.log",
+      "exit_code": 0,
+      "sha256": "3af561e16a706426ebd00d4b6cea89744321ec37826163b9c7cdd9567285886c"
+    },
+    {
+      "device": "pixel",
+      "optimization": "O",
+      "file": "pixel-O.log",
+      "exit_code": 0,
+      "sha256": "2aad9b5c738ea6d463279c5d41a1627c1b679df931cbfb95687c6ec8ad35b296"
+    }
+  ],
+  "error_control_runs": [
+    {
+      "device": "redmagic",
+      "file": "redmagic-negative-controls.log",
+      "simulated_errors": 3,
+      "invalid_arguments": 3,
+      "sha256": "7365e30c42144bd857637d56d5da86576d877e354bf2d520363392d9f9f76163"
+    },
+    {
+      "device": "pixel",
+      "file": "pixel-negative-controls.log",
+      "simulated_errors": 3,
+      "invalid_arguments": 3,
+      "sha256": "7365e30c42144bd857637d56d5da86576d877e354bf2d520363392d9f9f76163"
+    }
+  ],
+  "limitations": [
+    "Simulated device loss does not validate real driver VK_ERROR_DEVICE_LOST behavior",
+    "Memory allocation is capped at 1 MiB; no memory exhaustion attempt",
+    "Only public synthetic GPU arithmetic and per-stage CPU output verification",
+    "The archived Qualcomm OpenCL bcrypt mode-3200 self-test exit 245 remains unresolved"
+  ]
+}
