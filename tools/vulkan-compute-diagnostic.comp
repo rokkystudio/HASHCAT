@@ -1,0 +1,47 @@
+#version 450
+
+/*
+ * Validate unsigned 32-bit arithmetic and workgroup-shared memory using
+ * synthetic input. The shader contains no password or hash computations.
+ */
+layout (local_size_x = 32, local_size_y = 1, local_size_z = 1) in;
+
+layout (set = 0, binding = 0, std430) readonly buffer InputBuffer
+{
+  uint values[];
+} input_buffer;
+
+layout (set = 0, binding = 1, std430) writeonly buffer OutputBuffer
+{
+  uvec4 results[];
+} output_buffer;
+
+shared uint shared_values[32];
+
+void main ()
+{
+  const uint index = gl_GlobalInvocationID.x;
+  const uint lane = gl_LocalInvocationID.x;
+
+  const uint value = input_buffer.values[index];
+
+  const uint multiply_add = value * 1664525u + 1013904223u;
+  const uint rotated = (value << 7u) | (value >> 25u);
+
+  shared_values[lane] = multiply_add ^ rotated;
+
+  barrier ();
+
+  const uint next_lane = (lane + 1u) & 31u;
+  const uint neighbor = shared_values[next_lane];
+
+  const uint mixed = (multiply_add + rotated) ^ (value * 3u);
+  const uint swapped = (value << 16u) | (value >> 16u);
+
+  output_buffer.results[index] = uvec4 (
+    multiply_add,
+    rotated,
+    multiply_add ^ neighbor,
+    mixed ^ swapped
+  );
+}

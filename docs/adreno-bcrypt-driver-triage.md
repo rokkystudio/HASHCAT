@@ -77,4 +77,10 @@ A provenance-verified readback of the **real Qualcomm GPU's** intermediate bcryp
 
 For an OEM/Qualcomm issue, distinguish the ordinary **self-test rejection (245)** from the independent **compiler SIGSEGV (139)**, attach a sanitized compiler crash stack and the exact reported OpenCL build string, and ask for a supported explanation of both failures. Do not include device serial numbers, private credentials or unverified performance claims.
 
+## Independent Vulkan Compute hardware check (2026-10-31)
+
+A standalone, noncryptographic Vulkan 1.1 Compute program was compiled to SPIR-V by the Android NDK glslc tool and executed on the same connected RedMagic Adreno 730 and Pixel Mali-G715 GPUs. All eight combinations (two different public synthetic shaders, optimized and unoptimized, on both devices) exited 0 and matched an independent scalar CPU reference for all 8192 output words. The larger shader uses 32768 bytes of workgroup-shared memory and 256 cross-lane dependent reads per invocation with a barrier. SHA-256 source identities, actual GPU output logs and shader binary identities are archived in tests/fixtures/android-gpu/vulkan-compute-20261031/ and documented in docs/vulkan-compute-redmagic.md.
+
+This confirms specific Vulkan Compute arithmetic and shared-memory behavior on the current Qualcomm driver, but it does **not** execute bcrypt or show whether Qualcomm's OpenCL compiler produces incorrect Blowfish instructions. The archived mode-3200 OpenCL self-test failure (245) and the distinct optimized-disabled compiler SIGSEGV (139) remain unresolved.
+
 **Current decision:** Preserve original production code and hashcat's self-test; do not declare Adreno bcrypt mode 3200 operational until an authentic device execution passes.

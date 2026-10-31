@@ -1,0 +1,57 @@
+#version 450
+
+/*
+ * Verify 32 KiB of workgroup-shared memory with 32 threads, a barrier, and
+ * 256 cross-lane reads per thread. Input is synthetic, not cryptographic.
+ */
+layout (local_size_x = 32, local_size_y = 1, local_size_z = 1) in;
+
+layout (set = 0, binding = 0, std430) readonly buffer InputBuffer
+{
+  uint values[];
+} input_buffer;
+
+layout (set = 0, binding = 1, std430) writeonly buffer OutputBuffer
+{
+  uvec4 results[];
+} output_buffer;
+
+shared uint scratch[8192];
+
+void main ()
+{
+  const uint index = gl_GlobalInvocationID.x;
+  const uint lane = gl_LocalInvocationID.x;
+  const uint group_start = gl_WorkGroupID.x * 32u;
+  const uint value = input_buffer.values[index];
+
+  for (uint offset = lane; offset < 8192u; offset += 32u)
+  {
+    const uint source = input_buffer.values[group_start + (offset & 31u)];
+
+    scratch[offset] =
+      (source * 1664525u + 1013904223u) ^ (offset * 2654435761u);
+  }
+
+  barrier ();
+
+  uint accumulated = 0x12345678u;
+
+  for (uint offset = lane; offset < 8192u; offset += 32u)
+  {
+    const uint next = scratch[(offset + 1u) & 8191u];
+
+    accumulated =
+      (accumulated + next)
+      ^ ((accumulated << 5u) | (accumulated >> 27u));
+  }
+
+  const uint last_index = 8160u + ((lane + 1u) & 31u);
+
+  output_buffer.results[index] = uvec4 (
+    value * 1664525u + 1013904223u,
+    (value << 7u) | (value >> 25u),
+    accumulated,
+    scratch[last_index]
+  );
+}

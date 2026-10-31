@@ -1,0 +1,6 @@
+MODE=shared32k
+OPTIMIZATION=O
+ADB_EXIT_CODE=0
+VULKAN_DEVICE name=Mali-G715 vendor=0x13b5 device=0xb8a20000 driver=0x0d802000 api=1.4.305 queue_family=0
+VULKAN_LIMITS workgroup_x=1024 invocations=1024 shared_bytes=32768
+PASS Vulkan Compute mode=shared32k: 2048 elements, 8192 correct 32-bit words; FNV1A64=0c099d93a929bc82

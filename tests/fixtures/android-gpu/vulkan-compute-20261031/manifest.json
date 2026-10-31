@@ -1,0 +1,132 @@
+{
+  "observation_date": "2026-10-31",
+  "scope": "real on-device Vulkan 1.1 compute execution of public synthetic arithmetic; no cryptographic workload or hashcat modification",
+  "toolchain": {
+    "ndk": "29.0.14206865",
+    "native_compiler": "Android NDK Clang 21.0.0",
+    "shader_compiler": "glslc shaderc v2022.3 ndk-r28b",
+    "target_environment": "vulkan1.1",
+    "spirv_validation": "spirv-val --target-env vulkan1.1",
+    "host_target": "aarch64-linux-android26"
+  },
+  "device_profiles": {
+    "redmagic": {
+      "model": "RedMagic NX709S",
+      "gpu": "Adreno (TM) 730",
+      "vendor_id": "0x5143",
+      "device_id": "0x7030002",
+      "driver_version": "0x80267000",
+      "vulkan_api_version": "1.1.128",
+      "max_compute_work_group_size_x": 1024,
+      "max_compute_work_group_invocations": 1024,
+      "max_compute_shared_memory_size": 32768
+    },
+    "pixel": {
+      "model": "Pixel 9 Pro XL",
+      "gpu": "Mali-G715",
+      "vendor_id": "0x13b5",
+      "device_id": "0xb8a20000",
+      "driver_version": "0x0d802000",
+      "vulkan_api_version": "1.4.305",
+      "max_compute_work_group_size_x": 1024,
+      "max_compute_work_group_invocations": 1024,
+      "max_compute_shared_memory_size": 32768
+    }
+  },
+  "synthetic_workload": {
+    "elements": 2048,
+    "u32_outputs": 8192,
+    "local_group_size": 32,
+    "group_count": 64,
+    "baseline_shared_bytes": 128,
+    "shared32k_shared_bytes": 32768,
+    "shared32k_cross_lane_reads_per_thread": 256,
+    "expected_checksum_fnv1a64": {
+      "baseline": "967d964855b53334",
+      "shared32k": "0c099d93a929bc82"
+    }
+  },
+  "source_sha256": {
+    "tools/vulkan-compute-diagnostic.c": "c34ec01130cfddaddeaa0e6ea4368b404ad1721878c41d44581b3a80d2beca6f",
+    "tools/vulkan-compute-diagnostic.comp": "9041bff96424548e8a77095fab37be8cd44cea82241d00e98f91d19796460360",
+    "tools/vulkan-compute-shared32k.comp": "eaa8d31a1dc8d540a74c50067d959a52209ae7ea4f0723ebcda2923664096a63"
+  },
+  "build_artifact_sha256": {
+    "vulkan-compute-diagnostic-arm64": "3db0a963c40a60b9b727d56f8557248f95263ab1f4d49bc1db46dff975d7fd1a",
+    "vulkan-compute-O0.spv": "450f080795dea021388141b1b3fdabea79b6f879d86e499b398ea819b6366b18",
+    "vulkan-compute-O.spv": "9f048a22c53045c0475745bd3b444f69f1e2cfab8edab1bcfcb08eff251f5952",
+    "vulkan-compute-shared32k-O0.spv": "234a009a09643073546b4e1506ab5e0921b769e39be5792ddc7600384272834e",
+    "vulkan-compute-shared32k-O.spv": "8295b1ede698c82e6b235e2289b2f5e26d06002b5786e876444982e85e134ae4"
+  },
+  "runs": [
+    {
+      "device": "redmagic",
+      "mode": "baseline",
+      "optimization": "O0",
+      "file": "redmagic-baseline-O0.log",
+      "sha256": "348e691040cf537c9eefbb9555e666eada41196eec914ec57d340cda6f78351c",
+      "exit_code": 0
+    },
+    {
+      "device": "redmagic",
+      "mode": "baseline",
+      "optimization": "O",
+      "file": "redmagic-baseline-O.log",
+      "sha256": "03df8085eb6ee1fc4a2a85ffd4e28282be5975eaf359d876ae67c73230db740d",
+      "exit_code": 0
+    },
+    {
+      "device": "redmagic",
+      "mode": "shared32k",
+      "optimization": "O0",
+      "file": "redmagic-shared32k-O0.log",
+      "sha256": "1cccf3944dc9c60182f2dc849ea31461ceed94e0a2177b818fa12f4ba47ca0fb",
+      "exit_code": 0
+    },
+    {
+      "device": "redmagic",
+      "mode": "shared32k",
+      "optimization": "O",
+      "file": "redmagic-shared32k-O.log",
+      "sha256": "cdc9be7af057b6b228dd569473a3c362fc37f85255816ef3f7ed899abb472c32",
+      "exit_code": 0
+    },
+    {
+      "device": "pixel",
+      "mode": "baseline",
+      "optimization": "O0",
+      "file": "pixel-baseline-O0.log",
+      "sha256": "16f8344eae759df0cc6bfbdab7a77a5d6558bffe6766b504afae670349f11f13",
+      "exit_code": 0
+    },
+    {
+      "device": "pixel",
+      "mode": "baseline",
+      "optimization": "O",
+      "file": "pixel-baseline-O.log",
+      "sha256": "69a593dd90ad12c63185fc39c505b22efc13191510881417ca74817a53127b05",
+      "exit_code": 0
+    },
+    {
+      "device": "pixel",
+      "mode": "shared32k",
+      "optimization": "O0",
+      "file": "pixel-shared32k-O0.log",
+      "sha256": "0119606dd07a3e32d043c9e7acadd52ca56f10bf92b34ddf01adf4b78f7b088e",
+      "exit_code": 0
+    },
+    {
+      "device": "pixel",
+      "mode": "shared32k",
+      "optimization": "O",
+      "file": "pixel-shared32k-O.log",
+      "sha256": "84398329824ed1e9c4a4b874479e7720fb205a726ac6314ae1910ce3183ce2cb",
+      "exit_code": 0
+    }
+  ],
+  "limitations": [
+    "No hashcat runtime or bcrypt shader executed",
+    "Synthetic 32-bit arithmetic and 32 KiB workgroup memory passes do not prove every Vulkan driver operation",
+    "Vulkan compute success does not identify the separate archived OpenCL bcrypt self-test divergence"
+  ]
+}
