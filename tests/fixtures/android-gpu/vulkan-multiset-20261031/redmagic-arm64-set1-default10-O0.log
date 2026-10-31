@@ -1,0 +1,56 @@
+TEST=vulkan-core10-multiset
+SETS=1
+MODE=default10
+OPTIMIZATION=O0
+ABI=arm64-v8a
+ADB_EXIT_CODE=0
+VULKAN_LOADER_VERSION=1.3.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=3 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=1 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Adreno (TM) 730 vendor=0x5143 device=0x7030002 api=1.1.128 driver=0x80267000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=65535 shared_max=32768 storage_range_max=134217728 descriptor_max=524288 non_coherent_atom=1
+MULTI_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=1 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
+MULTI_REQUEST sets=1 buffers=5 bindings=3 storage=2 uniform=1 stages=1 mapped=3 noncoherent=0
+DESCRIPTOR_ACCEPT sets=1 bindings=3 storage=2 uniform=1
+MULTI_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=1 label=gpu-output size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=2 label=staging-upload size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=3 label=staging-download size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=4 label=uniform-parameters size=64 alignment=64 bits=0x00000041
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=1 label=gpu-output type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=2 label=staging-upload type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=staging-download type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=uniform-parameters type=6 heap=0 bytes=64 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=32832 declared=11584221184
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=268435456
+MULTI_MAPPED index=2 type=6 coherent=1
+MULTI_MAPPED index=3 type=6 coherent=1
+MULTI_MAPPED index=4 type=6 coherent=1
+MULTI_SET_LAYOUT index=0 bindings=3
+MULTI_SET_ALLOCATED index=0
+MULTI_DESCRIPTOR index=0 set=0 binding=2 type=storage buffer=0 range=8192
+MULTI_DESCRIPTOR index=1 set=0 binding=7 type=storage buffer=1 range=8192
+MULTI_DESCRIPTOR index=2 set=0 binding=4 type=uniform buffer=4 range=16
+MULTI_READY acquisitions=23 buffers=5 sets=1 bindings=3 storage=2 uniform=1 stages=1 mapped=3 api=1.0
+MULTI_SYNC index=2 operation=flush coherent=1 driver_call=0 atom=1 result=0
+MULTI_SYNC index=4 operation=flush coherent=1 driver_call=0 atom=1 result=0
+MULTI_SUBMIT completed=1 reused=0 result=0
+MULTI_SYNC index=3 operation=invalidate coherent=1 driver_call=0 atom=1 result=0
+MULTI_PASS sets=1 submission=0 verified_words=2048 output=da420145579e3ab0
+MULTI_SYNC index=2 operation=flush coherent=1 driver_call=0 atom=1 result=0
+MULTI_SYNC index=4 operation=flush coherent=1 driver_call=0 atom=1 result=0
+MULTI_SUBMIT completed=2 reused=1 result=0
+MULTI_SYNC index=3 operation=invalidate coherent=1 driver_call=0 atom=1 result=0
+MULTI_PASS sets=1 submission=1 verified_words=2048 output=3dc96f338cbbffac
+MULTI_SYNC index=2 operation=flush coherent=1 driver_call=0 atom=1 result=0
+MULTI_SYNC index=4 operation=flush coherent=1 driver_call=0 atom=1 result=0
+MULTI_SUBMIT completed=3 reused=1 result=0
+MULTI_SYNC index=3 operation=invalidate coherent=1 driver_call=0 atom=1 result=0
+MULTI_PASS sets=1 submission=2 verified_words=2048 output=fc6cfc42aeaff265
+MULTI_SYNC index=2 operation=flush coherent=1 driver_call=0 atom=1 result=0
+MULTI_SYNC index=4 operation=flush coherent=1 driver_call=0 atom=1 result=0
+MULTI_SUBMIT completed=4 reused=1 result=0
+MULTI_SYNC index=3 operation=invalidate coherent=1 driver_call=0 atom=1 result=0
+MULTI_PASS sets=1 submission=3 verified_words=2048 output=00ba58c7ff9a53e2
+MULTI_DESTROY acquisitions=23 buffers=5 memories=5 maps=3 layouts=1 sets=1 shaders=1 pipelines=1 submissions=4 idle_result=0

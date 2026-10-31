@@ -140,6 +140,12 @@ python -B tools/test-vulkan-core10-graph-evidence.py --artifacts build/diagnosti
 
 Without `--artifacts`, the verifier checks the archived real-device and native-CPU evidence and source file identities without requiring an Android device, NDK or compiled executable. `tools/archive-vulkan-core10-graph-evidence.py` records exact original local observations without rerunning any Vulkan program.
 
+## Follow-up: multiple descriptor sets and uniform buffers
+
+An independent `tools/vulkan-core10-multiset.c` resource owner now accepts arbitrary positive numbers of descriptor sets and Compute stages, with exactly declared `STORAGE_BUFFER` and `UNIFORM_BUFFER` types, sparse numbered binding positions and a dynamically allocated `VkPipelineLayout`. A standalone `vulkan_core10_descriptor_validate` policy checks actual `maxBoundDescriptorSets`, separate storage/uniform limits, buffer usage, ranges and offset alignments without guessing a GPU profile.
+
+Public integer SPIR-V 1.0 shaders exercise one and two descriptor sets, each with two storage descriptors and one std140 uniform descriptor. RedMagic ARM64/ARMv7 and Pixel ARM64 pass **40 actual GPU runs** with four sequential uniform-updated submissions per run. Pixel exercises true noncoherent flush/invalidate for mapped uniform and staging allocations. **144 hardware post-acquisition resource cleanup trials**, eight exact unsupported RedMagic memory requests and 27 invalid CLI controls are independently validated. See `docs/vulkan-core10-multiset-portability.md` and `tests/fixtures/android-gpu/vulkan-multiset-20261031/`.
+
 ## Integration boundaries
 
 The older six-buffer resource runtime and its SHA-256-certified logs remain unchanged; they serve as independent regression evidence. The dynamic graph runtime extends **resource infrastructure**, not hashcat GPU algorithms.

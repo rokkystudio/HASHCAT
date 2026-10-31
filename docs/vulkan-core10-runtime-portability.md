@@ -130,6 +130,10 @@ A separate `tools/vulkan-core10-graph.c` resource owner and `tools/vulkan-core10
 
 On actual RedMagic ARM64, RedMagic ARMv7 and Pixel ARM64 processes, **60 real GPU runs** (240 sequential submissions) passed exact CPU output verification. Pixel exercised actual noncoherent flush/invalidate for all three graph sizes. Another **216 post-acquisition fault-injection cases** checked cleanup at every one of the 20, 24 and 28 owned-resource states per graph configuration. Original source/binary/device SHA-256 records and limitations are in `docs/vulkan-core10-dynamic-graph-portability.md` and `tests/fixtures/android-gpu/vulkan-dynamic-graph-20261031/`. This remains synthetic Vulkan infrastructure, without hashcat GPU algorithm integration.
 
+## Follow-up: mixed storage/uniform multiple descriptor sets
+
+The independent `tools/vulkan-core10-multiset.c` runtime manages a variable number of `VkDescriptorSetLayout` and `VkDescriptorSet` handles with explicit `VkPipelineLayout.pSetLayouts`, validates both `STORAGE_BUFFER` and `UNIFORM_BUFFER` descriptors against actual physical GPU limits, and supports CPU-updated uniform data on coherent and noncoherent HOST_VISIBLE memory. On real RedMagic ARM64, RedMagic ARMv7 and Pixel ARM64, one- and two-set public shader layouts completed **40 GPU runs with 160 independently checked submissions**, 144 genuine post-acquisition fault cleanup trials and 27 malformed input rejections. All changes remain separate from existing runtime evidence. Detailed reproduction and limitations: `docs/vulkan-core10-multiset-portability.md`.
+
 ## Not established
 
 This is a fixed six-buffer/four-descriptor/three-pipeline resource owner for the current tested synthetic workload, not yet a runtime supporting arbitrary shader descriptor layouts or variable buffer counts. A future runtime must have explicit workload ABI contracts rather than inferred shader requirements.

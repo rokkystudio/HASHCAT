@@ -1,0 +1,37 @@
+#version 450
+
+/*
+ * Consume public synthetic 32-bit inputs and explicit std140 uniform
+ * parameters through one descriptor set with sparse binding positions.
+ * No password, hash or cryptographic GPU operation is performed.
+ */
+layout (local_size_x = 32, local_size_y = 1, local_size_z = 1) in;
+
+layout (set = 0, binding = 2, std430) readonly buffer InputBuffer
+{
+  uint values[];
+} input_buffer;
+
+layout (set = 0, binding = 7, std430) writeonly buffer OutputBuffer
+{
+  uint values[];
+} output_buffer;
+
+layout (set = 0, binding = 4, std140) uniform Parameters
+{
+  uvec4 values;
+} parameters;
+
+void main ()
+{
+  const uint index = gl_GlobalInvocationID.x;
+  const uint value = input_buffer.values[index];
+  const uint mixed =
+    value * parameters.values.x + parameters.values.y;
+  const uint shift = parameters.values.z;
+  const uint rotated =
+    (mixed << shift) | (mixed >> (32u - shift));
+
+  output_buffer.values[index] =
+    (mixed ^ rotated) + (index ^ parameters.values.w);
+}

@@ -1,0 +1,25 @@
+TEST=vulkan-core10-multiset-host-policy
+OPTIMIZATION=O2
+GPU_DRIVER_LINKED=0
+EXIT_CODE=0
+DESCRIPTOR_ACCEPT sets=1 bindings=3 storage=2 uniform=1
+PASS_DESCRIPTOR_ONE_SET sparse_storage_and_uniform
+DESCRIPTOR_ACCEPT sets=2 bindings=3 storage=2 uniform=1
+PASS_DESCRIPTOR_TWO_SETS independent_layouts_and_types
+DESCRIPTOR_REJECT_SETS required=2 max_bound=1
+DESCRIPTOR_REJECT_STAGE_RESOURCES required=3 max=2
+DESCRIPTOR_REJECT_COUNTS storage=2 uniform=1 storage_set_max=4 storage_stage_max=4 uniform_set_max=0 uniform_stage_max=2
+DESCRIPTOR_REJECT_COUNTS storage=2 uniform=1 storage_set_max=4 storage_stage_max=1 uniform_set_max=2 uniform_stage_max=2
+PASS_DESCRIPTOR_LIMITS bound_sets_stage_resources_storage_uniform
+DESCRIPTOR_REJECT_TYPE index=2 type=0
+DESCRIPTOR_REJECT_RANGE index=2 set=1 binding=5 type=6 offset=0 range=16 alignment=64 max=256
+DESCRIPTOR_REJECT_RANGE index=2 set=1 binding=5 type=6 offset=16 range=16 alignment=64 max=256
+DESCRIPTOR_REJECT_RANGE index=2 set=1 binding=5 type=6 offset=0 range=16 alignment=64 max=8
+DESCRIPTOR_REJECT_BINDING index=2 set=1 binding=5 buffer=2 offset=0 range=300
+DESCRIPTOR_REJECT_BINDING index=2 set=1 binding=5 buffer=3 offset=0 range=16
+PASS_DESCRIPTOR_RANGES unsupported_type_wrong_usage_alignment_length
+DESCRIPTOR_REJECT_DUPLICATE set=1 binding=1
+DESCRIPTOR_REJECT_EMPTY_SET set=2
+DESCRIPTOR_REJECT_BINDING index=2 set=2 binding=5 buffer=2 offset=0 range=16
+PASS_DESCRIPTOR_STRUCTURE duplicate_empty_set_invalid_set_empty_input
+PASS_DESCRIPTOR_POLICY no_vulkan_driver no_model_profiles

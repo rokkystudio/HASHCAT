@@ -1,0 +1,1200 @@
+TEST=vulkan-core10-multiset-faults
+ABI=arm64-v8a
+SET_COUNTS=1,2
+FAULT_CASE sets=1 point=1 exit=42
+MULTI_CREATE_FAILED result=-3 fail_after=1
+MULTI_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.3.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=3 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=1 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Adreno (TM) 730 vendor=0x5143 device=0x7030002 api=1.1.128 driver=0x80267000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=65535 shared_max=32768 storage_range_max=134217728 descriptor_max=524288 non_coherent_atom=1
+MULTI_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=1 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
+MULTI_REQUEST sets=1 buffers=5 bindings=3 storage=2 uniform=1 stages=1 mapped=3 noncoherent=0
+DESCRIPTOR_ACCEPT sets=1 bindings=3 storage=2 uniform=1
+MULTI_INJECT_FAULT acquisition=1 resource=device
+MULTI_DESTROY acquisitions=1 buffers=0 memories=0 maps=0 layouts=0 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE sets=1 point=2 exit=42
+MULTI_CREATE_FAILED result=-3 fail_after=2
+MULTI_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.3.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=3 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=1 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Adreno (TM) 730 vendor=0x5143 device=0x7030002 api=1.1.128 driver=0x80267000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=65535 shared_max=32768 storage_range_max=134217728 descriptor_max=524288 non_coherent_atom=1
+MULTI_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=1 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
+MULTI_REQUEST sets=1 buffers=5 bindings=3 storage=2 uniform=1 stages=1 mapped=3 noncoherent=0
+DESCRIPTOR_ACCEPT sets=1 bindings=3 storage=2 uniform=1
+MULTI_INJECT_FAULT acquisition=2 resource=buffer
+MULTI_DESTROY acquisitions=2 buffers=1 memories=0 maps=0 layouts=0 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE sets=1 point=3 exit=42
+MULTI_CREATE_FAILED result=-3 fail_after=3
+MULTI_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.3.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=3 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=1 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Adreno (TM) 730 vendor=0x5143 device=0x7030002 api=1.1.128 driver=0x80267000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=65535 shared_max=32768 storage_range_max=134217728 descriptor_max=524288 non_coherent_atom=1
+MULTI_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=1 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
+MULTI_REQUEST sets=1 buffers=5 bindings=3 storage=2 uniform=1 stages=1 mapped=3 noncoherent=0
+DESCRIPTOR_ACCEPT sets=1 bindings=3 storage=2 uniform=1
+MULTI_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000049
+MULTI_INJECT_FAULT acquisition=3 resource=buffer
+MULTI_DESTROY acquisitions=3 buffers=2 memories=0 maps=0 layouts=0 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE sets=1 point=4 exit=42
+MULTI_CREATE_FAILED result=-3 fail_after=4
+MULTI_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.3.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=3 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=1 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Adreno (TM) 730 vendor=0x5143 device=0x7030002 api=1.1.128 driver=0x80267000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=65535 shared_max=32768 storage_range_max=134217728 descriptor_max=524288 non_coherent_atom=1
+MULTI_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=1 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
+MULTI_REQUEST sets=1 buffers=5 bindings=3 storage=2 uniform=1 stages=1 mapped=3 noncoherent=0
+DESCRIPTOR_ACCEPT sets=1 bindings=3 storage=2 uniform=1
+MULTI_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=1 label=gpu-output size=8192 alignment=64 bits=0x00000041
+MULTI_INJECT_FAULT acquisition=4 resource=buffer
+MULTI_DESTROY acquisitions=4 buffers=3 memories=0 maps=0 layouts=0 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE sets=1 point=5 exit=42
+MULTI_CREATE_FAILED result=-3 fail_after=5
+MULTI_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.3.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=3 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=1 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Adreno (TM) 730 vendor=0x5143 device=0x7030002 api=1.1.128 driver=0x80267000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=65535 shared_max=32768 storage_range_max=134217728 descriptor_max=524288 non_coherent_atom=1
+MULTI_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=1 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
+MULTI_REQUEST sets=1 buffers=5 bindings=3 storage=2 uniform=1 stages=1 mapped=3 noncoherent=0
+DESCRIPTOR_ACCEPT sets=1 bindings=3 storage=2 uniform=1
+MULTI_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=1 label=gpu-output size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=2 label=staging-upload size=8192 alignment=64 bits=0x00000041
+MULTI_INJECT_FAULT acquisition=5 resource=buffer
+MULTI_DESTROY acquisitions=5 buffers=4 memories=0 maps=0 layouts=0 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE sets=1 point=6 exit=42
+MULTI_CREATE_FAILED result=-3 fail_after=6
+MULTI_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.3.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=3 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=1 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Adreno (TM) 730 vendor=0x5143 device=0x7030002 api=1.1.128 driver=0x80267000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=65535 shared_max=32768 storage_range_max=134217728 descriptor_max=524288 non_coherent_atom=1
+MULTI_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=1 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
+MULTI_REQUEST sets=1 buffers=5 bindings=3 storage=2 uniform=1 stages=1 mapped=3 noncoherent=0
+DESCRIPTOR_ACCEPT sets=1 bindings=3 storage=2 uniform=1
+MULTI_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=1 label=gpu-output size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=2 label=staging-upload size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=3 label=staging-download size=8192 alignment=64 bits=0x00000049
+MULTI_INJECT_FAULT acquisition=6 resource=buffer
+MULTI_DESTROY acquisitions=6 buffers=5 memories=0 maps=0 layouts=0 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE sets=1 point=7 exit=42
+MULTI_CREATE_FAILED result=-3 fail_after=7
+MULTI_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.3.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=3 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=1 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Adreno (TM) 730 vendor=0x5143 device=0x7030002 api=1.1.128 driver=0x80267000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=65535 shared_max=32768 storage_range_max=134217728 descriptor_max=524288 non_coherent_atom=1
+MULTI_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=1 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
+MULTI_REQUEST sets=1 buffers=5 bindings=3 storage=2 uniform=1 stages=1 mapped=3 noncoherent=0
+DESCRIPTOR_ACCEPT sets=1 bindings=3 storage=2 uniform=1
+MULTI_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=1 label=gpu-output size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=2 label=staging-upload size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=3 label=staging-download size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=4 label=uniform-parameters size=64 alignment=64 bits=0x00000041
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=1 label=gpu-output type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=2 label=staging-upload type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=staging-download type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=uniform-parameters type=6 heap=0 bytes=64 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=32832 declared=11584221184
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=268435456
+MULTI_INJECT_FAULT acquisition=7 resource=memory
+MULTI_DESTROY acquisitions=7 buffers=5 memories=1 maps=0 layouts=0 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE sets=1 point=8 exit=42
+MULTI_CREATE_FAILED result=-3 fail_after=8
+MULTI_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.3.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=3 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=1 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Adreno (TM) 730 vendor=0x5143 device=0x7030002 api=1.1.128 driver=0x80267000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=65535 shared_max=32768 storage_range_max=134217728 descriptor_max=524288 non_coherent_atom=1
+MULTI_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=1 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
+MULTI_REQUEST sets=1 buffers=5 bindings=3 storage=2 uniform=1 stages=1 mapped=3 noncoherent=0
+DESCRIPTOR_ACCEPT sets=1 bindings=3 storage=2 uniform=1
+MULTI_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=1 label=gpu-output size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=2 label=staging-upload size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=3 label=staging-download size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=4 label=uniform-parameters size=64 alignment=64 bits=0x00000041
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=1 label=gpu-output type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=2 label=staging-upload type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=staging-download type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=uniform-parameters type=6 heap=0 bytes=64 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=32832 declared=11584221184
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=268435456
+MULTI_INJECT_FAULT acquisition=8 resource=memory
+MULTI_DESTROY acquisitions=8 buffers=5 memories=2 maps=0 layouts=0 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE sets=1 point=9 exit=42
+MULTI_CREATE_FAILED result=-3 fail_after=9
+MULTI_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.3.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=3 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=1 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Adreno (TM) 730 vendor=0x5143 device=0x7030002 api=1.1.128 driver=0x80267000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=65535 shared_max=32768 storage_range_max=134217728 descriptor_max=524288 non_coherent_atom=1
+MULTI_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=1 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
+MULTI_REQUEST sets=1 buffers=5 bindings=3 storage=2 uniform=1 stages=1 mapped=3 noncoherent=0
+DESCRIPTOR_ACCEPT sets=1 bindings=3 storage=2 uniform=1
+MULTI_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=1 label=gpu-output size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=2 label=staging-upload size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=3 label=staging-download size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=4 label=uniform-parameters size=64 alignment=64 bits=0x00000041
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=1 label=gpu-output type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=2 label=staging-upload type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=staging-download type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=uniform-parameters type=6 heap=0 bytes=64 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=32832 declared=11584221184
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=268435456
+MULTI_INJECT_FAULT acquisition=9 resource=memory
+MULTI_DESTROY acquisitions=9 buffers=5 memories=3 maps=0 layouts=0 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE sets=1 point=10 exit=42
+MULTI_CREATE_FAILED result=-3 fail_after=10
+MULTI_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.3.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=3 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=1 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Adreno (TM) 730 vendor=0x5143 device=0x7030002 api=1.1.128 driver=0x80267000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=65535 shared_max=32768 storage_range_max=134217728 descriptor_max=524288 non_coherent_atom=1
+MULTI_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=1 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
+MULTI_REQUEST sets=1 buffers=5 bindings=3 storage=2 uniform=1 stages=1 mapped=3 noncoherent=0
+DESCRIPTOR_ACCEPT sets=1 bindings=3 storage=2 uniform=1
+MULTI_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=1 label=gpu-output size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=2 label=staging-upload size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=3 label=staging-download size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=4 label=uniform-parameters size=64 alignment=64 bits=0x00000041
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=1 label=gpu-output type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=2 label=staging-upload type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=staging-download type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=uniform-parameters type=6 heap=0 bytes=64 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=32832 declared=11584221184
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=268435456
+MULTI_INJECT_FAULT acquisition=10 resource=memory
+MULTI_DESTROY acquisitions=10 buffers=5 memories=4 maps=0 layouts=0 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE sets=1 point=11 exit=42
+MULTI_CREATE_FAILED result=-3 fail_after=11
+MULTI_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.3.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=3 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=1 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Adreno (TM) 730 vendor=0x5143 device=0x7030002 api=1.1.128 driver=0x80267000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=65535 shared_max=32768 storage_range_max=134217728 descriptor_max=524288 non_coherent_atom=1
+MULTI_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=1 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
+MULTI_REQUEST sets=1 buffers=5 bindings=3 storage=2 uniform=1 stages=1 mapped=3 noncoherent=0
+DESCRIPTOR_ACCEPT sets=1 bindings=3 storage=2 uniform=1
+MULTI_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=1 label=gpu-output size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=2 label=staging-upload size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=3 label=staging-download size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=4 label=uniform-parameters size=64 alignment=64 bits=0x00000041
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=1 label=gpu-output type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=2 label=staging-upload type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=staging-download type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=uniform-parameters type=6 heap=0 bytes=64 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=32832 declared=11584221184
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=268435456
+MULTI_INJECT_FAULT acquisition=11 resource=memory
+MULTI_DESTROY acquisitions=11 buffers=5 memories=5 maps=0 layouts=0 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE sets=1 point=12 exit=42
+MULTI_CREATE_FAILED result=-3 fail_after=12
+MULTI_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.3.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=3 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=1 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Adreno (TM) 730 vendor=0x5143 device=0x7030002 api=1.1.128 driver=0x80267000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=65535 shared_max=32768 storage_range_max=134217728 descriptor_max=524288 non_coherent_atom=1
+MULTI_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=1 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
+MULTI_REQUEST sets=1 buffers=5 bindings=3 storage=2 uniform=1 stages=1 mapped=3 noncoherent=0
+DESCRIPTOR_ACCEPT sets=1 bindings=3 storage=2 uniform=1
+MULTI_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=1 label=gpu-output size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=2 label=staging-upload size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=3 label=staging-download size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=4 label=uniform-parameters size=64 alignment=64 bits=0x00000041
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=1 label=gpu-output type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=2 label=staging-upload type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=staging-download type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=uniform-parameters type=6 heap=0 bytes=64 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=32832 declared=11584221184
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=268435456
+MULTI_INJECT_FAULT acquisition=12 resource=mapped-buffer
+MULTI_DESTROY acquisitions=12 buffers=5 memories=5 maps=1 layouts=0 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE sets=1 point=13 exit=42
+MULTI_CREATE_FAILED result=-3 fail_after=13
+MULTI_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.3.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=3 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=1 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Adreno (TM) 730 vendor=0x5143 device=0x7030002 api=1.1.128 driver=0x80267000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=65535 shared_max=32768 storage_range_max=134217728 descriptor_max=524288 non_coherent_atom=1
+MULTI_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=1 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
+MULTI_REQUEST sets=1 buffers=5 bindings=3 storage=2 uniform=1 stages=1 mapped=3 noncoherent=0
+DESCRIPTOR_ACCEPT sets=1 bindings=3 storage=2 uniform=1
+MULTI_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=1 label=gpu-output size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=2 label=staging-upload size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=3 label=staging-download size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=4 label=uniform-parameters size=64 alignment=64 bits=0x00000041
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=1 label=gpu-output type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=2 label=staging-upload type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=staging-download type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=uniform-parameters type=6 heap=0 bytes=64 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=32832 declared=11584221184
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=268435456
+MULTI_MAPPED index=2 type=6 coherent=1
+MULTI_INJECT_FAULT acquisition=13 resource=mapped-buffer
+MULTI_DESTROY acquisitions=13 buffers=5 memories=5 maps=2 layouts=0 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE sets=1 point=14 exit=42
+MULTI_CREATE_FAILED result=-3 fail_after=14
+MULTI_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.3.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=3 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=1 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Adreno (TM) 730 vendor=0x5143 device=0x7030002 api=1.1.128 driver=0x80267000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=65535 shared_max=32768 storage_range_max=134217728 descriptor_max=524288 non_coherent_atom=1
+MULTI_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=1 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
+MULTI_REQUEST sets=1 buffers=5 bindings=3 storage=2 uniform=1 stages=1 mapped=3 noncoherent=0
+DESCRIPTOR_ACCEPT sets=1 bindings=3 storage=2 uniform=1
+MULTI_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=1 label=gpu-output size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=2 label=staging-upload size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=3 label=staging-download size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=4 label=uniform-parameters size=64 alignment=64 bits=0x00000041
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=1 label=gpu-output type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=2 label=staging-upload type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=staging-download type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=uniform-parameters type=6 heap=0 bytes=64 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=32832 declared=11584221184
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=268435456
+MULTI_MAPPED index=2 type=6 coherent=1
+MULTI_MAPPED index=3 type=6 coherent=1
+MULTI_INJECT_FAULT acquisition=14 resource=mapped-buffer
+MULTI_DESTROY acquisitions=14 buffers=5 memories=5 maps=3 layouts=0 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE sets=1 point=15 exit=42
+MULTI_CREATE_FAILED result=-3 fail_after=15
+MULTI_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.3.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=3 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=1 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Adreno (TM) 730 vendor=0x5143 device=0x7030002 api=1.1.128 driver=0x80267000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=65535 shared_max=32768 storage_range_max=134217728 descriptor_max=524288 non_coherent_atom=1
+MULTI_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=1 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
+MULTI_REQUEST sets=1 buffers=5 bindings=3 storage=2 uniform=1 stages=1 mapped=3 noncoherent=0
+DESCRIPTOR_ACCEPT sets=1 bindings=3 storage=2 uniform=1
+MULTI_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=1 label=gpu-output size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=2 label=staging-upload size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=3 label=staging-download size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=4 label=uniform-parameters size=64 alignment=64 bits=0x00000041
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=1 label=gpu-output type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=2 label=staging-upload type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=staging-download type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=uniform-parameters type=6 heap=0 bytes=64 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=32832 declared=11584221184
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=268435456
+MULTI_MAPPED index=2 type=6 coherent=1
+MULTI_MAPPED index=3 type=6 coherent=1
+MULTI_MAPPED index=4 type=6 coherent=1
+MULTI_INJECT_FAULT acquisition=15 resource=set-layout
+MULTI_DESTROY acquisitions=15 buffers=5 memories=5 maps=3 layouts=1 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE sets=1 point=16 exit=42
+MULTI_CREATE_FAILED result=-3 fail_after=16
+MULTI_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.3.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=3 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=1 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Adreno (TM) 730 vendor=0x5143 device=0x7030002 api=1.1.128 driver=0x80267000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=65535 shared_max=32768 storage_range_max=134217728 descriptor_max=524288 non_coherent_atom=1
+MULTI_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=1 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
+MULTI_REQUEST sets=1 buffers=5 bindings=3 storage=2 uniform=1 stages=1 mapped=3 noncoherent=0
+DESCRIPTOR_ACCEPT sets=1 bindings=3 storage=2 uniform=1
+MULTI_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=1 label=gpu-output size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=2 label=staging-upload size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=3 label=staging-download size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=4 label=uniform-parameters size=64 alignment=64 bits=0x00000041
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=1 label=gpu-output type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=2 label=staging-upload type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=staging-download type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=uniform-parameters type=6 heap=0 bytes=64 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=32832 declared=11584221184
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=268435456
+MULTI_MAPPED index=2 type=6 coherent=1
+MULTI_MAPPED index=3 type=6 coherent=1
+MULTI_MAPPED index=4 type=6 coherent=1
+MULTI_SET_LAYOUT index=0 bindings=3
+MULTI_INJECT_FAULT acquisition=16 resource=pipeline-layout
+MULTI_DESTROY acquisitions=16 buffers=5 memories=5 maps=3 layouts=1 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE sets=1 point=17 exit=42
+MULTI_CREATE_FAILED result=-3 fail_after=17
+MULTI_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.3.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=3 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=1 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Adreno (TM) 730 vendor=0x5143 device=0x7030002 api=1.1.128 driver=0x80267000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=65535 shared_max=32768 storage_range_max=134217728 descriptor_max=524288 non_coherent_atom=1
+MULTI_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=1 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
+MULTI_REQUEST sets=1 buffers=5 bindings=3 storage=2 uniform=1 stages=1 mapped=3 noncoherent=0
+DESCRIPTOR_ACCEPT sets=1 bindings=3 storage=2 uniform=1
+MULTI_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=1 label=gpu-output size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=2 label=staging-upload size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=3 label=staging-download size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=4 label=uniform-parameters size=64 alignment=64 bits=0x00000041
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=1 label=gpu-output type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=2 label=staging-upload type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=staging-download type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=uniform-parameters type=6 heap=0 bytes=64 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=32832 declared=11584221184
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=268435456
+MULTI_MAPPED index=2 type=6 coherent=1
+MULTI_MAPPED index=3 type=6 coherent=1
+MULTI_MAPPED index=4 type=6 coherent=1
+MULTI_SET_LAYOUT index=0 bindings=3
+MULTI_INJECT_FAULT acquisition=17 resource=shader-module
+MULTI_DESTROY acquisitions=17 buffers=5 memories=5 maps=3 layouts=1 sets=0 shaders=1 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE sets=1 point=18 exit=42
+MULTI_CREATE_FAILED result=-3 fail_after=18
+MULTI_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.3.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=3 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=1 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Adreno (TM) 730 vendor=0x5143 device=0x7030002 api=1.1.128 driver=0x80267000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=65535 shared_max=32768 storage_range_max=134217728 descriptor_max=524288 non_coherent_atom=1
+MULTI_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=1 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
+MULTI_REQUEST sets=1 buffers=5 bindings=3 storage=2 uniform=1 stages=1 mapped=3 noncoherent=0
+DESCRIPTOR_ACCEPT sets=1 bindings=3 storage=2 uniform=1
+MULTI_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=1 label=gpu-output size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=2 label=staging-upload size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=3 label=staging-download size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=4 label=uniform-parameters size=64 alignment=64 bits=0x00000041
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=1 label=gpu-output type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=2 label=staging-upload type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=staging-download type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=uniform-parameters type=6 heap=0 bytes=64 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=32832 declared=11584221184
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=268435456
+MULTI_MAPPED index=2 type=6 coherent=1
+MULTI_MAPPED index=3 type=6 coherent=1
+MULTI_MAPPED index=4 type=6 coherent=1
+MULTI_SET_LAYOUT index=0 bindings=3
+MULTI_INJECT_FAULT acquisition=18 resource=compute-pipeline
+MULTI_DESTROY acquisitions=18 buffers=5 memories=5 maps=3 layouts=1 sets=0 shaders=1 pipelines=1 submissions=0 idle_result=0
+FAULT_CASE sets=1 point=19 exit=42
+MULTI_CREATE_FAILED result=-3 fail_after=19
+MULTI_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.3.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=3 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=1 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Adreno (TM) 730 vendor=0x5143 device=0x7030002 api=1.1.128 driver=0x80267000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=65535 shared_max=32768 storage_range_max=134217728 descriptor_max=524288 non_coherent_atom=1
+MULTI_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=1 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
+MULTI_REQUEST sets=1 buffers=5 bindings=3 storage=2 uniform=1 stages=1 mapped=3 noncoherent=0
+DESCRIPTOR_ACCEPT sets=1 bindings=3 storage=2 uniform=1
+MULTI_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=1 label=gpu-output size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=2 label=staging-upload size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=3 label=staging-download size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=4 label=uniform-parameters size=64 alignment=64 bits=0x00000041
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=1 label=gpu-output type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=2 label=staging-upload type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=staging-download type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=uniform-parameters type=6 heap=0 bytes=64 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=32832 declared=11584221184
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=268435456
+MULTI_MAPPED index=2 type=6 coherent=1
+MULTI_MAPPED index=3 type=6 coherent=1
+MULTI_MAPPED index=4 type=6 coherent=1
+MULTI_SET_LAYOUT index=0 bindings=3
+MULTI_INJECT_FAULT acquisition=19 resource=descriptor-pool
+MULTI_DESTROY acquisitions=19 buffers=5 memories=5 maps=3 layouts=1 sets=0 shaders=1 pipelines=1 submissions=0 idle_result=0
+FAULT_CASE sets=1 point=20 exit=42
+MULTI_CREATE_FAILED result=-3 fail_after=20
+MULTI_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.3.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=3 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=1 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Adreno (TM) 730 vendor=0x5143 device=0x7030002 api=1.1.128 driver=0x80267000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=65535 shared_max=32768 storage_range_max=134217728 descriptor_max=524288 non_coherent_atom=1
+MULTI_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=1 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
+MULTI_REQUEST sets=1 buffers=5 bindings=3 storage=2 uniform=1 stages=1 mapped=3 noncoherent=0
+DESCRIPTOR_ACCEPT sets=1 bindings=3 storage=2 uniform=1
+MULTI_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=1 label=gpu-output size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=2 label=staging-upload size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=3 label=staging-download size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=4 label=uniform-parameters size=64 alignment=64 bits=0x00000041
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=1 label=gpu-output type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=2 label=staging-upload type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=staging-download type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=uniform-parameters type=6 heap=0 bytes=64 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=32832 declared=11584221184
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=268435456
+MULTI_MAPPED index=2 type=6 coherent=1
+MULTI_MAPPED index=3 type=6 coherent=1
+MULTI_MAPPED index=4 type=6 coherent=1
+MULTI_SET_LAYOUT index=0 bindings=3
+MULTI_INJECT_FAULT acquisition=20 resource=descriptor-set
+MULTI_DESTROY acquisitions=20 buffers=5 memories=5 maps=3 layouts=1 sets=1 shaders=1 pipelines=1 submissions=0 idle_result=0
+FAULT_CASE sets=1 point=21 exit=42
+MULTI_CREATE_FAILED result=-3 fail_after=21
+MULTI_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.3.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=3 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=1 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Adreno (TM) 730 vendor=0x5143 device=0x7030002 api=1.1.128 driver=0x80267000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=65535 shared_max=32768 storage_range_max=134217728 descriptor_max=524288 non_coherent_atom=1
+MULTI_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=1 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
+MULTI_REQUEST sets=1 buffers=5 bindings=3 storage=2 uniform=1 stages=1 mapped=3 noncoherent=0
+DESCRIPTOR_ACCEPT sets=1 bindings=3 storage=2 uniform=1
+MULTI_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=1 label=gpu-output size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=2 label=staging-upload size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=3 label=staging-download size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=4 label=uniform-parameters size=64 alignment=64 bits=0x00000041
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=1 label=gpu-output type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=2 label=staging-upload type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=staging-download type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=uniform-parameters type=6 heap=0 bytes=64 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=32832 declared=11584221184
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=268435456
+MULTI_MAPPED index=2 type=6 coherent=1
+MULTI_MAPPED index=3 type=6 coherent=1
+MULTI_MAPPED index=4 type=6 coherent=1
+MULTI_SET_LAYOUT index=0 bindings=3
+MULTI_SET_ALLOCATED index=0
+MULTI_DESCRIPTOR index=0 set=0 binding=2 type=storage buffer=0 range=8192
+MULTI_DESCRIPTOR index=1 set=0 binding=7 type=storage buffer=1 range=8192
+MULTI_DESCRIPTOR index=2 set=0 binding=4 type=uniform buffer=4 range=16
+MULTI_INJECT_FAULT acquisition=21 resource=command-pool
+MULTI_DESTROY acquisitions=21 buffers=5 memories=5 maps=3 layouts=1 sets=1 shaders=1 pipelines=1 submissions=0 idle_result=0
+FAULT_CASE sets=1 point=22 exit=42
+MULTI_CREATE_FAILED result=-3 fail_after=22
+MULTI_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.3.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=3 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=1 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Adreno (TM) 730 vendor=0x5143 device=0x7030002 api=1.1.128 driver=0x80267000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=65535 shared_max=32768 storage_range_max=134217728 descriptor_max=524288 non_coherent_atom=1
+MULTI_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=1 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
+MULTI_REQUEST sets=1 buffers=5 bindings=3 storage=2 uniform=1 stages=1 mapped=3 noncoherent=0
+DESCRIPTOR_ACCEPT sets=1 bindings=3 storage=2 uniform=1
+MULTI_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=1 label=gpu-output size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=2 label=staging-upload size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=3 label=staging-download size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=4 label=uniform-parameters size=64 alignment=64 bits=0x00000041
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=1 label=gpu-output type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=2 label=staging-upload type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=staging-download type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=uniform-parameters type=6 heap=0 bytes=64 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=32832 declared=11584221184
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=268435456
+MULTI_MAPPED index=2 type=6 coherent=1
+MULTI_MAPPED index=3 type=6 coherent=1
+MULTI_MAPPED index=4 type=6 coherent=1
+MULTI_SET_LAYOUT index=0 bindings=3
+MULTI_SET_ALLOCATED index=0
+MULTI_DESCRIPTOR index=0 set=0 binding=2 type=storage buffer=0 range=8192
+MULTI_DESCRIPTOR index=1 set=0 binding=7 type=storage buffer=1 range=8192
+MULTI_DESCRIPTOR index=2 set=0 binding=4 type=uniform buffer=4 range=16
+MULTI_INJECT_FAULT acquisition=22 resource=command-buffer
+MULTI_DESTROY acquisitions=22 buffers=5 memories=5 maps=3 layouts=1 sets=1 shaders=1 pipelines=1 submissions=0 idle_result=0
+FAULT_CASE sets=1 point=23 exit=42
+MULTI_CREATE_FAILED result=-3 fail_after=23
+MULTI_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.3.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=3 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=1 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Adreno (TM) 730 vendor=0x5143 device=0x7030002 api=1.1.128 driver=0x80267000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=65535 shared_max=32768 storage_range_max=134217728 descriptor_max=524288 non_coherent_atom=1
+MULTI_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=1 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
+MULTI_REQUEST sets=1 buffers=5 bindings=3 storage=2 uniform=1 stages=1 mapped=3 noncoherent=0
+DESCRIPTOR_ACCEPT sets=1 bindings=3 storage=2 uniform=1
+MULTI_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=1 label=gpu-output size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=2 label=staging-upload size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=3 label=staging-download size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=4 label=uniform-parameters size=64 alignment=64 bits=0x00000041
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=1 label=gpu-output type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=2 label=staging-upload type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=staging-download type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=uniform-parameters type=6 heap=0 bytes=64 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=32832 declared=11584221184
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=268435456
+MULTI_MAPPED index=2 type=6 coherent=1
+MULTI_MAPPED index=3 type=6 coherent=1
+MULTI_MAPPED index=4 type=6 coherent=1
+MULTI_SET_LAYOUT index=0 bindings=3
+MULTI_SET_ALLOCATED index=0
+MULTI_DESCRIPTOR index=0 set=0 binding=2 type=storage buffer=0 range=8192
+MULTI_DESCRIPTOR index=1 set=0 binding=7 type=storage buffer=1 range=8192
+MULTI_DESCRIPTOR index=2 set=0 binding=4 type=uniform buffer=4 range=16
+MULTI_INJECT_FAULT acquisition=23 resource=fence
+MULTI_DESTROY acquisitions=23 buffers=5 memories=5 maps=3 layouts=1 sets=1 shaders=1 pipelines=1 submissions=0 idle_result=0
+FAULT_CASE sets=2 point=1 exit=42
+MULTI_CREATE_FAILED result=-3 fail_after=1
+MULTI_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.3.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=3 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=1 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Adreno (TM) 730 vendor=0x5143 device=0x7030002 api=1.1.128 driver=0x80267000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=65535 shared_max=32768 storage_range_max=134217728 descriptor_max=524288 non_coherent_atom=1
+MULTI_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=2 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
+MULTI_REQUEST sets=2 buffers=5 bindings=3 storage=2 uniform=1 stages=1 mapped=3 noncoherent=0
+DESCRIPTOR_ACCEPT sets=2 bindings=3 storage=2 uniform=1
+MULTI_INJECT_FAULT acquisition=1 resource=device
+MULTI_DESTROY acquisitions=1 buffers=0 memories=0 maps=0 layouts=0 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE sets=2 point=2 exit=42
+MULTI_CREATE_FAILED result=-3 fail_after=2
+MULTI_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.3.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=3 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=1 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Adreno (TM) 730 vendor=0x5143 device=0x7030002 api=1.1.128 driver=0x80267000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=65535 shared_max=32768 storage_range_max=134217728 descriptor_max=524288 non_coherent_atom=1
+MULTI_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=2 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
+MULTI_REQUEST sets=2 buffers=5 bindings=3 storage=2 uniform=1 stages=1 mapped=3 noncoherent=0
+DESCRIPTOR_ACCEPT sets=2 bindings=3 storage=2 uniform=1
+MULTI_INJECT_FAULT acquisition=2 resource=buffer
+MULTI_DESTROY acquisitions=2 buffers=1 memories=0 maps=0 layouts=0 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE sets=2 point=3 exit=42
+MULTI_CREATE_FAILED result=-3 fail_after=3
+MULTI_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.3.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=3 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=1 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Adreno (TM) 730 vendor=0x5143 device=0x7030002 api=1.1.128 driver=0x80267000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=65535 shared_max=32768 storage_range_max=134217728 descriptor_max=524288 non_coherent_atom=1
+MULTI_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=2 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
+MULTI_REQUEST sets=2 buffers=5 bindings=3 storage=2 uniform=1 stages=1 mapped=3 noncoherent=0
+DESCRIPTOR_ACCEPT sets=2 bindings=3 storage=2 uniform=1
+MULTI_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000049
+MULTI_INJECT_FAULT acquisition=3 resource=buffer
+MULTI_DESTROY acquisitions=3 buffers=2 memories=0 maps=0 layouts=0 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE sets=2 point=4 exit=42
+MULTI_CREATE_FAILED result=-3 fail_after=4
+MULTI_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.3.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=3 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=1 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Adreno (TM) 730 vendor=0x5143 device=0x7030002 api=1.1.128 driver=0x80267000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=65535 shared_max=32768 storage_range_max=134217728 descriptor_max=524288 non_coherent_atom=1
+MULTI_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=2 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
+MULTI_REQUEST sets=2 buffers=5 bindings=3 storage=2 uniform=1 stages=1 mapped=3 noncoherent=0
+DESCRIPTOR_ACCEPT sets=2 bindings=3 storage=2 uniform=1
+MULTI_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=1 label=gpu-output size=8192 alignment=64 bits=0x00000041
+MULTI_INJECT_FAULT acquisition=4 resource=buffer
+MULTI_DESTROY acquisitions=4 buffers=3 memories=0 maps=0 layouts=0 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE sets=2 point=5 exit=42
+MULTI_CREATE_FAILED result=-3 fail_after=5
+MULTI_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.3.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=3 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=1 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Adreno (TM) 730 vendor=0x5143 device=0x7030002 api=1.1.128 driver=0x80267000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=65535 shared_max=32768 storage_range_max=134217728 descriptor_max=524288 non_coherent_atom=1
+MULTI_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=2 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
+MULTI_REQUEST sets=2 buffers=5 bindings=3 storage=2 uniform=1 stages=1 mapped=3 noncoherent=0
+DESCRIPTOR_ACCEPT sets=2 bindings=3 storage=2 uniform=1
+MULTI_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=1 label=gpu-output size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=2 label=staging-upload size=8192 alignment=64 bits=0x00000041
+MULTI_INJECT_FAULT acquisition=5 resource=buffer
+MULTI_DESTROY acquisitions=5 buffers=4 memories=0 maps=0 layouts=0 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE sets=2 point=6 exit=42
+MULTI_CREATE_FAILED result=-3 fail_after=6
+MULTI_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.3.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=3 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=1 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Adreno (TM) 730 vendor=0x5143 device=0x7030002 api=1.1.128 driver=0x80267000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=65535 shared_max=32768 storage_range_max=134217728 descriptor_max=524288 non_coherent_atom=1
+MULTI_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=2 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
+MULTI_REQUEST sets=2 buffers=5 bindings=3 storage=2 uniform=1 stages=1 mapped=3 noncoherent=0
+DESCRIPTOR_ACCEPT sets=2 bindings=3 storage=2 uniform=1
+MULTI_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=1 label=gpu-output size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=2 label=staging-upload size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=3 label=staging-download size=8192 alignment=64 bits=0x00000049
+MULTI_INJECT_FAULT acquisition=6 resource=buffer
+MULTI_DESTROY acquisitions=6 buffers=5 memories=0 maps=0 layouts=0 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE sets=2 point=7 exit=42
+MULTI_CREATE_FAILED result=-3 fail_after=7
+MULTI_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.3.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=3 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=1 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Adreno (TM) 730 vendor=0x5143 device=0x7030002 api=1.1.128 driver=0x80267000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=65535 shared_max=32768 storage_range_max=134217728 descriptor_max=524288 non_coherent_atom=1
+MULTI_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=2 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
+MULTI_REQUEST sets=2 buffers=5 bindings=3 storage=2 uniform=1 stages=1 mapped=3 noncoherent=0
+DESCRIPTOR_ACCEPT sets=2 bindings=3 storage=2 uniform=1
+MULTI_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=1 label=gpu-output size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=2 label=staging-upload size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=3 label=staging-download size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=4 label=uniform-parameters size=64 alignment=64 bits=0x00000041
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=1 label=gpu-output type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=2 label=staging-upload type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=staging-download type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=uniform-parameters type=6 heap=0 bytes=64 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=32832 declared=11584221184
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=268435456
+MULTI_INJECT_FAULT acquisition=7 resource=memory
+MULTI_DESTROY acquisitions=7 buffers=5 memories=1 maps=0 layouts=0 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE sets=2 point=8 exit=42
+MULTI_CREATE_FAILED result=-3 fail_after=8
+MULTI_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.3.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=3 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=1 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Adreno (TM) 730 vendor=0x5143 device=0x7030002 api=1.1.128 driver=0x80267000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=65535 shared_max=32768 storage_range_max=134217728 descriptor_max=524288 non_coherent_atom=1
+MULTI_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=2 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
+MULTI_REQUEST sets=2 buffers=5 bindings=3 storage=2 uniform=1 stages=1 mapped=3 noncoherent=0
+DESCRIPTOR_ACCEPT sets=2 bindings=3 storage=2 uniform=1
+MULTI_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=1 label=gpu-output size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=2 label=staging-upload size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=3 label=staging-download size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=4 label=uniform-parameters size=64 alignment=64 bits=0x00000041
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=1 label=gpu-output type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=2 label=staging-upload type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=staging-download type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=uniform-parameters type=6 heap=0 bytes=64 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=32832 declared=11584221184
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=268435456
+MULTI_INJECT_FAULT acquisition=8 resource=memory
+MULTI_DESTROY acquisitions=8 buffers=5 memories=2 maps=0 layouts=0 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE sets=2 point=9 exit=42
+MULTI_CREATE_FAILED result=-3 fail_after=9
+MULTI_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.3.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=3 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=1 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Adreno (TM) 730 vendor=0x5143 device=0x7030002 api=1.1.128 driver=0x80267000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=65535 shared_max=32768 storage_range_max=134217728 descriptor_max=524288 non_coherent_atom=1
+MULTI_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=2 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
+MULTI_REQUEST sets=2 buffers=5 bindings=3 storage=2 uniform=1 stages=1 mapped=3 noncoherent=0
+DESCRIPTOR_ACCEPT sets=2 bindings=3 storage=2 uniform=1
+MULTI_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=1 label=gpu-output size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=2 label=staging-upload size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=3 label=staging-download size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=4 label=uniform-parameters size=64 alignment=64 bits=0x00000041
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=1 label=gpu-output type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=2 label=staging-upload type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=staging-download type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=uniform-parameters type=6 heap=0 bytes=64 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=32832 declared=11584221184
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=268435456
+MULTI_INJECT_FAULT acquisition=9 resource=memory
+MULTI_DESTROY acquisitions=9 buffers=5 memories=3 maps=0 layouts=0 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE sets=2 point=10 exit=42
+MULTI_CREATE_FAILED result=-3 fail_after=10
+MULTI_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.3.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=3 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=1 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Adreno (TM) 730 vendor=0x5143 device=0x7030002 api=1.1.128 driver=0x80267000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=65535 shared_max=32768 storage_range_max=134217728 descriptor_max=524288 non_coherent_atom=1
+MULTI_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=2 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
+MULTI_REQUEST sets=2 buffers=5 bindings=3 storage=2 uniform=1 stages=1 mapped=3 noncoherent=0
+DESCRIPTOR_ACCEPT sets=2 bindings=3 storage=2 uniform=1
+MULTI_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=1 label=gpu-output size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=2 label=staging-upload size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=3 label=staging-download size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=4 label=uniform-parameters size=64 alignment=64 bits=0x00000041
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=1 label=gpu-output type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=2 label=staging-upload type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=staging-download type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=uniform-parameters type=6 heap=0 bytes=64 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=32832 declared=11584221184
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=268435456
+MULTI_INJECT_FAULT acquisition=10 resource=memory
+MULTI_DESTROY acquisitions=10 buffers=5 memories=4 maps=0 layouts=0 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE sets=2 point=11 exit=42
+MULTI_CREATE_FAILED result=-3 fail_after=11
+MULTI_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.3.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=3 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=1 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Adreno (TM) 730 vendor=0x5143 device=0x7030002 api=1.1.128 driver=0x80267000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=65535 shared_max=32768 storage_range_max=134217728 descriptor_max=524288 non_coherent_atom=1
+MULTI_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=2 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
+MULTI_REQUEST sets=2 buffers=5 bindings=3 storage=2 uniform=1 stages=1 mapped=3 noncoherent=0
+DESCRIPTOR_ACCEPT sets=2 bindings=3 storage=2 uniform=1
+MULTI_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=1 label=gpu-output size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=2 label=staging-upload size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=3 label=staging-download size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=4 label=uniform-parameters size=64 alignment=64 bits=0x00000041
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=1 label=gpu-output type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=2 label=staging-upload type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=staging-download type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=uniform-parameters type=6 heap=0 bytes=64 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=32832 declared=11584221184
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=268435456
+MULTI_INJECT_FAULT acquisition=11 resource=memory
+MULTI_DESTROY acquisitions=11 buffers=5 memories=5 maps=0 layouts=0 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE sets=2 point=12 exit=42
+MULTI_CREATE_FAILED result=-3 fail_after=12
+MULTI_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.3.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=3 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=1 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Adreno (TM) 730 vendor=0x5143 device=0x7030002 api=1.1.128 driver=0x80267000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=65535 shared_max=32768 storage_range_max=134217728 descriptor_max=524288 non_coherent_atom=1
+MULTI_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=2 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
+MULTI_REQUEST sets=2 buffers=5 bindings=3 storage=2 uniform=1 stages=1 mapped=3 noncoherent=0
+DESCRIPTOR_ACCEPT sets=2 bindings=3 storage=2 uniform=1
+MULTI_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=1 label=gpu-output size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=2 label=staging-upload size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=3 label=staging-download size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=4 label=uniform-parameters size=64 alignment=64 bits=0x00000041
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=1 label=gpu-output type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=2 label=staging-upload type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=staging-download type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=uniform-parameters type=6 heap=0 bytes=64 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=32832 declared=11584221184
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=268435456
+MULTI_INJECT_FAULT acquisition=12 resource=mapped-buffer
+MULTI_DESTROY acquisitions=12 buffers=5 memories=5 maps=1 layouts=0 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE sets=2 point=13 exit=42
+MULTI_CREATE_FAILED result=-3 fail_after=13
+MULTI_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.3.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=3 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=1 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Adreno (TM) 730 vendor=0x5143 device=0x7030002 api=1.1.128 driver=0x80267000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=65535 shared_max=32768 storage_range_max=134217728 descriptor_max=524288 non_coherent_atom=1
+MULTI_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=2 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
+MULTI_REQUEST sets=2 buffers=5 bindings=3 storage=2 uniform=1 stages=1 mapped=3 noncoherent=0
+DESCRIPTOR_ACCEPT sets=2 bindings=3 storage=2 uniform=1
+MULTI_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=1 label=gpu-output size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=2 label=staging-upload size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=3 label=staging-download size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=4 label=uniform-parameters size=64 alignment=64 bits=0x00000041
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=1 label=gpu-output type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=2 label=staging-upload type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=staging-download type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=uniform-parameters type=6 heap=0 bytes=64 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=32832 declared=11584221184
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=268435456
+MULTI_MAPPED index=2 type=6 coherent=1
+MULTI_INJECT_FAULT acquisition=13 resource=mapped-buffer
+MULTI_DESTROY acquisitions=13 buffers=5 memories=5 maps=2 layouts=0 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE sets=2 point=14 exit=42
+MULTI_CREATE_FAILED result=-3 fail_after=14
+MULTI_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.3.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=3 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=1 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Adreno (TM) 730 vendor=0x5143 device=0x7030002 api=1.1.128 driver=0x80267000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=65535 shared_max=32768 storage_range_max=134217728 descriptor_max=524288 non_coherent_atom=1
+MULTI_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=2 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
+MULTI_REQUEST sets=2 buffers=5 bindings=3 storage=2 uniform=1 stages=1 mapped=3 noncoherent=0
+DESCRIPTOR_ACCEPT sets=2 bindings=3 storage=2 uniform=1
+MULTI_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=1 label=gpu-output size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=2 label=staging-upload size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=3 label=staging-download size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=4 label=uniform-parameters size=64 alignment=64 bits=0x00000041
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=1 label=gpu-output type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=2 label=staging-upload type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=staging-download type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=uniform-parameters type=6 heap=0 bytes=64 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=32832 declared=11584221184
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=268435456
+MULTI_MAPPED index=2 type=6 coherent=1
+MULTI_MAPPED index=3 type=6 coherent=1
+MULTI_INJECT_FAULT acquisition=14 resource=mapped-buffer
+MULTI_DESTROY acquisitions=14 buffers=5 memories=5 maps=3 layouts=0 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE sets=2 point=15 exit=42
+MULTI_CREATE_FAILED result=-3 fail_after=15
+MULTI_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.3.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=3 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=1 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Adreno (TM) 730 vendor=0x5143 device=0x7030002 api=1.1.128 driver=0x80267000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=65535 shared_max=32768 storage_range_max=134217728 descriptor_max=524288 non_coherent_atom=1
+MULTI_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=2 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
+MULTI_REQUEST sets=2 buffers=5 bindings=3 storage=2 uniform=1 stages=1 mapped=3 noncoherent=0
+DESCRIPTOR_ACCEPT sets=2 bindings=3 storage=2 uniform=1
+MULTI_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=1 label=gpu-output size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=2 label=staging-upload size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=3 label=staging-download size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=4 label=uniform-parameters size=64 alignment=64 bits=0x00000041
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=1 label=gpu-output type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=2 label=staging-upload type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=staging-download type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=uniform-parameters type=6 heap=0 bytes=64 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=32832 declared=11584221184
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=268435456
+MULTI_MAPPED index=2 type=6 coherent=1
+MULTI_MAPPED index=3 type=6 coherent=1
+MULTI_MAPPED index=4 type=6 coherent=1
+MULTI_INJECT_FAULT acquisition=15 resource=set-layout
+MULTI_DESTROY acquisitions=15 buffers=5 memories=5 maps=3 layouts=1 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE sets=2 point=16 exit=42
+MULTI_CREATE_FAILED result=-3 fail_after=16
+MULTI_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.3.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=3 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=1 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Adreno (TM) 730 vendor=0x5143 device=0x7030002 api=1.1.128 driver=0x80267000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=65535 shared_max=32768 storage_range_max=134217728 descriptor_max=524288 non_coherent_atom=1
+MULTI_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=2 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
+MULTI_REQUEST sets=2 buffers=5 bindings=3 storage=2 uniform=1 stages=1 mapped=3 noncoherent=0
+DESCRIPTOR_ACCEPT sets=2 bindings=3 storage=2 uniform=1
+MULTI_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=1 label=gpu-output size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=2 label=staging-upload size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=3 label=staging-download size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=4 label=uniform-parameters size=64 alignment=64 bits=0x00000041
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=1 label=gpu-output type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=2 label=staging-upload type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=staging-download type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=uniform-parameters type=6 heap=0 bytes=64 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=32832 declared=11584221184
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=268435456
+MULTI_MAPPED index=2 type=6 coherent=1
+MULTI_MAPPED index=3 type=6 coherent=1
+MULTI_MAPPED index=4 type=6 coherent=1
+MULTI_SET_LAYOUT index=0 bindings=1
+MULTI_INJECT_FAULT acquisition=16 resource=set-layout
+MULTI_DESTROY acquisitions=16 buffers=5 memories=5 maps=3 layouts=2 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE sets=2 point=17 exit=42
+MULTI_CREATE_FAILED result=-3 fail_after=17
+MULTI_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.3.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=3 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=1 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Adreno (TM) 730 vendor=0x5143 device=0x7030002 api=1.1.128 driver=0x80267000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=65535 shared_max=32768 storage_range_max=134217728 descriptor_max=524288 non_coherent_atom=1
+MULTI_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=2 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
+MULTI_REQUEST sets=2 buffers=5 bindings=3 storage=2 uniform=1 stages=1 mapped=3 noncoherent=0
+DESCRIPTOR_ACCEPT sets=2 bindings=3 storage=2 uniform=1
+MULTI_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=1 label=gpu-output size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=2 label=staging-upload size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=3 label=staging-download size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=4 label=uniform-parameters size=64 alignment=64 bits=0x00000041
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=1 label=gpu-output type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=2 label=staging-upload type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=staging-download type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=uniform-parameters type=6 heap=0 bytes=64 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=32832 declared=11584221184
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=268435456
+MULTI_MAPPED index=2 type=6 coherent=1
+MULTI_MAPPED index=3 type=6 coherent=1
+MULTI_MAPPED index=4 type=6 coherent=1
+MULTI_SET_LAYOUT index=0 bindings=1
+MULTI_SET_LAYOUT index=1 bindings=2
+MULTI_INJECT_FAULT acquisition=17 resource=pipeline-layout
+MULTI_DESTROY acquisitions=17 buffers=5 memories=5 maps=3 layouts=2 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE sets=2 point=18 exit=42
+MULTI_CREATE_FAILED result=-3 fail_after=18
+MULTI_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.3.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=3 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=1 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Adreno (TM) 730 vendor=0x5143 device=0x7030002 api=1.1.128 driver=0x80267000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=65535 shared_max=32768 storage_range_max=134217728 descriptor_max=524288 non_coherent_atom=1
+MULTI_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=2 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
+MULTI_REQUEST sets=2 buffers=5 bindings=3 storage=2 uniform=1 stages=1 mapped=3 noncoherent=0
+DESCRIPTOR_ACCEPT sets=2 bindings=3 storage=2 uniform=1
+MULTI_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=1 label=gpu-output size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=2 label=staging-upload size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=3 label=staging-download size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=4 label=uniform-parameters size=64 alignment=64 bits=0x00000041
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=1 label=gpu-output type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=2 label=staging-upload type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=staging-download type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=uniform-parameters type=6 heap=0 bytes=64 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=32832 declared=11584221184
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=268435456
+MULTI_MAPPED index=2 type=6 coherent=1
+MULTI_MAPPED index=3 type=6 coherent=1
+MULTI_MAPPED index=4 type=6 coherent=1
+MULTI_SET_LAYOUT index=0 bindings=1
+MULTI_SET_LAYOUT index=1 bindings=2
+MULTI_INJECT_FAULT acquisition=18 resource=shader-module
+MULTI_DESTROY acquisitions=18 buffers=5 memories=5 maps=3 layouts=2 sets=0 shaders=1 pipelines=0 submissions=0 idle_result=0
+FAULT_CASE sets=2 point=19 exit=42
+MULTI_CREATE_FAILED result=-3 fail_after=19
+MULTI_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.3.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=3 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=1 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Adreno (TM) 730 vendor=0x5143 device=0x7030002 api=1.1.128 driver=0x80267000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=65535 shared_max=32768 storage_range_max=134217728 descriptor_max=524288 non_coherent_atom=1
+MULTI_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=2 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
+MULTI_REQUEST sets=2 buffers=5 bindings=3 storage=2 uniform=1 stages=1 mapped=3 noncoherent=0
+DESCRIPTOR_ACCEPT sets=2 bindings=3 storage=2 uniform=1
+MULTI_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=1 label=gpu-output size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=2 label=staging-upload size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=3 label=staging-download size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=4 label=uniform-parameters size=64 alignment=64 bits=0x00000041
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=1 label=gpu-output type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=2 label=staging-upload type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=staging-download type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=uniform-parameters type=6 heap=0 bytes=64 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=32832 declared=11584221184
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=268435456
+MULTI_MAPPED index=2 type=6 coherent=1
+MULTI_MAPPED index=3 type=6 coherent=1
+MULTI_MAPPED index=4 type=6 coherent=1
+MULTI_SET_LAYOUT index=0 bindings=1
+MULTI_SET_LAYOUT index=1 bindings=2
+MULTI_INJECT_FAULT acquisition=19 resource=compute-pipeline
+MULTI_DESTROY acquisitions=19 buffers=5 memories=5 maps=3 layouts=2 sets=0 shaders=1 pipelines=1 submissions=0 idle_result=0
+FAULT_CASE sets=2 point=20 exit=42
+MULTI_CREATE_FAILED result=-3 fail_after=20
+MULTI_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.3.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=3 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=1 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Adreno (TM) 730 vendor=0x5143 device=0x7030002 api=1.1.128 driver=0x80267000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=65535 shared_max=32768 storage_range_max=134217728 descriptor_max=524288 non_coherent_atom=1
+MULTI_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=2 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
+MULTI_REQUEST sets=2 buffers=5 bindings=3 storage=2 uniform=1 stages=1 mapped=3 noncoherent=0
+DESCRIPTOR_ACCEPT sets=2 bindings=3 storage=2 uniform=1
+MULTI_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=1 label=gpu-output size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=2 label=staging-upload size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=3 label=staging-download size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=4 label=uniform-parameters size=64 alignment=64 bits=0x00000041
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=1 label=gpu-output type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=2 label=staging-upload type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=staging-download type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=uniform-parameters type=6 heap=0 bytes=64 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=32832 declared=11584221184
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=268435456
+MULTI_MAPPED index=2 type=6 coherent=1
+MULTI_MAPPED index=3 type=6 coherent=1
+MULTI_MAPPED index=4 type=6 coherent=1
+MULTI_SET_LAYOUT index=0 bindings=1
+MULTI_SET_LAYOUT index=1 bindings=2
+MULTI_INJECT_FAULT acquisition=20 resource=descriptor-pool
+MULTI_DESTROY acquisitions=20 buffers=5 memories=5 maps=3 layouts=2 sets=0 shaders=1 pipelines=1 submissions=0 idle_result=0
+FAULT_CASE sets=2 point=21 exit=42
+MULTI_CREATE_FAILED result=-3 fail_after=21
+MULTI_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.3.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=3 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=1 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Adreno (TM) 730 vendor=0x5143 device=0x7030002 api=1.1.128 driver=0x80267000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=65535 shared_max=32768 storage_range_max=134217728 descriptor_max=524288 non_coherent_atom=1
+MULTI_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=2 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
+MULTI_REQUEST sets=2 buffers=5 bindings=3 storage=2 uniform=1 stages=1 mapped=3 noncoherent=0
+DESCRIPTOR_ACCEPT sets=2 bindings=3 storage=2 uniform=1
+MULTI_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=1 label=gpu-output size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=2 label=staging-upload size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=3 label=staging-download size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=4 label=uniform-parameters size=64 alignment=64 bits=0x00000041
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=1 label=gpu-output type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=2 label=staging-upload type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=staging-download type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=uniform-parameters type=6 heap=0 bytes=64 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=32832 declared=11584221184
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=268435456
+MULTI_MAPPED index=2 type=6 coherent=1
+MULTI_MAPPED index=3 type=6 coherent=1
+MULTI_MAPPED index=4 type=6 coherent=1
+MULTI_SET_LAYOUT index=0 bindings=1
+MULTI_SET_LAYOUT index=1 bindings=2
+MULTI_INJECT_FAULT acquisition=21 resource=descriptor-set
+MULTI_DESTROY acquisitions=21 buffers=5 memories=5 maps=3 layouts=2 sets=1 shaders=1 pipelines=1 submissions=0 idle_result=0
+FAULT_CASE sets=2 point=22 exit=42
+MULTI_CREATE_FAILED result=-3 fail_after=22
+MULTI_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.3.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=3 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=1 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Adreno (TM) 730 vendor=0x5143 device=0x7030002 api=1.1.128 driver=0x80267000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=65535 shared_max=32768 storage_range_max=134217728 descriptor_max=524288 non_coherent_atom=1
+MULTI_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=2 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
+MULTI_REQUEST sets=2 buffers=5 bindings=3 storage=2 uniform=1 stages=1 mapped=3 noncoherent=0
+DESCRIPTOR_ACCEPT sets=2 bindings=3 storage=2 uniform=1
+MULTI_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=1 label=gpu-output size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=2 label=staging-upload size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=3 label=staging-download size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=4 label=uniform-parameters size=64 alignment=64 bits=0x00000041
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=1 label=gpu-output type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=2 label=staging-upload type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=staging-download type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=uniform-parameters type=6 heap=0 bytes=64 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=32832 declared=11584221184
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=268435456
+MULTI_MAPPED index=2 type=6 coherent=1
+MULTI_MAPPED index=3 type=6 coherent=1
+MULTI_MAPPED index=4 type=6 coherent=1
+MULTI_SET_LAYOUT index=0 bindings=1
+MULTI_SET_LAYOUT index=1 bindings=2
+MULTI_SET_ALLOCATED index=0
+MULTI_INJECT_FAULT acquisition=22 resource=descriptor-set
+MULTI_DESTROY acquisitions=22 buffers=5 memories=5 maps=3 layouts=2 sets=2 shaders=1 pipelines=1 submissions=0 idle_result=0
+FAULT_CASE sets=2 point=23 exit=42
+MULTI_CREATE_FAILED result=-3 fail_after=23
+MULTI_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.3.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=3 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=1 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Adreno (TM) 730 vendor=0x5143 device=0x7030002 api=1.1.128 driver=0x80267000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=65535 shared_max=32768 storage_range_max=134217728 descriptor_max=524288 non_coherent_atom=1
+MULTI_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=2 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
+MULTI_REQUEST sets=2 buffers=5 bindings=3 storage=2 uniform=1 stages=1 mapped=3 noncoherent=0
+DESCRIPTOR_ACCEPT sets=2 bindings=3 storage=2 uniform=1
+MULTI_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=1 label=gpu-output size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=2 label=staging-upload size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=3 label=staging-download size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=4 label=uniform-parameters size=64 alignment=64 bits=0x00000041
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=1 label=gpu-output type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=2 label=staging-upload type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=staging-download type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=uniform-parameters type=6 heap=0 bytes=64 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=32832 declared=11584221184
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=268435456
+MULTI_MAPPED index=2 type=6 coherent=1
+MULTI_MAPPED index=3 type=6 coherent=1
+MULTI_MAPPED index=4 type=6 coherent=1
+MULTI_SET_LAYOUT index=0 bindings=1
+MULTI_SET_LAYOUT index=1 bindings=2
+MULTI_SET_ALLOCATED index=0
+MULTI_SET_ALLOCATED index=1
+MULTI_DESCRIPTOR index=0 set=0 binding=2 type=storage buffer=0 range=8192
+MULTI_DESCRIPTOR index=1 set=1 binding=1 type=storage buffer=1 range=8192
+MULTI_DESCRIPTOR index=2 set=1 binding=5 type=uniform buffer=4 range=16
+MULTI_INJECT_FAULT acquisition=23 resource=command-pool
+MULTI_DESTROY acquisitions=23 buffers=5 memories=5 maps=3 layouts=2 sets=2 shaders=1 pipelines=1 submissions=0 idle_result=0
+FAULT_CASE sets=2 point=24 exit=42
+MULTI_CREATE_FAILED result=-3 fail_after=24
+MULTI_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.3.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=3 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=1 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Adreno (TM) 730 vendor=0x5143 device=0x7030002 api=1.1.128 driver=0x80267000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=65535 shared_max=32768 storage_range_max=134217728 descriptor_max=524288 non_coherent_atom=1
+MULTI_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=2 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
+MULTI_REQUEST sets=2 buffers=5 bindings=3 storage=2 uniform=1 stages=1 mapped=3 noncoherent=0
+DESCRIPTOR_ACCEPT sets=2 bindings=3 storage=2 uniform=1
+MULTI_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=1 label=gpu-output size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=2 label=staging-upload size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=3 label=staging-download size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=4 label=uniform-parameters size=64 alignment=64 bits=0x00000041
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=1 label=gpu-output type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=2 label=staging-upload type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=staging-download type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=uniform-parameters type=6 heap=0 bytes=64 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=32832 declared=11584221184
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=268435456
+MULTI_MAPPED index=2 type=6 coherent=1
+MULTI_MAPPED index=3 type=6 coherent=1
+MULTI_MAPPED index=4 type=6 coherent=1
+MULTI_SET_LAYOUT index=0 bindings=1
+MULTI_SET_LAYOUT index=1 bindings=2
+MULTI_SET_ALLOCATED index=0
+MULTI_SET_ALLOCATED index=1
+MULTI_DESCRIPTOR index=0 set=0 binding=2 type=storage buffer=0 range=8192
+MULTI_DESCRIPTOR index=1 set=1 binding=1 type=storage buffer=1 range=8192
+MULTI_DESCRIPTOR index=2 set=1 binding=5 type=uniform buffer=4 range=16
+MULTI_INJECT_FAULT acquisition=24 resource=command-buffer
+MULTI_DESTROY acquisitions=24 buffers=5 memories=5 maps=3 layouts=2 sets=2 shaders=1 pipelines=1 submissions=0 idle_result=0
+FAULT_CASE sets=2 point=25 exit=42
+MULTI_CREATE_FAILED result=-3 fail_after=25
+MULTI_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.3.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=3 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=1 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Adreno (TM) 730 vendor=0x5143 device=0x7030002 api=1.1.128 driver=0x80267000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=65535 shared_max=32768 storage_range_max=134217728 descriptor_max=524288 non_coherent_atom=1
+MULTI_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=2 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
+MULTI_REQUEST sets=2 buffers=5 bindings=3 storage=2 uniform=1 stages=1 mapped=3 noncoherent=0
+DESCRIPTOR_ACCEPT sets=2 bindings=3 storage=2 uniform=1
+MULTI_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=1 label=gpu-output size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=2 label=staging-upload size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=3 label=staging-download size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=4 label=uniform-parameters size=64 alignment=64 bits=0x00000041
+GRAPH_PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=1 label=gpu-output type=0 heap=0 bytes=8192 coherent=0
+GRAPH_PLAN_BUFFER index=2 label=staging-upload type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=3 label=staging-download type=6 heap=0 bytes=8192 coherent=1
+GRAPH_PLAN_BUFFER index=4 label=uniform-parameters type=6 heap=0 bytes=64 coherent=1
+GRAPH_PLAN_HEAP index=0 reserved=32832 declared=11584221184
+GRAPH_PLAN_HEAP index=1 reserved=0 declared=268435456
+MULTI_MAPPED index=2 type=6 coherent=1
+MULTI_MAPPED index=3 type=6 coherent=1
+MULTI_MAPPED index=4 type=6 coherent=1
+MULTI_SET_LAYOUT index=0 bindings=1
+MULTI_SET_LAYOUT index=1 bindings=2
+MULTI_SET_ALLOCATED index=0
+MULTI_SET_ALLOCATED index=1
+MULTI_DESCRIPTOR index=0 set=0 binding=2 type=storage buffer=0 range=8192
+MULTI_DESCRIPTOR index=1 set=1 binding=1 type=storage buffer=1 range=8192
+MULTI_DESCRIPTOR index=2 set=1 binding=5 type=uniform buffer=4 range=16
+MULTI_INJECT_FAULT acquisition=25 resource=fence
+MULTI_DESTROY acquisitions=25 buffers=5 memories=5 maps=3 layouts=2 sets=2 shaders=1 pipelines=1 submissions=0 idle_result=0
