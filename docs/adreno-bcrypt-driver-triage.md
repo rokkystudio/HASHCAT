@@ -85,6 +85,8 @@ This confirms specific Vulkan Compute arithmetic and shared-memory behavior on t
 
 A separate synthetic three-stage Vulkan 1.1 program was also compiled and **executed on both devices** with two intermediate GPU buffers and explicit compute-to-compute barriers. Optimized and unoptimized shaders on RedMagic and Pixel each passed 12288 independent CPU word comparisons, including stage-A and stage-B readback, with identical FNV-1a checksums for all three stages. The four actual GPU logs and exact source/build identities are archived in `tests/fixtures/android-gpu/vulkan-pipeline-20261031/`; see `docs/vulkan-multistage-redmagic.md`. This proves the tested Vulkan multi-dispatch memory dependencies work on current devices, **not** that a Vulkan bcrypt implementation exists.
 
+A further Vulkan 1.1 lifecycle diagnostic reuses a single recorded three-stage command buffer over four sequential queue submissions, changing public synthetic input between submits and resetting an already-completed fence. Both GPU devices passed all 98,304 checked 32-bit output words across the optimized and unoptimized variants per device. Four input rejection controls per phone returned code 2. Detailed provenance and real-device logs are in `docs/vulkan-command-reuse-redmagic.md` and `tests/fixtures/android-gpu/vulkan-resubmit-20261031/`.
+
 The archived mode-3200 OpenCL self-test failure (245) and the distinct optimizer-disabled compiler SIGSEGV (139) remain unresolved.
 
 **Current decision:** Preserve original production code and hashcat's self-test; do not declare Adreno bcrypt mode 3200 operational until an authentic device execution passes.

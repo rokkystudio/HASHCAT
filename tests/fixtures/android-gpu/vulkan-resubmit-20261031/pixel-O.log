@@ -1,0 +1,11 @@
+PIPELINE=three-stage-command-reuse
+OPTIMIZATION=O
+SUBMISSIONS=4
+ADB_EXIT_CODE=0
+VULKAN_DEVICE name=Mali-G715 vendor=0x13b5 device=0xb8a20000 driver=0x0d802000 api=1.4.305 queue_family=0
+VULKAN_LIMITS workgroup_x=1024 invocations=1024 shared_bytes=32768
+PASS Vulkan replay submission=0: 2048 elements, 12288 correct 32-bit words; stageA=de56d6d0aa66c6ec stageB=c1259ad4f024499a output=05de70c62f8d7cfd
+PASS Vulkan replay submission=1: 2048 elements, 12288 correct 32-bit words; stageA=66ee1b4b1385e0e3 stageB=27fb4f34e64d89a7 output=7509bfa6ed0455d8
+PASS Vulkan replay submission=2: 2048 elements, 12288 correct 32-bit words; stageA=69b8f65ae2e8be72 stageB=d8038be5522a0b58 output=e50a539d4459e45b
+PASS Vulkan replay submission=3: 2048 elements, 12288 correct 32-bit words; stageA=8fb63465a93a5631 stageB=ac37a5c3b35fc366 output=07d63cfd9773324d
+PASS Vulkan command reuse: 4 sequential submissions, 3 dispatches/submission, 12288 verified words/submission

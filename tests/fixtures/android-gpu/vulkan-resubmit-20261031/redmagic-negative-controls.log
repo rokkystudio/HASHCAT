@@ -1,0 +1,6 @@
+PIPELINE=three-stage-command-reuse
+ERROR_CONTROLS=4
+NEGATIVE zero-submissions exit=2
+NEGATIVE too-many-submissions exit=2
+NEGATIVE non-numeric-submissions exit=2
+NEGATIVE missing-spirv-stage exit=2
