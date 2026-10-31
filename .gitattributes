@@ -24,3 +24,11 @@ tests/fixtures/vulkan-host-policy-20261031/manifest.json text eol=lf
 # Keep Vulkan heap allocation evidence byte-stable across Windows checkouts.
 tests/fixtures/android-gpu/vulkan-heap-20261031/*.log text eol=lf
 tests/fixtures/android-gpu/vulkan-heap-20261031/manifest.json text eol=lf
+
+# Preserve Vulkan 1.0 core-baseline real device and host test log identities.
+tests/fixtures/android-gpu/vulkan-core-baseline-20261031/*.log text eol=lf
+tests/fixtures/android-gpu/vulkan-core-baseline-20261031/manifest.json text eol=lf
+
+# Preserve Vulkan 1.0 three-stage synthetic GPU and native C test evidence.
+tests/fixtures/android-gpu/vulkan-core-multistage-20261031/*.log text eol=lf
+tests/fixtures/android-gpu/vulkan-core-multistage-20261031/manifest.json text eol=lf

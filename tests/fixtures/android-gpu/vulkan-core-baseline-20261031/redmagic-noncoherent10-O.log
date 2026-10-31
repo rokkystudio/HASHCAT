@@ -1,0 +1,19 @@
+TEST=vulkan-core1.0-noncoherent-staging
+MODE=noncoherent10
+OPTIMIZATION=O
+ADB_EXIT_CODE=1
+REJECT_VULKAN_CALL name=vulkan_heap_plan_allocations ( &selected->memory_properties, selected->properties.limits.maxMemoryAllocationCount, 0u, requests, BUFFER_COUNT, &plan, stdout ) result=-8
+NO_CORE11_COMPATIBLE_SYNTHETIC_COMPUTE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.3.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=3 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=1 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Adreno (TM) 730 vendor=0x5143 device=0x7030002 api=1.1.128 driver=0x80267000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=65535 shared_max=32768 storage_range_max=134217728 descriptor_max=524288 non_coherent_atom=1
+CORE11_OPTIONAL_FEATURES reported_shaderInt64=0 reported_shaderInt16=1 enabled=0 extensions=0 effective_api=1.0
+CORE10_BUFFER_REQUIREMENTS index=0 role=gpu-input size=8192 alignment=64 bits=0x00000049
+CORE10_BUFFER_REQUIREMENTS index=1 role=gpu-output size=8192 alignment=64 bits=0x00000041
+CORE10_BUFFER_REQUIREMENTS index=2 role=staging-upload size=8192 alignment=64 bits=0x00000041
+CORE10_BUFFER_REQUIREMENTS index=3 role=staging-download size=8192 alignment=64 bits=0x00000049
+CORE10_STAGING_REQUEST mode=noncoherent input_bits=0x00000041 output_bits=0x00000049
+REJECT_ALLOCATION_TYPE index=2 role=1 bits=0x00000041 forbidden=0x00000064
+SKIP_CORE11_DEVICE index=0 reason=memory_or_compute_execution

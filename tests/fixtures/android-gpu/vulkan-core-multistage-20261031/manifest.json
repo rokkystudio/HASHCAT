@@ -1,0 +1,199 @@
+{
+  "date": "2026-10-31",
+  "scope": "public synthetic Vulkan 1.0 three-stage GPU staging with six planned allocations, no cryptographic compute",
+  "minimum_android_api": 24,
+  "compiled_abis": [
+    "arm64-v8a",
+    "armeabi-v7a"
+  ],
+  "real_multistage_abis": [
+    "arm64-v8a"
+  ],
+  "physical_vulkan10_only_device_tested": false,
+  "source_hash_policy": "UTF-8 CRLF normalized to LF",
+  "source_sha256": {
+    "tools/vulkan-core10-multistage-diagnostic.c": "95378f86ca9ebeed55020abaa7ccb40156fae70d3556deebbd77a68555997e61",
+    "tools/vulkan-multistage-memory-plan.c": "ce2809e349ec7c8a7a51e5a822ad0cfb8e2884b0568f220ebf4db1ff5b52ee57",
+    "tools/vulkan-multistage-memory-plan.h": "485043062c099823ec8b025d42c12562d3755b9cac755dfbb88507cb3f8d3fbb",
+    "tools/test-vulkan-multistage-memory-plan-host.c": "e8ee94b7806c73af5997ff49c54a7b04935065ab576a7a09c73fb5be69ead418",
+    "tools/build-vulkan-core10-multistage.ps1": "b4ab8ddd656854ce0aceedc0e780b833f3353bba7dea06c62fb47524223370ac",
+    "tools/run-vulkan-core10-multistage.ps1": "dccac4bbf0d5111bf47c875f25b9dd6fce6fd6d3e29f3e8a373e37af48e7c762",
+    "tools/test-vulkan-core10-multistage-evidence.py": "d05284c4dfaa1e262322ec7f72328b2c4431448a8d512c326024e11cf91ad06e",
+    "tools/vulkan-auto-config.c": "7dda45d969c6fd092c31821cc8022f69a4dd8b748e852fcb7a2bd23552a571dd",
+    "tools/vulkan-auto-config.h": "1329f5b833bd8a0ffed9e3eadddead210665a1e8fba2f051e6f4259d63385086",
+    "tools/vulkan-core11-policy.c": "ac4fd1bf17a4e61d801de94ee51f6df920e9ce1b9285168e94f2ea412305ede8",
+    "tools/vulkan-core11-policy.h": "e56989252c758b7e8289067540b7d04b9e534d85ae56a05e3f3a4d465662b0fa",
+    "tools/vulkan-pipeline-stage-a.comp": "e9c8ba8d1502a0120ad05043096cc02400221f3099d7c8432307c6cef2caeec8",
+    "tools/vulkan-pipeline-stage-b.comp": "d79344b2d4c22514da50bbf716c20e5b3bba413d88b21d2a166fdee19e39aca4",
+    "tools/vulkan-pipeline-stage-c.comp": "800ac35354741e9dd01b7e8d2f2922e3f9f62f8e7e0f99095f63e2bbd1ee26c1"
+  },
+  "artifact_sha256": {
+    "vulkan-core10-multistage-arm64": "cdab9ed42d134a9479734f503930570c0068cbd2b99de2cd31f1179a5bd9f92e",
+    "vulkan-core10-multistage-armv7": "513c524234913b3d44c9f090c1169b1018b35debbd65da55f12f26d60834721f",
+    "vulkan-multistage-heap-O0.exe": "596480dfbc65407c26852ae34e8603e0c4b94b227fea2dee2a16389a7800f2ee",
+    "vulkan-multistage-heap-O2.exe": "9fdd0075b9a333ad5026a13342e10f40d1c28922de7a67beb89caa953daa9c7a",
+    "stage-a-O0-vk1.0.spv": "b597688dc435d15816557aaa098602ef60b2f084d924633af64e89767ba819f1",
+    "stage-a-O-vk1.0.spv": "244700759a984dc12dc89b6b5aa58191f75345532af5daea18c03357dfef8a28",
+    "stage-b-O0-vk1.0.spv": "2780dfaac1317884617be534e339982bd862d1a8884f455d1f64d69470bb2ba0",
+    "stage-b-O-vk1.0.spv": "ec0fa6f18e07c75c5cce4235b9b0d681c7b4016e5ecb519563c3395b48975378",
+    "stage-c-O0-vk1.0.spv": "8311c92f2c8f4f2f6eb61ebfed7e41864b353535123998109e14f067bdcfd648",
+    "stage-c-O-vk1.0.spv": "fd311a3f826a204d0dd70d62b1fa6ebd23eea44efe7e8b122247d0a65519cf3d"
+  },
+  "cpu_checksums": {
+    "stageA": "de56d6d0aa66c6ec",
+    "stageB": "c1259ad4f024499a",
+    "output": "05de70c62f8d7cfd"
+  },
+  "native_runs": [
+    {
+      "optimization": "O0",
+      "file": "vulkan-multistage-heap-O0.log",
+      "sha256": "df656d5cc009feef4b87daf8b1eb0dee1e84e5b4eb95b86bb80c1108308a6f50",
+      "exit_code": 0
+    },
+    {
+      "optimization": "O2",
+      "file": "vulkan-multistage-heap-O2.log",
+      "sha256": "21d5677f7366fc1f4be222aafeb933d5322100979a45b6e75f04daa0a24d252c",
+      "exit_code": 0
+    }
+  ],
+  "device_runs": [
+    {
+      "device": "redmagic-arm64",
+      "mode": "default10",
+      "optimization": "O0",
+      "file": "redmagic-arm64-default10-O0.log",
+      "sha256": "7f16c846961f5c26c7f18b98aaeee7684491a19e284722a5d6e3fc2183a15b69",
+      "exit_code": 0
+    },
+    {
+      "device": "redmagic-arm64",
+      "mode": "default10",
+      "optimization": "O",
+      "file": "redmagic-arm64-default10-O.log",
+      "sha256": "d160ec35e461794064b45efdf2ba75b59e3eabce57c3ab2dae08ef06672f536a",
+      "exit_code": 0
+    },
+    {
+      "device": "redmagic-arm64",
+      "mode": "explicit10",
+      "optimization": "O0",
+      "file": "redmagic-arm64-explicit10-O0.log",
+      "sha256": "a803761f1b5447a0b17abe3c24f3a8d6d4aa7a17ccc31a090cd038bae9fee987",
+      "exit_code": 0
+    },
+    {
+      "device": "redmagic-arm64",
+      "mode": "explicit10",
+      "optimization": "O",
+      "file": "redmagic-arm64-explicit10-O.log",
+      "sha256": "e4253831fbda3c51be532e6342634ab65f581a0ac0d30b42f8916c06af2927d5",
+      "exit_code": 0
+    },
+    {
+      "device": "redmagic-arm64",
+      "mode": "required11",
+      "optimization": "O0",
+      "file": "redmagic-arm64-required11-O0.log",
+      "sha256": "e79ccb04b0443dd43a6590265be8fae1b5d7ab493174b8fbfd201e855bdb3ff1",
+      "exit_code": 0
+    },
+    {
+      "device": "redmagic-arm64",
+      "mode": "required11",
+      "optimization": "O",
+      "file": "redmagic-arm64-required11-O.log",
+      "sha256": "c792abed45050492d56a00b5ade768d12f828a76cb27402ca8e57550fc2a477e",
+      "exit_code": 0
+    },
+    {
+      "device": "redmagic-arm64",
+      "mode": "noncoherent10",
+      "optimization": "O0",
+      "file": "redmagic-arm64-noncoherent10-O0.log",
+      "sha256": "598345bdd7c90e178078375b0685f5f3451b6ef7adb7dcc1dc261fb752fe4ffc",
+      "exit_code": 1
+    },
+    {
+      "device": "redmagic-arm64",
+      "mode": "noncoherent10",
+      "optimization": "O",
+      "file": "redmagic-arm64-noncoherent10-O.log",
+      "sha256": "7b716f04ca52b1690f5cc72fec351106dd499ef5f54ed02d592fbfb5eb160de4",
+      "exit_code": 1
+    },
+    {
+      "device": "pixel-arm64",
+      "mode": "default10",
+      "optimization": "O0",
+      "file": "pixel-arm64-default10-O0.log",
+      "sha256": "ab12f1965bd05b25f045252b7a8a906bcc2a001bcbc8ba311ba8a2cf354af051",
+      "exit_code": 0
+    },
+    {
+      "device": "pixel-arm64",
+      "mode": "default10",
+      "optimization": "O",
+      "file": "pixel-arm64-default10-O.log",
+      "sha256": "e35faf47ab21804bf6f55e7f2cca288cae94505eb76e77b06465db4a3948382d",
+      "exit_code": 0
+    },
+    {
+      "device": "pixel-arm64",
+      "mode": "explicit10",
+      "optimization": "O0",
+      "file": "pixel-arm64-explicit10-O0.log",
+      "sha256": "d6b62c57f20ad02371b9aa89c991e7f595e74b54c23c7254b8d77fed4cfb7c0a",
+      "exit_code": 0
+    },
+    {
+      "device": "pixel-arm64",
+      "mode": "explicit10",
+      "optimization": "O",
+      "file": "pixel-arm64-explicit10-O.log",
+      "sha256": "5a200cd7b2cda1a4f6d74129c9ca5c163bed4e87ec6baa7f6deb288444321611",
+      "exit_code": 0
+    },
+    {
+      "device": "pixel-arm64",
+      "mode": "required11",
+      "optimization": "O0",
+      "file": "pixel-arm64-required11-O0.log",
+      "sha256": "48daec9baf4ea98e86faedb8b699ce2aa094d3c15f90e650e65eb2bb9f8c5527",
+      "exit_code": 0
+    },
+    {
+      "device": "pixel-arm64",
+      "mode": "required11",
+      "optimization": "O",
+      "file": "pixel-arm64-required11-O.log",
+      "sha256": "f9d007faba5f182e86bd060bdfb3be00a65bf7aa381923c3bffddcda74a74f2e",
+      "exit_code": 0
+    },
+    {
+      "device": "pixel-arm64",
+      "mode": "noncoherent10",
+      "optimization": "O0",
+      "file": "pixel-arm64-noncoherent10-O0.log",
+      "sha256": "a66b724c47126afabb739c785e062907c29acf34526cd0d2f91205ef6e2be002",
+      "exit_code": 0
+    },
+    {
+      "device": "pixel-arm64",
+      "mode": "noncoherent10",
+      "optimization": "O",
+      "file": "pixel-arm64-noncoherent10-O.log",
+      "sha256": "783fe1053dba27371532bae3f015f7b2d33b3610a163dd38fe89143bd895c4ef",
+      "exit_code": 0
+    }
+  ],
+  "limitations": [
+    "Physical Vulkan API 1.0-only GPU and Android 7/API24 hardware not available; both GPUs report later Vulkan and run an explicitly selected Vulkan 1.0 instance",
+    "ARMv7 multistage device execution was not recorded; ARMv7 executable is strict-compiled and older single-stage hardware test exists separately",
+    "Stage A/B are validated through separate channels of stage C GPU output; no direct intermediate host readback occurs in this two-transfer implementation",
+    "The explicit forced noncoherent stage succeeds on Pixel, and RedMagic returns VK_ERROR_FEATURE_NOT_PRESENT because compatible HOST_VISIBLE noncoherent memory is absent",
+    "Per-stage CPU verification uses only publicly defined noncryptographic integer operations",
+    "This is independent Vulkan Compute infrastructure, not a hashcat credential-processing backend"
+  ]
+}

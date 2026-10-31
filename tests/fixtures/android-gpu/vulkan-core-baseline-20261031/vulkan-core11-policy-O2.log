@@ -1,0 +1,8 @@
+TEST=vulkan-core-api-1.0-baseline
+OPTIMIZATION=O2
+VULKAN_DRIVER_LINKED=0
+EXIT_CODE=0
+PASS_CORE11_LOADER dynamic_query core10_missing version_errors
+PASS_CORE11_INSTANCE default10 newer_loader_never_raises_api explicit11
+PASS_CORE11_DEVICE cap11 physical_version_independent lower_minimum
+PASS_CORE11_POLICY all three groups without Vulkan driver

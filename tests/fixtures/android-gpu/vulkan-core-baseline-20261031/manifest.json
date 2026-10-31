@@ -1,0 +1,363 @@
+{
+  "date": "2026-10-31",
+  "scope": "synthetic Vulkan 1.0 default Compute with staging, optional explicit Vulkan 1.1, and real Adreno/Mali device results",
+  "source_hash_policy": "UTF-8 source with CRLF normalized to LF",
+  "toolchains": {
+    "ndk": "29.0.14206865",
+    "clang": "21.0.0",
+    "native_gcc": "MSYS2 MinGW GCC 16.2.0",
+    "shader_target": "vulkan1.0",
+    "validated_shader_targets": [
+      "vulkan1.0",
+      "vulkan1.1"
+    ],
+    "android_targets": [
+      "aarch64-linux-android24",
+      "armv7a-linux-androideabi24"
+    ]
+  },
+  "workload": {
+    "default_instance_api": "1.0",
+    "optional_instance_api": "1.1",
+    "minimum_spirv_version": "1.0",
+    "local_size": [
+      32,
+      1,
+      1
+    ],
+    "workgroups": [
+      64,
+      1,
+      1
+    ],
+    "words": 2048,
+    "buffer_count": 4,
+    "bytes_per_buffer": 8192,
+    "copies_per_dispatch": 2,
+    "enabled_optional_device_features": 0,
+    "enabled_extensions": 0,
+    "noncoherent_staging_test": {
+      "requested_core_api": "1.0",
+      "host_visible_required": true,
+      "host_coherent_forbidden": true,
+      "unsupported_memory_exit_code": 1
+    },
+    "minimum_android_api": 24,
+    "supported_android_abis": [
+      "arm64-v8a",
+      "armeabi-v7a"
+    ]
+  },
+  "source_sha256": {
+    "tools/vulkan-core11-policy.c": "ac4fd1bf17a4e61d801de94ee51f6df920e9ce1b9285168e94f2ea412305ede8",
+    "tools/vulkan-core11-policy.h": "e56989252c758b7e8289067540b7d04b9e534d85ae56a05e3f3a4d465662b0fa",
+    "tools/vulkan-core11-compute-diagnostic.c": "1cf0f9c74ccd92c6bc04d1623dd845fc28a1559eeb8a8ece67f1f59ad96f3827",
+    "tools/test-vulkan-core11-policy-host.c": "cc185c26318903b096c064fbda4b83831ab2d58294b4bd528abac88509893ef3",
+    "tools/build-vulkan-core-baseline.ps1": "01127e68718d71c75ad1deb715825727e173242f62aec9296baf63a6cf1f1a0f",
+    "tools/run-vulkan-core-baseline.ps1": "a79516ff8e05b5d76a675f18211ef88ec2bacd421b84e85b4f3e68c6ca0531bc",
+    "tools/test-vulkan-core-baseline-evidence.py": "bacd1ad1ebc189e6f39c229fcd1d33cc31cef100ae5fda59b3ee8b4a396f0a90",
+    "tools/vulkan-auto-config.c": "7dda45d969c6fd092c31821cc8022f69a4dd8b748e852fcb7a2bd23552a571dd",
+    "tools/vulkan-auto-config.h": "1329f5b833bd8a0ffed9e3eadddead210665a1e8fba2f051e6f4259d63385086",
+    "tools/vulkan-memory-heap-policy.c": "b487214d3d6e19027dae5d16797804d241ea8b9b688366de9ffbd4be45757db4",
+    "tools/vulkan-memory-heap-policy.h": "8f04b683784511a03e16a1e681385ccca8d70db2ad29c94e059203d85ba78d6c",
+    "tools/vulkan-pipeline-stage-a.comp": "e9c8ba8d1502a0120ad05043096cc02400221f3099d7c8432307c6cef2caeec8",
+    "tools/vulkan-memory-heap-probe.c": "21307cddd6f3a28c7b7f0f2849a87c920e6e083b778e091c226ad99cc35de5c7"
+  },
+  "artifact_sha256": {
+    "vulkan-core-baseline-arm64": "d350aa7faebe8a54aaf2ea0d812e5d926e32d37724663d06dfce7adb8a2beea5",
+    "stage-a-O0-vk1.0.spv": "b597688dc435d15816557aaa098602ef60b2f084d924633af64e89767ba819f1",
+    "stage-a-O-vk1.0.spv": "244700759a984dc12dc89b6b5aa58191f75345532af5daea18c03357dfef8a28",
+    "vulkan-core11-policy-O0.exe": "82ccd2ab7657fe720b65cea341ef6ded959b82426a07215966c65d76db13268a",
+    "vulkan-core11-policy-O2.exe": "7d14932b9803ee032ed56dc5a8cf90f107462a9f012fa4a01f1977e3f154da1e",
+    "vulkan-core-baseline-armv7": "c23768d9f32b8ea9ca9cb7968600ff1d2512dad1c3af4626a2957c781b451e0f",
+    "vulkan-heap-probe-armv7": "36e1d22868c517b5db499f23b4a7d6d54a7426a7bb359256c416c758deecd5f3"
+  },
+  "host_imports": [
+    "KERNEL32.dll",
+    "msvcrt.dll"
+  ],
+  "native_policy_uses_vulkan_driver": false,
+  "real_physical_vulkan10_only_device_tested": false,
+  "device_profiles": {
+    "redmagic": {
+      "model": "RedMagic NX709S",
+      "gpu": "Adreno (TM) 730",
+      "vendor_id": "0x5143",
+      "device_id": "0x7030002",
+      "driver_version": "0x80267000",
+      "vulkan_api_version": "1.1.128",
+      "queue_family": 0,
+      "shared_memory_limit": 32768
+    },
+    "pixel": {
+      "model": "Pixel 9 Pro XL",
+      "gpu": "Mali-G715",
+      "vendor_id": "0x13b5",
+      "device_id": "0xb8a20000",
+      "driver_version": "0x0d802000",
+      "vulkan_api_version": "1.4.305",
+      "queue_family": 0,
+      "shared_memory_limit": 32768
+    }
+  },
+  "expected_gpu_fnv1a64": "00d6d6e4837edebc",
+  "host_policy_runs": [
+    {
+      "optimization": "O0",
+      "file": "vulkan-core11-policy-O0.log",
+      "sha256": "f8a7374afface817f71ad1519b5219db64ba7f8213536a681f5994773c9bef5e",
+      "exit_code": 0
+    },
+    {
+      "optimization": "O2",
+      "file": "vulkan-core11-policy-O2.log",
+      "sha256": "8891c90a7f09848b4df866c7576daeab0f180af34ad49859b31dc48b4b19a829",
+      "exit_code": 0
+    }
+  ],
+  "device_runs": [
+    {
+      "device": "redmagic",
+      "mode": "default10",
+      "optimization": "O0",
+      "file": "redmagic-default10-O0.log",
+      "sha256": "b8a3703f88bc46e6a093f5ae7875775a6750e026d5fba63b70f3cdd6e17eec4f",
+      "exit_code": 0
+    },
+    {
+      "device": "redmagic",
+      "mode": "default10",
+      "optimization": "O",
+      "file": "redmagic-default10-O.log",
+      "sha256": "d9866fbfa20e489ef99e0bdce063ba8c8af378bb499335c57c5c3691e026daa9",
+      "exit_code": 0
+    },
+    {
+      "device": "redmagic",
+      "mode": "explicit10",
+      "optimization": "O0",
+      "file": "redmagic-explicit10-O0.log",
+      "sha256": "c76c07ed8463f8ba6d22d507b98280960e881e14a215fb9e319dfd37db16773c",
+      "exit_code": 0
+    },
+    {
+      "device": "redmagic",
+      "mode": "explicit10",
+      "optimization": "O",
+      "file": "redmagic-explicit10-O.log",
+      "sha256": "aa6234dd4e764312c094f170fa15a326949f11d839db3d118ad6e37c96e49451",
+      "exit_code": 0
+    },
+    {
+      "device": "redmagic",
+      "mode": "required11",
+      "optimization": "O0",
+      "file": "redmagic-required11-O0.log",
+      "sha256": "5ca53b57e8797f3fba88298f01b8834b81772029d5aeb5efa53c7dd1919c670f",
+      "exit_code": 0
+    },
+    {
+      "device": "redmagic",
+      "mode": "required11",
+      "optimization": "O",
+      "file": "redmagic-required11-O.log",
+      "sha256": "525e8c3c526837431adea040d3ebb0f1bc4eadd675e6c85e1355d1dc53510446",
+      "exit_code": 0
+    },
+    {
+      "device": "pixel",
+      "mode": "default10",
+      "optimization": "O0",
+      "file": "pixel-default10-O0.log",
+      "sha256": "8c54ab475bdc03736cea4c2bf2fc8be265b8a5126d80e56ba4046b79d8ac23a6",
+      "exit_code": 0
+    },
+    {
+      "device": "pixel",
+      "mode": "default10",
+      "optimization": "O",
+      "file": "pixel-default10-O.log",
+      "sha256": "65247458c961fee3acffcef38649b54e664786ffa058fa1fa9a596acbbed8efc",
+      "exit_code": 0
+    },
+    {
+      "device": "pixel",
+      "mode": "explicit10",
+      "optimization": "O0",
+      "file": "pixel-explicit10-O0.log",
+      "sha256": "ff8a12f0c7393409e6716a7dcebd3c2ed4381ff0c41a3976e7000b446c625b79",
+      "exit_code": 0
+    },
+    {
+      "device": "pixel",
+      "mode": "explicit10",
+      "optimization": "O",
+      "file": "pixel-explicit10-O.log",
+      "sha256": "9b62ee85dc3be0c098f8bd28773b971fc7488b2d98b1025d6e27f752ae067a7e",
+      "exit_code": 0
+    },
+    {
+      "device": "pixel",
+      "mode": "required11",
+      "optimization": "O0",
+      "file": "pixel-required11-O0.log",
+      "sha256": "b73519f51d0658fe729c6804df1855e490b531083550c9a8c8e8e7cbe85494da",
+      "exit_code": 0
+    },
+    {
+      "device": "pixel",
+      "mode": "required11",
+      "optimization": "O",
+      "file": "pixel-required11-O.log",
+      "sha256": "debac8e16cacd8337e278baeca79fa5bbe1c763d4ebe65aeef0469a8de56ce67",
+      "exit_code": 0
+    }
+  ],
+  "negative_controls": [
+    {
+      "device": "redmagic",
+      "file": "redmagic-negative-controls.log",
+      "sha256": "52b6fa5a60e42286adb952f6ea60248002dba62a2f3a8cdab370ffd8832193f7",
+      "exit_code": 2
+    },
+    {
+      "device": "pixel",
+      "file": "pixel-negative-controls.log",
+      "sha256": "52b6fa5a60e42286adb952f6ea60248002dba62a2f3a8cdab370ffd8832193f7",
+      "exit_code": 2
+    }
+  ],
+  "limitations": [
+    "Binaries target Android API 24 in ARM64 and ARMv7, and run on newer connected Android versions; no real Android 7/API 24 phone has been connected",
+    "ARMv7 Vulkan 1.0 and explicit 1.1 CPU/GPU transfers passed on RedMagic; Pixel reports only ARM64 and rejects explicit ARMv7",
+    "A real Vulkan 1.0 memory survey on the same RedMagic GPU reports a 4-GiB heap in ARMv7 but an 11.58-billion-byte heap in ARM64; actual current-process properties must always be queried",
+    "Vulkan 1.0 is really requested and used on physical GPUs reporting 1.1 and 1.4; a hardware Vulkan 1.0-only device has not been connected",
+    "A native C mock verifies the Vulkan 1.0 loader with no vkEnumerateInstanceVersion and a Vulkan 1.0 physical device",
+    "On Pixel, a real noncoherent HOST_VISIBLE staging type is allocated and real Vulkan 1.0 flush and invalidate return VK_SUCCESS around a verified GPU Compute workload",
+    "On RedMagic, the exact staging-upload memoryTypeBits do not permit a noncoherent HOST_VISIBLE type, and the explicit test returns VK_ERROR_FEATURE_NOT_PRESENT without fallback",
+    "The default mode prefers coherent staging memory where available; no phone vendor or model participates in runtime allocation selection",
+    "Only a synthetic 32-bit integer SPIR-V 1.0 workload is tested, not a hashcat Vulkan backend or credential-processing workload",
+    "The original Qualcomm OpenCL bcrypt self-test code 245 remains unresolved"
+  ],
+  "noncoherent_runs": [
+    {
+      "device": "redmagic",
+      "optimization": "O0",
+      "file": "redmagic-noncoherent10-O0.log",
+      "sha256": "ba7197cf743958b71c20d7d27139b35423668e9f1a53df47954438817c644c89",
+      "exit_code": 1
+    },
+    {
+      "device": "redmagic",
+      "optimization": "O",
+      "file": "redmagic-noncoherent10-O.log",
+      "sha256": "686096e568ed0c2c16e667acfadc5104b0f5ddba85472325eddd80358a451a11",
+      "exit_code": 1
+    },
+    {
+      "device": "pixel",
+      "optimization": "O0",
+      "file": "pixel-noncoherent10-O0.log",
+      "sha256": "0fa5cfc76c0fd5529f7791e67b0d5cb2cbb1c50d0115874476ced4739e9ee279",
+      "exit_code": 0
+    },
+    {
+      "device": "pixel",
+      "optimization": "O",
+      "file": "pixel-noncoherent10-O.log",
+      "sha256": "14dc4788859d4c5a3991ffa95cb16a6a60f5adb4f7e85a9582b5ea9f12df0e21",
+      "exit_code": 0
+    }
+  ],
+  "armv7_gpu_runs": [
+    {
+      "device": "redmagic",
+      "abi": "armeabi-v7a",
+      "mode": "default10",
+      "optimization": "O0",
+      "file": "redmagic-armv7-default10-O0.log",
+      "sha256": "446d172b84d294a22de1cc9d043fae08bb42251f6496ec697690493a9df252df",
+      "exit_code": 0
+    },
+    {
+      "device": "redmagic",
+      "abi": "armeabi-v7a",
+      "mode": "default10",
+      "optimization": "O",
+      "file": "redmagic-armv7-default10-O.log",
+      "sha256": "1088476e226741ba8734f01c8790e00242bf1c2e81ebd9e2db8a6b964c0059fb",
+      "exit_code": 0
+    },
+    {
+      "device": "redmagic",
+      "abi": "armeabi-v7a",
+      "mode": "explicit10",
+      "optimization": "O0",
+      "file": "redmagic-armv7-explicit10-O0.log",
+      "sha256": "8f009423191c4dc62c738e04bbaf9014d923cc45fb4374b12fc4399ca81cf3f5",
+      "exit_code": 0
+    },
+    {
+      "device": "redmagic",
+      "abi": "armeabi-v7a",
+      "mode": "explicit10",
+      "optimization": "O",
+      "file": "redmagic-armv7-explicit10-O.log",
+      "sha256": "659cb9e1d56d89e2abd737407e70e47e67e6b5f351effdc5b424b9171d2731e2",
+      "exit_code": 0
+    },
+    {
+      "device": "redmagic",
+      "abi": "armeabi-v7a",
+      "mode": "required11",
+      "optimization": "O0",
+      "file": "redmagic-armv7-required11-O0.log",
+      "sha256": "ce1b7f75e1fe7741c5a055f73e433fd3c76affb12ae453b6ae705db4abea8050",
+      "exit_code": 0
+    },
+    {
+      "device": "redmagic",
+      "abi": "armeabi-v7a",
+      "mode": "required11",
+      "optimization": "O",
+      "file": "redmagic-armv7-required11-O.log",
+      "sha256": "6b492c6c4b83e60706641306ca58806b78f6d36e43671bb38a5c53a3543adf05",
+      "exit_code": 0
+    }
+  ],
+  "armv7_noncoherent_runs": [
+    {
+      "device": "redmagic",
+      "abi": "armeabi-v7a",
+      "optimization": "O0",
+      "file": "redmagic-armv7-noncoherent10-O0.log",
+      "sha256": "ba7197cf743958b71c20d7d27139b35423668e9f1a53df47954438817c644c89",
+      "exit_code": 1
+    },
+    {
+      "device": "redmagic",
+      "abi": "armeabi-v7a",
+      "optimization": "O",
+      "file": "redmagic-armv7-noncoherent10-O.log",
+      "sha256": "686096e568ed0c2c16e667acfadc5104b0f5ddba85472325eddd80358a451a11",
+      "exit_code": 1
+    }
+  ],
+  "armv7_negative_controls": [
+    {
+      "device": "redmagic",
+      "abi": "armeabi-v7a",
+      "file": "redmagic-armv7-negative-controls.log",
+      "sha256": "52b6fa5a60e42286adb952f6ea60248002dba62a2f3a8cdab370ffd8832193f7",
+      "exit_code": 2
+    }
+  ],
+  "noncoherent_staging_on_armv7": "RedMagic explicitly rejected unavailable HOST_VISIBLE noncoherent staging memory; the standard ARMv7 path passed",
+  "armv7_memory_survey": {
+    "device": "redmagic",
+    "abi": "armeabi-v7a",
+    "file": "redmagic-armv7-memory-properties.log",
+    "sha256": "44c8786370cfc36bc5c07f114edad01fb4288cbbae24a07287e6fa5c7ae3ef90",
+    "exit_code": 0
+  }
+}

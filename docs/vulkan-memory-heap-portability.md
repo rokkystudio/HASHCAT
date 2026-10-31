@@ -86,7 +86,7 @@ Both physical devices placed all four buffer allocations in declared heap zero. 
 
 The different choices illustrate why neither `memoryTypeIndex = 0` nor `memoryTypeIndex = 6` should be prescribed globally. The code derives them only from the real per-buffer compatible masks and actual memory properties.
 
-On these phones, the chosen host staging memory was coherent. Real **noncoherent** host-memory flush behavior remains unverified on hardware, although the direct/staging logic and flush call sites are independently tested using synthetic Vulkan properties and mock APIs.
+In **this original allocation-only probe**, host staging memory was coherent on both devices and no Compute command was submitted. A separate Vulkan 1.0 Compute diagnostic subsequently performed a real noncoherent staging upload/download on Pixel using compatible memory type 1, including successful driver `vkFlushMappedMemoryRanges` and `vkInvalidateMappedMemoryRanges` calls and 2,048 correct GPU outputs. RedMagic explicitly rejected noncoherent staging upload because its `memoryTypeBits` contained no compatible HOST_VISIBLE noncoherent type. See `docs/vulkan-core10-portability.md` and the four ARM64 explicit-mode logs in `tests/fixtures/android-gpu/vulkan-core-baseline-20261031/`. A subsequent real ARMv7 Vulkan 1.0 memory survey on RedMagic reported **4 GiB** for heap 0, whereas the ARM64 survey reported **11,584,221,184 bytes** for the same GPU. The Vulkan planner therefore always uses the heap properties of the *current process ABI*. The standalone API24 diagnostic has successful ARM64 and ARMv7 compute runs, with an independently archived ARMv7 heap survey.
 
 ## Build and test from Windows
 

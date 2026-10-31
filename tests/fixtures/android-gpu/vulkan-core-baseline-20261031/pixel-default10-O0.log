@@ -1,0 +1,25 @@
+TEST=vulkan-core1.0-baseline-optional-1.1
+MODE=default10
+OPTIMIZATION=O0
+ADB_EXIT_CODE=0
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+CORE11_OPTIONAL_FEATURES reported_shaderInt64=1 reported_shaderInt16=1 enabled=0 extensions=0 effective_api=1.0
+CORE10_BUFFER_REQUIREMENTS index=0 role=gpu-input size=8192 alignment=64 bits=0x00000003
+CORE10_BUFFER_REQUIREMENTS index=1 role=gpu-output size=8192 alignment=64 bits=0x00000003
+CORE10_BUFFER_REQUIREMENTS index=2 role=staging-upload size=8192 alignment=64 bits=0x00000003
+CORE10_BUFFER_REQUIREMENTS index=3 role=staging-download size=8192 alignment=64 bits=0x00000003
+CORE10_STAGING_REQUEST mode=auto input_bits=0x00000003 output_bits=0x00000003
+PLAN_BUFFER index=0 label=gpu-input type=0 heap=0 bytes=8192 coherent=1
+PLAN_BUFFER index=1 label=gpu-output type=0 heap=0 bytes=8192 coherent=1
+PLAN_BUFFER index=2 label=staging-upload type=0 heap=0 bytes=8192 coherent=1
+PLAN_BUFFER index=3 label=staging-download type=0 heap=0 bytes=8192 coherent=1
+PLAN_HEAP index=0 reserved=32768 declared=16101965824
+PLAN_HEAP index=1 reserved=0 declared=104857600
+CORE10_STAGING_MAPPED input_type=0 output_type=0 input_coherent=1 output_coherent=1
+CORE10_STAGING_SYNC index=2 operation=flush coherent=1 driver_call=0 atom=64 result=0
+CORE10_STAGING_SYNC index=3 operation=invalidate coherent=1 driver_call=0 atom=64 result=0
+PASS_CORE11_COMPUTE device=0 queue=0 words=2048 checksum=00d6d6e4837edebc gpu_buffers=2 staging_buffers=2 copies=2 optional_features=0 extensions=0

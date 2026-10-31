@@ -1,0 +1,6 @@
+TEST=vulkan-core1.0-baseline-optional-1.1
+INVALID_INPUT_CONTROLS=4
+INVALID no-shader exit=2
+INVALID bad-flag exit=2
+INVALID unsupported-api exit=2
+INVALID missing-file exit=2

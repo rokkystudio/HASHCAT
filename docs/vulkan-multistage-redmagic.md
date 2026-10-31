@@ -112,6 +112,14 @@ A full application backend entails resource management beyond this demonstration
 
 The next noncryptographic infrastructure checks would be multi-submission command-buffer reuse, buffer-lifetime failures, and stage-specific error reporting. The three-stage sample provides an isolated reference for those checks without linking to a password-cracking workflow.
 
+## Follow-up: Vulkan 1.0 default with six-buffer staging
+
+An independent, device-capability-driven three-stage program now requests Vulkan **1.0** by default, rather than relying on 1.1, and executes the same public SPIR-V 1.0 stage A/B/C shaders with four DEVICE_LOCAL-preferred storage buffers and two HOST_VISIBLE staging buffers. A joint six-allocation memory plan checks all six actual `memoryTypeBits` masks, heap sizes, memory flags and allocation counts; intermediate compute dependencies and two staging transfers use core Vulkan 1.0 barriers.
+
+On ARM64, Adreno and Mali passed 14 real GPU runs covering the default core API, explicit 1.0/1.1 and genuine noncoherent staging on Pixel, with independent matching stage checksums; the two forced noncoherent Adreno trials returned precise incompatibility errors. The outputs embed both intermediate stage values, so the new two-transfer path checks stage A and B through the stage C readback rather than independently mapping the GPU stage buffers. The ARMv7 executable builds for Android API 24 but has not been run as a six-buffer GPU pipeline.
+
+See `docs/vulkan-core10-multistage-portability.md` and `tests/fixtures/android-gpu/vulkan-core-multistage-20261031/`.
+
 ## Follow-up: sequential command-buffer reuse
 
 A separate Vulkan 1.1 host executable now records the same three noncryptographic shaders **once** and submits the same command buffer four times with distinct synthetic input and a wait/reset fence. Both Adreno 730 and Mali-G715 passed 12,288 word comparisons **per submission** with `-O0` and `-O`, with all eight input generations per phone matching the independent scalar reference. Four deliberately invalid inputs were rejected with exit code 2 on each device. The exact source, build identities, real GPU logs, manifest and resource-lifetime scope are documented in `docs/vulkan-command-reuse-redmagic.md` and `tests/fixtures/android-gpu/vulkan-resubmit-20261031/`. No bcrypt or hashcat kernel was executed.

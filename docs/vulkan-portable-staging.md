@@ -145,7 +145,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/run-vulkan-staging
 python -B tools/test-vulkan-staging-policy-host-evidence.py --artifacts build/diagnostic-multimode/vulkan-staging-policy-host-20261031
 ```
 
-This validates the policy's exact **C behavior**, not a third GPU model's Vulkan driver. Automatic staging fallback and noncoherent cache synchronization still require hardware observation on actual devices exposing those capabilities. No hashcat execution is involved.
+This validates the policy's exact **C behavior**, not a third GPU model's Vulkan driver. This **historical standalone staging-module test** still does not establish automatic staging selection on a device lacking direct mappable storage memory. A later independent Vulkan 1.0 diagnostic confirms actual noncoherent flush/invalidate and GPU verification on a Pixel, together with explicit incompatibility on RedMagic for a forced noncoherent staging upload. See `docs/vulkan-core10-portability.md`. No hashcat execution is involved.
 
 ## Follow-up: exact four-buffer Vulkan heap allocation planning
 
@@ -153,7 +153,9 @@ This validates the policy's exact **C behavior**, not a third GPU model's Vulkan
 
 The native C implementation passed **200,704** simulated two-buffer combinations at `-O0` and `-O2`, cross-checked by a separate Python feasibility oracle. In a second, real Vulkan 1.0 *buffer-only* diagnostic, Adreno and Mali each successfully allocated and bound four 8192-byte buffers and mapped both staging buffers, after selecting memory from actual driver heap properties. This test dispatched **zero** GPU compute commands. Full hardware logs, source identities and limitations are documented in `docs/vulkan-memory-heap-portability.md` and `tests/fixtures/android-gpu/vulkan-heap-20261031/`.
 
-The new heap planner is not yet part of the original standalone GPU staging execution program or a production hashcat backend; the earlier GPU execution evidence remains independently versioned.
+The new heap planner is not part of the original standalone GPU staging execution program or a production hashcat backend; the earlier GPU execution evidence remains independently versioned.
+
+A **separate Vulkan 1.0-by-default synthetic Compute diagnostic** now integrates the heap planner with real GPU staging upload/compute/download and a core API-version policy. It requests core 1.0 by default on both Adreno and Mali; an explicitly required 1.1 mode remains optional. All 12 actual combinations of device, API selection and shader optimization pass 2,048-word CPU/GPU verification. See `docs/vulkan-core10-portability.md` and `tests/fixtures/android-gpu/vulkan-core-baseline-20261031/`. This proves the chosen 1.0 API path on 1.1+ devices, not physical support on an untested Vulkan-1.0-only phone. The latest standalone path targets **Android API 24**, builds both ARM64 and ARMv7 executables and chooses the executable using Android's reported ABI list. On RedMagic six real ARMv7 Compute runs and an independent ARMv7 heap survey also passed. The ARMv7 process reports a smaller device-local heap than ARM64, which is why heap properties are always queried in the executing process.
 
 ## Compatibility boundaries
 
