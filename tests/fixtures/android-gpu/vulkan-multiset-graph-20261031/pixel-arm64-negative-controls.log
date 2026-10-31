@@ -1,0 +1,13 @@
+TEST=vulkan-core10-multiset-graph-invalid-inputs
+ABI=arm64-v8a
+INVALID_CASES=10
+INVALID_CASE=missing-both exit=2
+INVALID_CASE=zero-stages exit=2
+INVALID_CASE=four-stages exit=2
+INVALID_CASE=zero-sets exit=2
+INVALID_CASE=three-sets exit=2
+INVALID_CASE=five-submissions exit=2
+INVALID_CASE=invalid-api exit=2
+INVALID_CASE=zero-fault exit=2
+INVALID_CASE=fault-over-limit exit=2
+INVALID_CASE=missing-shader exit=2

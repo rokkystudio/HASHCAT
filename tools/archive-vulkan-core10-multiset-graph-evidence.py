@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Archive original public Vulkan 1.0 multi-stage, multi-set GPU evidence.
 
-Copies LF-only logs recorded on RedMagic ARM64 without editing their bytes.
+Copies LF-only logs recorded on RedMagic ARM64, RedMagic ARMv7 and Pixel
+ARM64 without editing their bytes.
 Stores independently identifiable source and build SHA-256 digests, explicit
 device/ABI coverage and exact run/negative-case metadata. Does not execute
 Android, Vulkan or shader build operations.
@@ -21,6 +22,8 @@ ARCHIVE = ROOT / "tests/fixtures/android-gpu/vulkan-multiset-graph-20261031"
 
 DEVICES = {
     "redmagic-arm64": "arm64-v8a",
+    "redmagic-armv7": "armeabi-v7a",
+    "pixel-arm64": "arm64-v8a",
 }
 MODES = ("default10", "explicit10", "required11", "noncoherent10")
 OPTIMIZATIONS = ("O0", "O")
@@ -89,11 +92,12 @@ def copy_original(name: str) -> str:
 
 
 def main() -> None:
-    """Create a manifest for all observed graph scenarios and build products."""
+    """Archive three device/ABI GPU matrices, faults and build identities."""
     ARCHIVE.mkdir(parents=True, exist_ok=True)
 
     device_runs = []
     invalid_runs = []
+    fault_runs = []
 
     for device, abi in DEVICES.items():
         for sets in (1, 2):
@@ -105,7 +109,10 @@ def main() -> None:
                             f"{mode}-{optimization}.log"
                         )
                         digest = copy_original(name)
-                        exit_code = int(mode == "noncoherent10")
+                        exit_code = int(
+                            mode == "noncoherent10"
+                            and device.startswith("redmagic")
+                        )
                         rows = (ARCHIVE / name).read_text(
                             encoding="utf-8"
                         ).splitlines()
@@ -142,6 +149,29 @@ def main() -> None:
             "cases": 10,
         })
 
+        name = f"{device}-faults.log"
+        digest = copy_original(name)
+        fault_rows = (ARCHIVE / name).read_text(
+            encoding="utf-8"
+        ).splitlines()
+
+        assert fault_rows[:3] == [
+            "TEST=vulkan-core10-multiset-graph-faults",
+            f"ABI={abi}",
+            "CONFIGURATIONS=set1-stages1,set2-stages3",
+        ], name
+
+        fault_runs.append({
+            "device": device,
+            "abi": abi,
+            "file": name,
+            "sha256": digest,
+            "set_stage_points": {
+                "1:1": 23,
+                "2:3": 39,
+            },
+        })
+
     manifest = {
         "date": "2026-10-31",
         "scope": (
@@ -170,15 +200,16 @@ def main() -> None:
         },
         "device_runs": device_runs,
         "invalid_runs": invalid_runs,
+        "fault_runs": fault_runs,
         "limitations": [
-            "Only RedMagic ARM64 was rerun in this multi-stage GPU matrix.",
-            "RedMagic ARMv7 and Pixel ARM64 have compiled binaries, but no fresh multi-stage runtime log in this fixture.",
+            "Three device/ABI combinations were executed: RedMagic ARM64, RedMagic ARMv7 and Pixel ARM64.",
+            "Pixel ARM64 executed all three stages using real HOST_VISIBLE noncoherent memory and driver cache flush/invalidate calls.",
             "Neither a Vulkan 1.0-only GPU nor an Android 7.0 device was available.",
             "Only public integer shaders are executed, without hashcat GPU integration.",
             "The shared pipeline layout serves all stages; stage-specific descriptor layouts and concurrent queues are not implemented.",
             "The new graph recorder validates declared usage against supplied original specifications, not SPIR-V reflection.",
             "The runtime is sequential with one queue, command buffer, fence and no device-loss recovery.",
-            "No new resource acquisition fault matrix or validation-layer leak test is recorded here.",
+            "Post-acquisition fault injection was executed for 62 object acquisition points on each device/ABI; no driver device loss or validation-layer leak test was performed.",
         ],
     }
 
@@ -188,12 +219,14 @@ def main() -> None:
         newline="\n",
     )
 
-    assert len(device_runs) == 48
-    assert len(invalid_runs) == 1
-    assert len(list(ARCHIVE.glob("*.log"))) == 49
+    assert len(device_runs) == 144
+    assert len(invalid_runs) == 3
+    assert len(fault_runs) == 3
+    assert len(list(ARCHIVE.glob("*.log"))) == 150
 
-    print("PASS 36 real RedMagic GPU graph runs, 12 explicit memory refusals")
-    print("PASS 10 malformed CLI controls")
+    print("PASS 120 real GPU graph runs, 24 explicit memory refusals")
+    print("PASS 186 real post-acquisition partial cleanup trials")
+    print("PASS 30 malformed CLI controls")
     print("PASS exact canonical source files", len(SOURCES))
     print("PASS native ARM64/ARMv7 and SPIR-V artifacts", len(ARTIFACTS))
     print("MANIFEST_SHA256", sha256(ARCHIVE / "manifest.json"))

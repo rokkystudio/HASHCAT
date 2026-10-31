@@ -114,21 +114,44 @@ sequential command-buffer submission.
 
 ## Confirmed on actual hardware
 
-RedMagic / Adreno 730 / **ARM64** was rerun with the new multi-stage
-and multi-set recorder. The requested Vulkan version was 1.0 by default;
-Vulkan 1.1 was exercised only by explicit opt-in.
+The exact one-, two- and three-stage graph runs on three device/ABI
+configurations. The default Vulkan version is **1.0**, while 1.1 is
+requested only during optional compatibility checks.
 
-| Real RedMagic ARM64 trial | Result |
-| --- | --- |
-| 1, 2, 3 stages × 1, 2 descriptor sets × default 1.0, explicit 1.0, explicit 1.1 × O0 / O | **36 GPU runs PASS** |
-| Four completed, fence-separated command submissions per successful run | **144 PASS** |
-| CPU-verified output values across all stage readbacks and submissions | **589,824 32-bit words** |
-| Forced HOST_VISIBLE without HOST_COHERENT | **12 exact unsupported-memory refusals**, no Compute dispatch |
-| Malformed CLI controls | **10 exit-code-2 rejections** |
-| Independently rejected altered GPU logs | **5 mutation checks** |
+| Device / process ABI | Real successful GPU runs | Forced noncoherent memory |
+| --- | ---: | --- |
+| RedMagic / Adreno 730 / ARM64 | **36 PASS** | 12 exact incompatible-memory refusals |
+| RedMagic / Adreno 730 / ARMv7 | **36 PASS** | 12 exact incompatible-memory refusals |
+| Pixel / Mali-G715 / ARM64 | **48 PASS** | 12 real GPU runs using noncoherent mappings and flush/invalidate |
 
-Every one of the 36 successful GPU runs verified all 2,048 words in every
-active stage against the CPU reference, not just the final stage. A recorded
+Across these three configurations, the verified evidence contains **120
+successful GPU runs**, **480 fence-separated submissions**, **1,966,080
+independently CPU-verified 32-bit stage outputs**, **24 explicit
+unsupported-memory refusals**, **186 real post-acquisition cleanup
+tests** and **30 rejected malformed CLI controls**.
+
+Each successful GPU run checks all 2,048 words in every active stage
+against the CPU reference, not just the final stage. In the Pixel forced
+noncoherent mode, Vulkan reports `nonCoherentAtomSize = 64`, and each
+submission invokes actual driver flush calls on the upload and uniform
+allocations and actual invalidate calls on each readback.
+
+RedMagic's main Vulkan heap is reported as **11,584,221,184 bytes** by
+its ARM64 process and **4,294,967,296 bytes** by ARMv7. The independent
+validator requires these distinct archived ABI observations and verifies
+each run's heap reservations against the buffer allocations reported by
+that process, without using the model of the phone to select allocations.
+
+The 186 post-acquisition fault tests cover **23 acquisition points** of
+the one-stage, one-set graph and **39 acquisition points** of the
+three-stage, two-set graph on each of the three process configurations.
+Every injected failure returns before dispatch and frees the precisely
+acquired Vulkan resources. These are controlled application-level
+failure points, not actual GPU device loss.
+
+The independent validator also rejects **seven** deliberately corrupted
+GPU/cleanup records, including a missing noncoherent uniform flush and
+an inaccurate ARMv7 resource cleanup ledger. A recorded
 three-stage, two-set graph acquired and released exactly 39 Vulkan objects:
 nine GPU/host buffers, nine allocations, five mappings, two set layouts,
 two descriptor sets, three shader modules, three Compute pipelines and
@@ -147,11 +170,24 @@ The same checksums appear for optimized and nonoptimized variants and both
 descriptor layouts. The independent Python verifier calculates all 12 values
 from the public formula rather than trusting C diagnostic output.
 
-The original 49 LF-only logs and a source/build SHA-256 manifest are saved at:
+The original 150 LF-only GPU, fault and CLI logs and a source/build SHA-256 manifest are saved at:
 
 `tests/fixtures/android-gpu/vulkan-multiset-graph-20261031/`
 
-To verify the archived real GPU observations and exact compiled artifacts:
+Run the complete hardware matrix on a connected Android GPU, using its actual
+ADB serial and one explicitly supported ABI:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/run-vulkan-core10-multiset-graph.ps1 -Serial $DeviceAdbSerial -Abi auto -ReportPrefix device-arm -TestCore11 -TestNoncoherent -TestFaults
+```
+
+The runner selects ARM64 or ARMv7 from `ro.product.cpu.abilist`.
+For RedMagic ARMv7 specify `-Abi armeabi-v7a`. For both RedMagic and
+Pixel, Vulkan 1.0 is the baseline; a device unable to allocate
+`HOST_VISIBLE` noncoherent staging and uniform memory receives an
+explicit `VK_ERROR_FEATURE_NOT_PRESENT` without Compute dispatch.
+
+To verify archived hardware observations and exact compiled artifacts:
 
 ```powershell
 python -B tools/test-vulkan-core10-multiset-graph-evidence.py --artifacts build/diagnostic-multimode/vulkan-multiset-graph-20261031
@@ -162,19 +198,15 @@ archived logs; it never invokes Android or Vulkan.
 
 ## Known boundaries
 
-- The new three-stage graph was actually executed on **RedMagic ARM64 only**.
-  RedMagic ARMv7 and Pixel ARM64 binaries compile, but this stage does not
-  claim fresh executions on those configurations. A Pixel attempt was not
-  completed in this pass.
-- No GPU physically limited to Vulkan 1.0 and no device running Android
-  API 24 were available for hardware testing. The tested phones are newer
-  GPUs with a **requested** Vulkan 1.0 execution path.
-- Pixel's noncoherent memory paths have earlier single-stage hardware
-  evidence, but the new three-stage noncoherent path is not yet validated
-  on Pixel. RedMagic correctly rejected incompatible forced requests.
-- The original Vulkan multi-set runtime and its recorded fault test results
-  remain unchanged. The new multi-stage runner provides opt-in acquisition
-  fault testing, but **no new fault matrix is included in this archive**.
+- The three-stage graph runs on RedMagic ARM64, RedMagic ARMv7 and Pixel
+  ARM64. A physically Vulkan 1.0-only GPU and an Android 7.0/API 24
+  system were not available; these tests request Vulkan 1.0 on newer drivers.
+- Pixel's noncoherent multi-stage path completes actual GPU work with
+  driver `flush`/`invalidate`. RedMagic rejects unsupported forced memory
+  requirements, and its normal coherent pathway completes the same computation.
+- The 186 fault cases stop after successful native resource acquisitions,
+  rather than inducing actual device loss or proving driver-internal leak
+  absence. Vulkan validation-layer execution was not tested.
 - Descriptor types remain `STORAGE_BUFFER` and `UNIFORM_BUFFER`; multiple
   queues, concurrent command submissions, push constants, images, dynamic
   descriptors, pipeline-specific layouts, SPIR-V reflection and device-loss

@@ -31,6 +31,15 @@ PLAN = re.compile(
     r"^GRAPH_PLAN_BUFFER index=(\d+) label=([^ ]+) "
     r"type=(\d+) heap=(\d+) bytes=(\d+) coherent=([01])$"
 )
+HEAP = re.compile(
+    r"^GRAPH_PLAN_HEAP index=(\d+) reserved=(\d+) declared=(\d+)$"
+)
+COMPUTE = re.compile(
+    r"^ACCEPT_COMPUTE index=(\d+) queue_family=(\d+) "
+    r"local_max=(\d+) invocations_max=(\d+) groups_max=(\d+) "
+    r"shared_max=(\d+) storage_range_max=(\d+) "
+    r"descriptor_max=(\d+) non_coherent_atom=(\d+)$"
+)
 DESCRIPTOR = re.compile(
     r"^MULTI_DESCRIPTOR index=(\d+) set=(\d+) binding=(\d+) "
     r"type=(storage|uniform) buffer=(\d+) range=(\d+)$"
@@ -121,7 +130,7 @@ def verify_success(
     """Validate a complete GPU graph run against declared resource contracts."""
     assert 1 <= sets <= 2
     assert 1 <= stages <= 3
-    assert mode in ("default10", "explicit10", "required11")
+    assert mode in ("default10", "explicit10", "required11", "noncoherent10")
 
     api = "1.1" if mode == "required11" else "1.0"
     buffers = 2 * stages + 3
@@ -149,7 +158,7 @@ def verify_success(
         lines,
         f"MULTIGRAPH_REQUEST sets={sets} stages={stages} "
         f"buffers={buffers} bindings={binding_count} "
-        f"mapped={mapped_count} noncoherent=0",
+        f"mapped={mapped_count} noncoherent={int(mode == 'noncoherent10')}",
     )
     exact_line(
         lines,
@@ -172,12 +181,19 @@ def verify_success(
 
     requirements = matching(lines, REQUIREMENTS)
     plan = matching(lines, PLAN)
+    heaps = matching(lines, HEAP)
+    compute = matching(lines, COMPUTE)
     descriptors = matching(lines, DESCRIPTOR)
     syncs = matching(lines, SYNC)
     passes = matching(lines, PASS)
 
     assert len(requirements) == buffers
     assert len(plan) == buffers
+    assert len(heaps) >= 1
+    assert len(compute) == 1
+    assert int(compute[0].group(1)) == 0
+    atom = int(compute[0].group(9))
+    assert atom > 0
     assert len(descriptors) == binding_count
     assert len(syncs) == 4 * (stages + 2)
     assert len(passes) == 4 * stages
@@ -197,6 +213,15 @@ def verify_success(
             int(requirement.group(3)) == 8192
             if index != uniform else int(requirement.group(3)) >= 16
         )
+
+    for heap_index, heap in enumerate(heaps):
+        assert int(heap.group(1)) == heap_index
+        reserved = sum(
+            int(item.group(5)) for item in plan
+            if int(item.group(4)) == heap_index
+        )
+        assert int(heap.group(2)) == reserved
+        assert 0 <= reserved <= int(heap.group(3))
 
     for index, descriptor in enumerate(descriptors):
         assert int(descriptor.group(1)) == index
@@ -268,6 +293,9 @@ def verify_success(
         assert int(item.group(2)) == int(plan[index].group(3))
         assert int(item.group(3)) == int(plan[index].group(6))
 
+        if mode == "noncoherent10":
+            assert int(item.group(3)) == 0
+
     for submission in range(4):
         exact_line(
             lines,
@@ -290,7 +318,11 @@ def verify_success(
             coherent = int(plan[index].group(6))
             assert int(sync.group(3)) == coherent
             assert int(sync.group(4)) == 1 - coherent
-            assert int(sync.group(5)) > 0
+            assert int(sync.group(5)) == atom
+
+            if mode == "noncoherent10":
+                assert int(sync.group(3)) == 0
+                assert int(sync.group(4)) == 1
 
         for stage in range(stages):
             match = passes[submission * stages + stage]
@@ -324,13 +356,148 @@ def verify_incompatible(lines: list[str], sets: int, stages: int) -> None:
     assert not any(row.startswith("MULTIGRAPH_PASS ") for row in lines)
     assert not any(row.startswith("MULTI_SUBMIT ") for row in lines)
     assert not any(row.startswith("MULTIGRAPH_DISPATCH ") for row in lines)
+    assert not any(row.startswith("MULTI_READY ") for row in lines)
+
+
+def acquisition_ledger(sets: int, stages: int, point: int) -> dict[str, int]:
+    """Calculate precisely which native Vulkan objects exist at a fault point."""
+    buffers = 2 * stages + 3
+    mapped = stages + 2
+
+    objects = (
+        ["device"]
+        + ["buffer"] * buffers
+        + ["memory"] * buffers
+        + ["map"] * mapped
+        + ["layout"] * sets
+        + ["pipeline-layout"]
+    )
+
+    for _ in range(stages):
+        objects.extend(("shader", "pipeline"))
+
+    objects.extend(
+        ["descriptor-pool"]
+        + ["set"] * sets
+        + ["command-pool", "command-buffer", "fence"]
+    )
+
+    assert len(objects) == 14 + 7 * stages + 2 * sets
+    assert 1 <= point <= len(objects)
+
+    return {
+        kind: objects[:point].count(kind)
+        for kind in ("buffer", "memory", "map", "layout", "set", "shader", "pipeline")
+    }
+
+
+def verify_faults(
+    item: dict,
+    supplied_lines: list[str] | None = None,
+) -> int:
+    """Audit actual or deliberately altered Vulkan partial-cleanup evidence."""
+    path = ARCHIVE / item["file"]
+    assert sha256(path) == item["sha256"]
+    lines = (
+        supplied_lines if supplied_lines is not None
+        else path.read_text(encoding="utf-8").splitlines()
+    )
+
+    assert lines[:3] == [
+        "TEST=vulkan-core10-multiset-graph-faults",
+        f"ABI={item['abi']}",
+        "CONFIGURATIONS=set1-stages1,set2-stages3",
+    ]
+
+    marker = re.compile(
+        r"^FAULT_CASE sets=(\d+) stages=(\d+) point=(\d+) exit=42$"
+    )
+    markers = [
+        (index, match)
+        for index, line in enumerate(lines)
+        if (match := marker.fullmatch(line)) is not None
+    ]
+    expected = (
+        [(1, 1, point) for point in range(1, 24)]
+        + [(2, 3, point) for point in range(1, 40)]
+    )
+    assert len(markers) == 62
+
+    for index, ((position, match), (sets, stages, point)) in enumerate(
+        zip(markers, expected)
+    ):
+        assert (
+            int(match.group(1)),
+            int(match.group(2)),
+            int(match.group(3)),
+        ) == (sets, stages, point)
+
+        end = markers[index + 1][0] if index + 1 < len(markers) else len(lines)
+        section = lines[position + 1:end]
+        ledger = acquisition_ledger(sets, stages, point)
+
+        assert sum(
+            line.startswith(f"MULTI_INJECT_FAULT acquisition={point} resource=")
+            for line in section
+        ) == 1
+
+        exact_line(
+            section,
+            f"MULTIGRAPH_CREATE_FAILED result=-3 fail_after={point}",
+        )
+        exact_line(section, "MULTIGRAPH_NO_COMPATIBLE_CONFIGURATION")
+        exact_line(
+            section,
+            f"MULTI_DESTROY acquisitions={point} "
+            f"buffers={ledger['buffer']} memories={ledger['memory']} "
+            f"maps={ledger['map']} layouts={ledger['layout']} "
+            f"sets={ledger['set']} shaders={ledger['shader']} "
+            f"pipelines={ledger['pipeline']} submissions=0 idle_result=0",
+        )
+
+        assert not any(row.startswith("MULTI_SUBMIT ") for row in section)
+        assert not any(row.startswith("MULTIGRAPH_PASS ") for row in section)
+        assert not any(row.startswith("MULTIGRAPH_DISPATCH ") for row in section)
+
+    assert item["set_stage_points"] == {"1:1": 23, "2:3": 39}
+
+    return len(markers)
+
+
+def verify_abi_heap_properties(manifest: dict) -> None:
+    """Verify RedMagic ARM64 and ARMv7 retain distinct driver-local GPU heaps."""
+    actual = {}
+
+    for device in ("redmagic-arm64", "redmagic-armv7"):
+        record = next(
+            item for item in manifest["device_runs"]
+            if item["device"] == device
+            and item["sets"] == 2 and item["stages"] == 3
+            and item["mode"] == "default10"
+            and item["optimization"] == "O"
+        )
+        lines = (ARCHIVE / record["file"]).read_text(
+            encoding="utf-8"
+        ).splitlines()[7:]
+        heaps = matching(lines, HEAP)
+        assert len(heaps) == 2
+        assert int(heaps[0].group(1)) == 0
+
+        actual[device] = int(heaps[0].group(3))
+
+    assert actual == {
+        "redmagic-arm64": 11584221184,
+        "redmagic-armv7": 4294967296,
+    }
+
+    print("PASS ABI-specific Adreno GPU heap capacities from native Vulkan")
 
 
 def verify_mutations(
     manifest: dict,
     oracle: dict[tuple[int, int], str],
 ) -> None:
-    """Demonstrate rejection of corrupted GPU output and resource evidence."""
+    """Reject altered Compute output, memory synchronization and cleanup logs."""
     target = next(
         item for item in manifest["device_runs"]
         if item["sets"] == 2 and item["stages"] == 3
@@ -378,9 +545,66 @@ def verify_mutations(
         else:
             raise AssertionError(f"Accepted corrupted Vulkan record: {source}")
 
+    pixel = next(
+        item for item in manifest["device_runs"]
+        if item["device"] == "pixel-arm64"
+        and item["sets"] == 2 and item["stages"] == 3
+        and item["mode"] == "noncoherent10"
+        and item["optimization"] == "O"
+    )
+    pixel_lines = (ARCHIVE / pixel["file"]).read_text(
+        encoding="utf-8"
+    ).splitlines()[7:]
+    cache_line = next(
+        line for line in pixel_lines
+        if line.startswith(
+            "MULTI_SYNC index=8 operation=flush coherent=0 driver_call=1 "
+        )
+    )
+    altered = [
+        row.replace("driver_call=1", "driver_call=0")
+        if row == cache_line else row
+        for row in pixel_lines
+    ]
+    assert altered != pixel_lines
+
+    try:
+        verify_success(altered, 2, 3, "noncoherent10", oracle)
+    except AssertionError:
+        print("PASS rejected altered Pixel noncoherent uniform flush")
+    else:
+        raise AssertionError("Accepted missing Pixel Vulkan uniform flush")
+
+    fault = next(
+        item for item in manifest["fault_runs"]
+        if item["device"] == "redmagic-armv7"
+    )
+    original_faults = (ARCHIVE / fault["file"]).read_text(
+        encoding="utf-8"
+    ).splitlines()
+    destroy_line = next(
+        line for line in original_faults
+        if line.startswith(
+            "MULTI_DESTROY acquisitions=39 buffers=9 memories=9"
+        )
+    )
+    altered_faults = [
+        row.replace("buffers=9 memories=9", "buffers=8 memories=9")
+        if row == destroy_line else row
+        for row in original_faults
+    ]
+    assert altered_faults != original_faults
+
+    try:
+        verify_faults(fault, altered_faults)
+    except AssertionError:
+        print("PASS rejected altered ARMv7 resource cleanup ledger")
+    else:
+        raise AssertionError("Accepted damaged Vulkan object teardown ledger")
+
 
 def main() -> None:
-    """Verify all archived original GPU observations and exact source hashes."""
+    """Validate three hardware/ABI matrices, Vulkan faults and exact hashes."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--artifacts",
@@ -396,7 +620,9 @@ def main() -> None:
     assert manifest["api_default"] == "1.0"
     assert manifest["physical_vulkan10_only_device_tested"] is False
     assert manifest["gpu_device_abi_tested"] == {
-        "redmagic-arm64": "arm64-v8a"
+        "redmagic-arm64": "arm64-v8a",
+        "redmagic-armv7": "armeabi-v7a",
+        "pixel-arm64": "arm64-v8a",
     }
 
     for name, digest in manifest["source_sha256"].items():
@@ -414,6 +640,7 @@ def main() -> None:
 
     success_count = 0
     incompatible_count = 0
+    verified_words = 0
 
     for item in manifest["device_runs"]:
         path = ARCHIVE / item["file"]
@@ -435,7 +662,9 @@ def main() -> None:
                 item["mode"], oracle
             )
             success_count += 1
+            verified_words += 4 * 2048 * item["stages"]
         else:
+            assert item["device"].startswith("redmagic")
             assert item["mode"] == "noncoherent10"
             assert item["exit_code"] == 1
             verify_incompatible(
@@ -463,11 +692,18 @@ def main() -> None:
             for name in expected_invalid
         ]
 
-    assert len(manifest["device_runs"]) == 48
-    assert success_count == 36, success_count
-    assert incompatible_count == 12, incompatible_count
-    assert len(manifest["invalid_runs"]) == 1
-    assert len(list(ARCHIVE.glob("*.log"))) == 49
+    fault_count = sum(
+        verify_faults(item) for item in manifest["fault_runs"]
+    )
+
+    assert len(manifest["device_runs"]) == 144
+    assert success_count == 120, success_count
+    assert incompatible_count == 24, incompatible_count
+    assert verified_words == 1966080, verified_words
+    assert fault_count == 186, fault_count
+    assert len(manifest["invalid_runs"]) == 3
+    assert len(manifest["fault_runs"]) == 3
+    assert len(list(ARCHIVE.glob("*.log"))) == 150
 
     if args.artifacts is not None:
         directory = args.artifacts.resolve(strict=True)
@@ -478,14 +714,17 @@ def main() -> None:
         assert len(manifest["artifact_sha256"]) == 14
         print("PASS all fourteen exact ARM64/ARMv7 and SPIR-V binaries")
 
+    verify_abi_heap_properties(manifest)
     verify_mutations(manifest, oracle)
 
     print("PASS 19 canonical source identities")
     print("PASS 12 independent Python CPU stage/submission references")
-    print("PASS 36 real RedMagic Vulkan GPU runs with 144 fence submits")
-    print("PASS all 589,824 real GPU stage words represented by exact FNV hashes")
-    print("PASS 12 explicit noncoherent incompatibility results")
-    print("PASS 10 malformed CLI controls and five corrupted evidence rejections")
+    print("PASS 120 real GPU runs and 480 fence-separated submissions")
+    print("PASS 1,966,080 real GPU stage words independently checked")
+    print("PASS 12 actual Pixel noncoherent multi-stage GPU runs")
+    print("PASS 24 explicit RedMagic noncoherent memory incompatibilities")
+    print("PASS 186 Vulkan post-acquisition partial cleanup trials")
+    print("PASS 30 malformed CLI controls and seven corrupted evidence rejections")
 
 
 if __name__ == "__main__":

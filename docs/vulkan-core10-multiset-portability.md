@@ -154,7 +154,7 @@ Without `--artifacts`, the same independent verifier needs only the archived log
 
 ## Sequential multi-stage graph extension
 
-The separate `vulkan-core10-multiset-graph.c` recorder accepts explicit stage dependencies, per-stage readbacks, 1–3 Compute pipelines and one or two mixed storage/uniform descriptor sets. It uses the resource-owner API documented above and records Vulkan 1.0 transfer/compute and shader-write→shader-read barriers. The new public integer three-stage GPU matrix executed on RedMagic ARM64, with **36 successful GPU runs, 144 fence-separated submits, 589,824 scalar-CPU-verified stage words** and 12 exact incompatible noncoherent-memory requests. Source, build, hardware coverage and archived evidence are detailed in `docs/vulkan-core10-multiset-graph-portability.md`. ARMv7 and Pixel multi-stage hardware validation remain open.
+The separate `vulkan-core10-multiset-graph.c` recorder accepts explicit stage dependencies, per-stage readbacks, 1–3 Compute pipelines and one or two mixed storage/uniform descriptor sets. It uses the resource-owner API documented above and records Vulkan 1.0 transfer/compute and shader-write→shader-read barriers. The new public integer graph matrix executed on RedMagic ARM64, RedMagic ARMv7 and Pixel ARM64, with **120 successful GPU runs, 480 fence-separated submits, 1,966,080 scalar-CPU-verified stage words**, 12 actual Pixel noncoherent GPU runs, 24 precise RedMagic incompatible-memory refusals and 186 post-acquisition cleanup checks. Source, build, hardware coverage and archived evidence are detailed in `docs/vulkan-core10-multiset-graph-portability.md`.
 
 ## Explicit limits
 
