@@ -77,3 +77,7 @@ Build hashes of the standalone executable and four SPIR-V files are recorded in 
 - **Migration cost:** Hashcat mode 3200 currently uses the host OpenCL backend and three kernel stages. Vulkan requires an explicit device/queue/pipeline and descriptor/memory/synchronization host backend. This synthetic experiment does not introduce such a hashcat backend.
 
 The existing Android application, original `source/OpenCL/m03200-pure.cl` and production `module_03200.so` were not modified or overwritten. Only dedicated files under `/data/local/tmp` were created for each test and then removed. The results support investigating Vulkan as an alternative execution API, but not declaring the OpenCL bcrypt defect resolved.
+
+## Follow-up: real three-stage Vulkan pipeline
+
+A subsequent noncryptographic prototype uses **three separate compute pipelines**, two intermediate storage buffers, compute-to-compute barriers, an output buffer and host readback. Both Adreno 730 and Mali-G715 passed all 12288 exact word comparisons on `-O0` and `-O` variants, including intermediate stages. See `docs/vulkan-multistage-redmagic.md`, `tools/vulkan-multistage-diagnostic.c` and archived evidence under `tests/fixtures/android-gpu/vulkan-pipeline-20261031/`. This demonstrates the multi-stage Vulkan synchronization path, not a migrated hashcat mode.

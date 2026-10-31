@@ -1,0 +1,36 @@
+#version 450
+
+/*
+ * Read a previous dispatch's 32-bit state, synchronize all 32 workgroup
+ * lanes, and write another synthetic state to a separate storage buffer.
+ */
+layout (local_size_x = 32, local_size_y = 1, local_size_z = 1) in;
+
+layout (set = 0, binding = 1, std430) readonly buffer StateA
+{
+  uint values[];
+} state_a;
+
+layout (set = 0, binding = 2, std430) writeonly buffer StateB
+{
+  uint values[];
+} state_b;
+
+shared uint lane_values[32];
+
+void main ()
+{
+  const uint index = gl_GlobalInvocationID.x;
+  const uint lane = gl_LocalInvocationID.x;
+
+  const uint value = state_a.values[index];
+
+  lane_values[lane] = value;
+
+  barrier ();
+
+  const uint neighbor = lane_values[(lane + 7u) & 31u];
+  const uint rotated = (value << 11u) | (value >> 21u);
+
+  state_b.values[index] = (value + neighbor) ^ rotated ^ 0x6c8e9cf5u;
+}

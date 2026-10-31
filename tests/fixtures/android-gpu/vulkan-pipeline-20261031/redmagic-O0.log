@@ -1,0 +1,6 @@
+PIPELINE=three-stage
+OPTIMIZATION=O0
+ADB_EXIT_CODE=0
+VULKAN_DEVICE name=Adreno (TM) 730 vendor=0x5143 device=0x7030002 driver=0x80267000 api=1.1.128 queue_family=0
+VULKAN_LIMITS workgroup_x=1024 invocations=1024 shared_bytes=32768
+PASS Vulkan 3-stage pipeline: 2048 elements, 12288 correct 32-bit words; stageA=de56d6d0aa66c6ec stageB=c1259ad4f024499a output=05de70c62f8d7cfd

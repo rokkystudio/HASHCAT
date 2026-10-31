@@ -1,0 +1,29 @@
+#version 450
+
+/*
+ * Write one deterministic 32-bit intermediate state from public synthetic
+ * input. This stage does not implement a cryptographic transformation.
+ */
+layout (local_size_x = 32, local_size_y = 1, local_size_z = 1) in;
+
+layout (set = 0, binding = 0, std430) readonly buffer InputBuffer
+{
+  uint values[];
+} input_buffer;
+
+layout (set = 0, binding = 1, std430) writeonly buffer StateA
+{
+  uint values[];
+} state_a;
+
+void main ()
+{
+  const uint index = gl_GlobalInvocationID.x;
+  const uint value = input_buffer.values[index];
+
+  const uint affine = value * 1664525u + 1013904223u;
+  const uint rotated = (value << 7u) | (value >> 25u);
+
+  state_a.values[index] =
+    (affine ^ rotated) + index * 2654435761u;
+}

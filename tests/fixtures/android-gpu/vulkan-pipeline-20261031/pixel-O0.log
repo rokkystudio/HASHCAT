@@ -1,0 +1,6 @@
+PIPELINE=three-stage
+OPTIMIZATION=O0
+ADB_EXIT_CODE=0
+VULKAN_DEVICE name=Mali-G715 vendor=0x13b5 device=0xb8a20000 driver=0x0d802000 api=1.4.305 queue_family=0
+VULKAN_LIMITS workgroup_x=1024 invocations=1024 shared_bytes=32768
+PASS Vulkan 3-stage pipeline: 2048 elements, 12288 correct 32-bit words; stageA=de56d6d0aa66c6ec stageB=c1259ad4f024499a output=05de70c62f8d7cfd

@@ -1,0 +1,38 @@
+#version 450
+
+/*
+ * Merge two previous dispatches' states into a four-word synthetic result.
+ * Dependencies on both earlier storage buffers are intentional.
+ */
+layout (local_size_x = 32, local_size_y = 1, local_size_z = 1) in;
+
+layout (set = 0, binding = 1, std430) readonly buffer StateA
+{
+  uint values[];
+} state_a;
+
+layout (set = 0, binding = 2, std430) readonly buffer StateB
+{
+  uint values[];
+} state_b;
+
+layout (set = 0, binding = 3, std430) writeonly buffer OutputBuffer
+{
+  uvec4 values[];
+} output_buffer;
+
+void main ()
+{
+  const uint index = gl_GlobalInvocationID.x;
+  const uint a = state_a.values[index];
+  const uint b = state_b.values[index];
+
+  const uint rotated = (b << 3u) | (b >> 29u);
+
+  output_buffer.values[index] = uvec4 (
+    a,
+    b,
+    a ^ b,
+    (a * 2246822519u + b * 3266489917u) ^ rotated
+  );
+}

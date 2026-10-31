@@ -1,0 +1,101 @@
+{
+  "observation_date": "2026-10-31",
+  "scope": "real Vulkan compute execution using public synthetic integer data only; no password, hashcat or cryptographic GPU code",
+  "toolchain": {
+    "android_ndk": "29.0.14206865",
+    "native_compiler": "Clang 21.0.0",
+    "shader_compiler": "glslc shaderc v2022.3",
+    "target": "aarch64-linux-android26",
+    "spirv_target": "vulkan1.1"
+  },
+  "device_profiles": {
+    "redmagic": {
+      "model": "RedMagic NX709S",
+      "gpu": "Adreno (TM) 730",
+      "vendor_id": "0x5143",
+      "device_id": "0x7030002",
+      "driver_version": "0x80267000",
+      "vulkan_api_version": "1.1.128",
+      "queue_family": 0,
+      "shared_memory_limit": 32768
+    },
+    "pixel": {
+      "model": "Pixel 9 Pro XL",
+      "gpu": "Mali-G715",
+      "vendor_id": "0x13b5",
+      "device_id": "0xb8a20000",
+      "driver_version": "0x0d802000",
+      "vulkan_api_version": "1.4.305",
+      "queue_family": 0,
+      "shared_memory_limit": 32768
+    }
+  },
+  "workload": {
+    "element_count": 2048,
+    "workgroup_count": 64,
+    "local_size": 32,
+    "dispatch_count": 3,
+    "storage_buffers": 4,
+    "intermediate_words_per_stage": 2048,
+    "final_words": 8192,
+    "verified_words_per_run": 12288,
+    "compute_to_compute_barriers": 2,
+    "compute_to_host_barriers": 1,
+    "expected_stage_checksums": {
+      "stage_a": "de56d6d0aa66c6ec",
+      "stage_b": "c1259ad4f024499a",
+      "output": "05de70c62f8d7cfd"
+    }
+  },
+  "source_sha256": {
+    "tools/vulkan-multistage-diagnostic.c": "76f822519f9e4c3e9f98c6a45a04d60690a20ba47716c66cf38631a6f20af6dd",
+    "tools/vulkan-pipeline-stage-a.comp": "e9c8ba8d1502a0120ad05043096cc02400221f3099d7c8432307c6cef2caeec8",
+    "tools/vulkan-pipeline-stage-b.comp": "d79344b2d4c22514da50bbf716c20e5b3bba413d88b21d2a166fdee19e39aca4",
+    "tools/vulkan-pipeline-stage-c.comp": "800ac35354741e9dd01b7e8d2f2922e3f9f62f8e7e0f99095f63e2bbd1ee26c1",
+    "tools/test-vulkan-multistage-reference.py": "a8c2b36586b07f709cfe4952e67d61cdc8dbed9c3717ad26cf0d5459c35f7489"
+  },
+  "build_artifact_sha256": {
+    "vulkan-multistage-arm64": "ae2c33123d0b3e0e3d1d502225954d1427a683aedb0ec2822fca90d99663c7ba",
+    "stage-a-O0.spv": "c391fa1c7af20b012719c282f5589c48eb0652adc2f78c1491defb7e25999ff0",
+    "stage-a-O.spv": "2d04ccfa7d801f15ecd42c4bf76a4582c9490366ec8a21039ca0e38ef1901706",
+    "stage-b-O0.spv": "73178264dc42364dce6ab6c2de21417e86e35e8e3dfd4852d94a808a6b5c3dab",
+    "stage-b-O.spv": "7406e64670e925ed395b882544814b39606bb79bc612ca18d87b882ca5ffa589",
+    "stage-c-O0.spv": "2f893613ee640cc0045089f3b55761ef6eb20eaffd956b6388828e4fdfa5fc1c",
+    "stage-c-O.spv": "6b9cbb6bf9f1845e1e63749e11f7d1c745e965b9dfda424183cf8090d2efc379"
+  },
+  "runs": [
+    {
+      "device": "redmagic",
+      "optimization": "O0",
+      "file": "redmagic-O0.log",
+      "exit_code": 0,
+      "sha256": "96fa304d92e4bbc4e46da79f75ccc00b66180ed0af098abfabc66d6b7013859b"
+    },
+    {
+      "device": "redmagic",
+      "optimization": "O",
+      "file": "redmagic-O.log",
+      "exit_code": 0,
+      "sha256": "713eb741f2f193f0ada8a067c23fed2f57df973c7e7dbc88b6db70a0772ecad7"
+    },
+    {
+      "device": "pixel",
+      "optimization": "O0",
+      "file": "pixel-O0.log",
+      "exit_code": 0,
+      "sha256": "af72f25cc9f33b2171db37d25241a60c454c06efc46b96bd36eee853e1f176cb"
+    },
+    {
+      "device": "pixel",
+      "optimization": "O",
+      "file": "pixel-O.log",
+      "exit_code": 0,
+      "sha256": "ea2565498aeaf0e8484c2a2368b11f646b9c197545231ea47024c9da7d9371cf"
+    }
+  ],
+  "limitations": [
+    "No hashcat or bcrypt Vulkan shader executed",
+    "Synthetic arithmetic does not establish correctness of arbitrary GPU compute workloads",
+    "The archived RedMagic OpenCL bcrypt self-test error 245 remains unresolved"
+  ]
+}
