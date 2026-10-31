@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Independently verify public Vulkan 1.0 multi-stage GPU graph evidence.
 
-Audits exact source/binary/log SHA-256 identities, storage/uniform descriptor
-layout positions, memory requirements, stage ordering, GPU fence reuse,
+Audits exact source/binary/log SHA-256 identities, Vulkan instance/device
+ownership, storage/uniform descriptor layout positions, memory requirements,
+stage ordering, GPU fence reuse,
 coherent/noncoherent cache calls, all 2,048 output words represented by
 independently calculated stage FNV-1a checksums, and rejected inputs.
 
@@ -120,6 +121,74 @@ def exact_line(lines: list[str], value: str) -> None:
     assert lines.count(value) == 1, value
 
 
+def verify_catalog_lifecycle(
+    lines: list[str],
+    api: str,
+) -> int:
+    """Verify one Vulkan 1.0/1.1 instance and explicit device selection.
+
+    Requires a driver-enumerated nonempty device list, exactly five rejected
+    invalid discovery calls before any device selection, and catalogue
+    destruction after the owned VkDevice has completed its teardown.
+    """
+    assert api in ("1.0", "1.1")
+
+    opened = matching(
+        lines,
+        re.compile(
+            rf"^DEVICE_CATALOG_OPEN requested_api={re.escape(api)} "
+            rf"instance_api={re.escape(api)} devices=(\d+) "
+            r"extensions=0 layers=0$"
+        ),
+    )
+    selected = matching(
+        lines,
+        re.compile(
+            rf"^DEVICE_CATALOG_SELECT index=(\d+) queue_family=(\d+) "
+            rf"effective_api={re.escape(api)} selections=(\d+)$"
+        ),
+    )
+
+    assert len(opened) == 1
+    assert len(selected) == 1
+    assert sum(row.startswith("DEVICE_CATALOG_OPEN ") for row in lines) == 1
+    assert sum(row.startswith("DEVICE_CATALOG_SELECT ") for row in lines) == 1
+    assert sum(row.startswith("DEVICE_CATALOG_CLOSE ") for row in lines) == 1
+
+    device_count = int(opened[0].group(1))
+    device_index = int(selected[0].group(1))
+    family = int(selected[0].group(2))
+
+    assert device_count > 0
+    assert 0 <= device_index < device_count
+    assert family >= 0
+    assert int(selected[0].group(3)) == 1
+
+    invalid = "DEVICE_CATALOG_INVALID_CONTROLS rejected=5 selections=0"
+    closed = f"DEVICE_CATALOG_CLOSE devices={device_count} selections=1"
+
+    exact_line(lines, invalid)
+    exact_line(lines, closed)
+
+    opened_index = next(
+        index for index, row in enumerate(lines)
+        if row.startswith("DEVICE_CATALOG_OPEN ")
+    )
+    selected_index = next(
+        index for index, row in enumerate(lines)
+        if row.startswith("DEVICE_CATALOG_SELECT ")
+    )
+    destroyed_index = next(
+        index for index, row in enumerate(lines)
+        if row.startswith("MULTI_DESTROY acquisitions=")
+    )
+
+    assert opened_index < lines.index(invalid) < selected_index
+    assert selected_index < destroyed_index < lines.index(closed)
+
+    return device_count
+
+
 def verify_success(
     lines: list[str],
     sets: int,
@@ -142,6 +211,7 @@ def verify_success(
 
     assert any(row.startswith(f"SELECT_INSTANCE_API={api} ") for row in lines)
     assert any(row.startswith(f"SELECT_DEVICE_API={api} ") for row in lines)
+    assert verify_catalog_lifecycle(lines, api) > 0
     assert any(
         row.startswith("MULTIGRAPH_SELECTED_DEVICE index=0 ")
         and f"requested_api={api} effective_api={api} " in row
@@ -387,6 +457,7 @@ def verify_incompatible(lines: list[str], sets: int, stages: int) -> None:
         f"mapped={stages + 2} noncoherent=1",
     )
 
+    assert verify_catalog_lifecycle(lines, "1.0") > 0
     assert not any(row.startswith("MULTIGRAPH_PASS ") for row in lines)
     assert not any(row.startswith("MULTI_SUBMIT ") for row in lines)
     assert not any(row.startswith("MULTIGRAPH_DISPATCH ") for row in lines)
@@ -469,6 +540,7 @@ def verify_faults(
 
         end = markers[index + 1][0] if index + 1 < len(markers) else len(lines)
         section = lines[position + 1:end]
+        assert verify_catalog_lifecycle(section, "1.0") > 0
         ledger = acquisition_ledger(sets, stages, point)
 
         assert sum(
@@ -546,6 +618,22 @@ def verify_mutations(
 
     corruptions = (
         (
+            "DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0",
+            "DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=0 extensions=0 layers=0",
+        ),
+        (
+            "DEVICE_CATALOG_INVALID_CONTROLS rejected=5 selections=0",
+            "DEVICE_CATALOG_INVALID_CONTROLS rejected=4 selections=0",
+        ),
+        (
+            "DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=1",
+            "DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=2",
+        ),
+        (
+            "DEVICE_CATALOG_CLOSE devices=1 selections=1",
+            "DEVICE_CATALOG_CLOSE devices=1 selections=0",
+        ),
+        (
             "MULTIGRAPH_BARRIER from=1 to=2 buffer=2",
             "MULTIGRAPH_BARRIER from=1 to=2 buffer=0",
         ),
@@ -592,6 +680,28 @@ def verify_mutations(
             print("PASS rejected corrupted evidence", source.split()[0])
         else:
             raise AssertionError(f"Accepted corrupted Vulkan record: {source}")
+
+    teardown = next(
+        index for index, row in enumerate(original)
+        if row.startswith("MULTI_DESTROY acquisitions=")
+    )
+    catalogue_close = next(
+        index for index, row in enumerate(original)
+        if row.startswith("DEVICE_CATALOG_CLOSE ")
+    )
+    assert teardown < catalogue_close
+
+    reordered = original.copy()
+    reordered[teardown], reordered[catalogue_close] = (
+        reordered[catalogue_close], reordered[teardown]
+    )
+
+    try:
+        verify_success(reordered, 2, 3, "default10", oracle)
+    except AssertionError:
+        print("PASS rejected Vulkan instance destroyed before VkDevice")
+    else:
+        raise AssertionError("Accepted out-of-order Vulkan instance cleanup")
 
     pixel = next(
         item for item in manifest["device_runs"]
@@ -746,12 +856,14 @@ def main() -> None:
         verify_faults(item) for item in manifest["fault_runs"]
     )
 
+    assert len(manifest["source_sha256"]) == 23
     assert len(manifest["device_runs"]) == 144
     assert success_count == 120, success_count
     assert incompatible_count == 24, incompatible_count
     assert verified_words == 1966080, verified_words
     assert invalid_job_count == 680, invalid_job_count
     assert fault_count == 186, fault_count
+    assert success_count + incompatible_count + fault_count == 330
     assert len(manifest["invalid_runs"]) == 3
     assert len(manifest["fault_runs"]) == 3
     assert len(list(ARCHIVE.glob("*.log"))) == 150
@@ -768,7 +880,9 @@ def main() -> None:
     verify_abi_heap_properties(manifest)
     verify_mutations(manifest, oracle)
 
-    print("PASS 21 canonical source identities")
+    print("PASS 23 canonical source identities")
+    print("PASS 330 real Vulkan instance/device lifecycle sessions")
+    print("PASS 1650 malformed catalog requests rejected before selection")
     print("PASS 680 invalid host GPU job calls rejected before submission")
     print("PASS 12 independent Python CPU stage/submission references")
     print("PASS 120 real GPU runs and 480 fence-separated submissions")
@@ -776,7 +890,7 @@ def main() -> None:
     print("PASS 12 actual Pixel noncoherent multi-stage GPU runs")
     print("PASS 24 explicit RedMagic noncoherent memory incompatibilities")
     print("PASS 186 Vulkan post-acquisition partial cleanup trials")
-    print("PASS 30 malformed CLI controls and ten corrupted evidence rejections")
+    print("PASS 30 malformed CLI controls and fifteen corrupted evidence rejections")
 
 
 if __name__ == "__main__":

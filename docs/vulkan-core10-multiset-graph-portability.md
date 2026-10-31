@@ -28,6 +28,7 @@ mode-3200 failure is a separate issue.
 | `tools/vulkan-core10-multiset-graph.h` / `.c` | Validate and record a caller-declared sequential Compute graph into the existing multi-set runtime |
 | `tools/vulkan-core10-multiset-graph-diagnostic.c` | Create one to three real pipelines, execute host-owned jobs through the synchronous port, independently verify per-stage readbacks with scalar CPU results and reject invalid job calls |
 | `tools/vulkan-core10-job-port.h` / `.c` | Open one reusable Compute graph, validate caller-owned job buffers, synchronize mapped memory, submit once and return all stage outputs to host callers |
+| `tools/vulkan-core10-device-catalog.h` / `.c` | Own VkInstance, enumerate physical devices and select an explicitly indexed compatible Compute device using real Vulkan limits |
 | `tools/vulkan-multiset-graph.comp` | Build-time-selected public integer shader using sparse storage bindings and one std140 `uvec4` uniform block |
 | `tools/build-vulkan-core10-multiset-graph.ps1` | Build Android API 24 ARM64/ARMv7 executables and 12 Vulkan 1.0 SPIR-V variants |
 | `tools/run-vulkan-core10-multiset-graph.ps1` | Execute real Android GPU runs with exact ABI selection, resource cleanup, optional noncoherent memory and opt-in fault injection |
@@ -53,6 +54,13 @@ copies every completed stage output into caller-owned destinations.
 Vulkan owner is destroyed. Full API contracts and lifecycle mapping to the
 future hashcat device/session integration are documented in
 `docs/vulkan-core10-job-port-integration.md`.
+
+The `vulkan_core10_device_catalog_t` owns Vulkan instance creation,
+physical-device enumeration and exact index-based Compute-device checks.
+It remains open while the job port and resource owner are active, and
+closes after all VkDevice resources have been destroyed. Its lifecycle,
+API contracts and real Android evidence are documented in
+`docs/vulkan-core10-device-catalog-portability.md`.
 
 ## Explicit graph geometry
 
@@ -82,6 +90,11 @@ Binding numbers within the descriptor sets are deliberately sparse:
 Only output bindings for the requested number of stages are present.
 Each stage consumes the preceding GPU buffer and produces a distinct output.
 All pipelines use one compatible `VkPipelineLayout` and the same bound sets.
+
+The device catalogue requests an exact Vulkan 1.0 instance by default,
+selects a real physical-device index and checks declared Compute limits
+before the multi-set runtime creates VkDevice. All GPU resources are
+destroyed before the catalogue destroys VkInstance.
 
 The command sequence is:
 
@@ -165,9 +178,12 @@ The GPU job port additionally rejected **680** invalid host-facing calls
 before submission: five for every single-stage configuration and six for
 every two-/three-stage configuration. These include incorrect byte counts,
 missing outputs, duplicate stage destination pointers and opening an active
-port twice. The independent validator checks the `JOB_PORT_READY`,
-`JOB_PORT_INVALID_CONTROLS`, `JOB_PORT_SUBMIT` and `JOB_PORT_CLOSE` event
-sequence and rejects **ten** deliberately corrupted GPU/task/cleanup records,
+port twice. The independent validator checks `JOB_PORT_READY`,
+`JOB_PORT_INVALID_CONTROLS`, `JOB_PORT_SUBMIT` and `JOB_PORT_CLOSE` events,
+as well as all Vulkan instance/device catalogue ownership events.
+Across all 330 real catalogue openings it verifies **1,650 invalid
+catalogue calls** and instance closure after VkDevice teardown.
+It rejects **15** deliberately corrupted GPU/task/cleanup records,
 including a missing Pixel noncoherent flush and an inaccurate ARMv7
 resource cleanup ledger. A recorded
 three-stage, two-set graph acquired and released exactly 39 Vulkan objects:

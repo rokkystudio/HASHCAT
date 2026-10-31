@@ -13,7 +13,7 @@
 #include "vulkan-core10-multiset.h"
 #include "vulkan-core10-multiset-graph.h"
 #include "vulkan-core10-job-port.h"
-#include "vulkan-core11-policy.h"
+#include "vulkan-core10-device-catalog.h"
 
 #include <inttypes.h>
 #include <stdint.h>
@@ -774,78 +774,21 @@ int main (int argc, char **argv)
   }
 
   int status = 1;
-  uint32_t loader = 0u;
-  VkResult result = vulkan_core11_query_loader_version (
-    vkGetInstanceProcAddr, &loader, stdout
-  );
+  vulkan_core10_device_catalog_t catalog = { 0 };
 
-  if (result != VK_SUCCESS) goto cleanup_shader;
-
-  uint32_t instance_api = 0u;
-  result = vulkan_core11_select_instance_version (
-    loader, required_api, &instance_api, stdout
-  );
-
-  if (result != VK_SUCCESS) goto cleanup_shader;
-
-  const VkApplicationInfo application =
-  {
-    .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
-    .pApplicationName = "Vulkan 1.0 Explicit Multi-stage Multi-set Compute",
-    .applicationVersion = VK_MAKE_VERSION (1, 0, 0),
-    .pEngineName = "None",
-    .engineVersion = VK_MAKE_VERSION (1, 0, 0),
-    .apiVersion = instance_api
-  };
-  const VkInstanceCreateInfo instance_info =
-  {
-    .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
-    .pApplicationInfo = &application
-  };
-
-  VkInstance instance = VK_NULL_HANDLE;
-
-  result = vkCreateInstance (
-    &instance_info, NULL, &instance
+  VkResult result = vulkan_core10_device_catalog_open (
+    &catalog, required_api,
+    "Vulkan 1.0 Explicit Multi-stage Multi-set Compute", stdout
   );
 
   if (result != VK_SUCCESS)
   {
     fprintf (
-      stderr, "MULTIGRAPH_INSTANCE_FAILED result=%d\n", result
+      stderr, "MULTIGRAPH_CATALOG_FAILED result=%d\n", result
     );
 
     goto cleanup_shader;
   }
-
-  uint32_t device_count = 0u;
-
-  result = vkEnumeratePhysicalDevices (
-    instance, &device_count, NULL
-  );
-
-  if (result != VK_SUCCESS || device_count == 0u)
-  {
-    fprintf (
-      stderr,
-      "MULTIGRAPH_ENUM_DEVICES_FAILED result=%d devices=%" PRIu32 "\n",
-      result, device_count
-    );
-
-    goto cleanup_instance;
-  }
-
-  VkPhysicalDevice *physical = (VkPhysicalDevice *) calloc (
-    device_count, sizeof (*physical)
-  );
-
-  if (physical == NULL) goto cleanup_instance;
-
-  result = vkEnumeratePhysicalDevices (
-    instance, &device_count, physical
-  );
-
-  if (result != VK_SUCCESS) goto cleanup_physical;
 
   const vulkan_auto_compute_requirements_t workload =
   {
@@ -859,35 +802,55 @@ int main (int argc, char **argv)
     .shared_memory_bytes = 0u
   };
 
-  for (uint32_t index = 0u; index < device_count; index++)
+  vulkan_core10_device_catalog_t unopened = { 0 };
+  vulkan_auto_device_t rejected_selected = { 0 };
+  uint32_t rejected_version = 0u;
+
+  const VkResult reject_unopened = vulkan_core10_device_catalog_select (
+    &unopened, 0u, &workload, &rejected_selected, &rejected_version
+  );
+  const VkResult reject_reopen = vulkan_core10_device_catalog_open (
+    &catalog, required_api,
+    "Vulkan 1.0 Explicit Multi-stage Multi-set Compute", stdout
+  );
+  const VkResult reject_index = vulkan_core10_device_catalog_select (
+    &catalog, catalog.device_count, &workload,
+    &rejected_selected, &rejected_version
+  );
+  const VkResult reject_workload = vulkan_core10_device_catalog_select (
+    &catalog, 0u, NULL, &rejected_selected, &rejected_version
+  );
+  const VkResult reject_selected = vulkan_core10_device_catalog_select (
+    &catalog, 0u, &workload, NULL, &rejected_version
+  );
+
+  if (reject_unopened != VK_ERROR_INITIALIZATION_FAILED
+   || reject_reopen != VK_ERROR_INITIALIZATION_FAILED
+   || reject_index != VK_ERROR_INITIALIZATION_FAILED
+   || reject_workload != VK_ERROR_INITIALIZATION_FAILED
+   || reject_selected != VK_ERROR_INITIALIZATION_FAILED
+   || catalog.selections != 0u
+   || catalog.opened != VK_TRUE)
   {
-    VkPhysicalDeviceProperties properties = { 0 };
-
-    vkGetPhysicalDeviceProperties (
-      physical[index], &properties
+    fprintf (
+      stderr, "DEVICE_CATALOG_INVALID_CONTROLS_FAILED\n"
     );
 
-    uint32_t effective = 0u;
-    result = vulkan_core11_select_device_version (
-      properties.apiVersion, instance_api, required_api,
-      &effective, stdout
-    );
+    goto cleanup_catalog;
+  }
 
-    if (result != VK_SUCCESS)
-    {
-      fprintf (
-        stdout,
-        "MULTIGRAPH_SKIP_DEVICE index=%" PRIu32
-        " reason=api\n", index
-      );
+  fprintf (
+    stdout,
+    "DEVICE_CATALOG_INVALID_CONTROLS rejected=5 selections=0\n"
+  );
 
-      continue;
-    }
-
+  for (uint32_t index = 0u; index < catalog.device_count; index++)
+  {
     vulkan_auto_device_t selected = { 0 };
+    uint32_t effective = 0u;
 
-    result = vulkan_auto_check_device (
-      physical[index], index, &workload, &selected, stdout
+    result = vulkan_core10_device_catalog_select (
+      &catalog, index, &workload, &selected, &effective
     );
 
     if (result != VK_SUCCESS)
@@ -895,7 +858,7 @@ int main (int argc, char **argv)
       fprintf (
         stdout,
         "MULTIGRAPH_SKIP_DEVICE index=%" PRIu32
-        " reason=workload_limits\n", index
+        " reason=capability result=%d\n", index, result
       );
 
       continue;
@@ -938,11 +901,17 @@ int main (int argc, char **argv)
     );
   }
 
-cleanup_physical:
-  free (physical);
+cleanup_catalog:
+  result = vulkan_core10_device_catalog_close (&catalog);
 
-cleanup_instance:
-  vkDestroyInstance (instance, NULL);
+  if (result != VK_SUCCESS)
+  {
+    fprintf (
+      stderr, "MULTIGRAPH_CATALOG_CLOSE_FAILED result=%d\n", result
+    );
+
+    status = 1;
+  }
 
 cleanup_shader:
   for (uint32_t stage = 0u; stage < stage_count; stage++)

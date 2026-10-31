@@ -234,6 +234,66 @@ function Save-Graph {
     )
 }
 
+function Assert-CatalogLifecycle {
+    <#
+    .SYNOPSIS
+    Verify the ownership lifecycle of one Vulkan physical-device catalogue.
+
+    .DESCRIPTION
+    Confirms instance API negotiation, a nonempty driver-enumerated device
+    list, five rejected invalid catalogue calls, explicit selection of one
+    compute-capable device, and instance destruction after VkDevice cleanup.
+    The device count is parsed from the native Vulkan transcript and is
+    not inferred from vendor or Android model information.
+    #>
+    param (
+        [hashtable]$Result,
+        [string]$Api
+    )
+
+    $escaped = [regex]::Escape($Api)
+    $open = @([regex]::Matches(
+        $Result.Body,
+        "(?m)^DEVICE_CATALOG_OPEN requested_api=$escaped instance_api=$escaped devices=(\d+) extensions=0 layers=0$"
+    ))
+    $selected = @([regex]::Matches(
+        $Result.Body,
+        "(?m)^DEVICE_CATALOG_SELECT index=(\d+) queue_family=(\d+) effective_api=$escaped selections=(\d+)$"
+    ))
+
+    if ($open.Count -ne 1 -or $selected.Count -ne 1) {
+        throw "Missing exact Vulkan catalogue creation or selection: API $Api"
+    }
+
+    $deviceCount = [int]$open[0].Groups[1].Value
+    $selectedIndex = [int]$selected[0].Groups[1].Value
+
+    if ($deviceCount -le 0 -or $selectedIndex -ge $deviceCount -or
+        [int]$selected[0].Groups[3].Value -ne 1) {
+        throw 'Vulkan catalogue selected an invalid physical device.'
+    }
+
+    $invalid = 'DEVICE_CATALOG_INVALID_CONTROLS rejected=5 selections=0'
+    $closed = "DEVICE_CATALOG_CLOSE devices=$deviceCount selections=1"
+
+    foreach ($line in @($invalid, $closed)) {
+        if (@([regex]::Matches(
+            $Result.Body, "(?m)^$([regex]::Escape($line))$"
+        )).Count -ne 1) {
+            throw "Missing or repeated Vulkan catalogue lifecycle event: $line"
+        }
+    }
+
+    if ($Result.Body.IndexOf('DEVICE_CATALOG_OPEN ') -ge
+            $Result.Body.IndexOf($invalid) -or
+        $Result.Body.IndexOf($invalid) -ge
+            $Result.Body.IndexOf('DEVICE_CATALOG_SELECT ') -or
+        $Result.Body.IndexOf('MULTI_DESTROY acquisitions=') -ge
+            $Result.Body.IndexOf($closed)) {
+        throw 'VkInstance was not managed in dependency-safe order.'
+    }
+}
+
 function Assert-GraphSuccess {
     <#
     .SYNOPSIS
@@ -257,6 +317,9 @@ function Assert-GraphSuccess {
     }
 
     $api = if ($Mode -eq 'required11') { '1.1' } else { '1.0' }
+
+    Assert-CatalogLifecycle -Result $Result -Api $api
+
     $buffers = 2 * $Stages + 3
     $bindings = $Stages + 2
     $mapped = $Stages + 2
@@ -388,6 +451,8 @@ try {
                     $result = Invoke-Graph -Arguments $arguments
 
                     if ($mode -eq 'noncoherent10' -and $result.ExitCode -eq 1) {
+                        Assert-CatalogLifecycle -Result $result -Api '1.0'
+
                         foreach ($fragment in @(
                             'GRAPH_REJECT_MEMORY_TYPE index=',
                             'MULTIGRAPH_CREATE_FAILED result=-8 fail_after=0',
@@ -441,6 +506,8 @@ try {
                 if ($result.ExitCode -ne 42) {
                     throw "Graph fault returned $($result.ExitCode), expected 42: sets=$sets stages=$stages point=$point"
                 }
+
+                Assert-CatalogLifecycle -Result $result -Api '1.0'
 
                 foreach ($fragment in @(
                     "MULTI_INJECT_FAULT acquisition=$point resource=",

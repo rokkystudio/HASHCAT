@@ -7,9 +7,12 @@ ABI=arm64-v8a
 ADB_EXIT_CODE=0
 VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
 SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0
+DEVICE_CATALOG_INVALID_CONTROLS rejected=5 selections=0
 SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
 VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
 ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=1
 MULTIGRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=2 stages=3 storage=4 uniform=1 workgroup=32 groups=64 features=0 extensions=0
 MULTIGRAPH_REQUEST sets=2 stages=3 buffers=9 bindings=5 mapped=5 noncoherent=1
 DESCRIPTOR_ACCEPT sets=2 bindings=5 storage=4 uniform=1
@@ -101,3 +104,4 @@ MULTIGRAPH_PASS sets=2 stages=3 submission=3 stage=1 words=2048 fnv=ebe62698c3a6
 MULTIGRAPH_PASS sets=2 stages=3 submission=3 stage=2 words=2048 fnv=007be5e7346adf5a
 JOB_PORT_CLOSE completed=4 stages=3 failed=0
 MULTI_DESTROY acquisitions=39 buffers=9 memories=9 maps=5 layouts=2 sets=2 shaders=3 pipelines=3 submissions=4 idle_result=0
+DEVICE_CATALOG_CLOSE devices=1 selections=1

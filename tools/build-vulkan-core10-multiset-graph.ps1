@@ -90,6 +90,7 @@ foreach ($sets in @(1, 2)) {
 $sources = @(
     (Join-Path $PSScriptRoot 'vulkan-auto-config.c'),
     (Join-Path $PSScriptRoot 'vulkan-core11-policy.c'),
+    (Join-Path $PSScriptRoot 'vulkan-core10-device-catalog.c'),
     (Join-Path $PSScriptRoot 'vulkan-core10-graph-memory.c'),
     (Join-Path $PSScriptRoot 'vulkan-core10-descriptor-policy.c'),
     (Join-Path $PSScriptRoot 'vulkan-core10-multiset.c'),

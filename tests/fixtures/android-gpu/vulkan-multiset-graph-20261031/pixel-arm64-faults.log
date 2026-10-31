@@ -6,49 +6,64 @@ MULTIGRAPH_CREATE_FAILED result=-3 fail_after=1
 MULTIGRAPH_NO_COMPATIBLE_CONFIGURATION
 VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
 SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0
+DEVICE_CATALOG_INVALID_CONTROLS rejected=5 selections=0
 SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
 VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
 ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=1
 MULTIGRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=1 stages=1 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
 MULTIGRAPH_REQUEST sets=1 stages=1 buffers=5 bindings=3 mapped=3 noncoherent=0
 DESCRIPTOR_ACCEPT sets=1 bindings=3 storage=2 uniform=1
 MULTI_INJECT_FAULT acquisition=1 resource=device
 MULTI_DESTROY acquisitions=1 buffers=0 memories=0 maps=0 layouts=0 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+DEVICE_CATALOG_CLOSE devices=1 selections=1
 FAULT_CASE sets=1 stages=1 point=2 exit=42
 MULTIGRAPH_CREATE_FAILED result=-3 fail_after=2
 MULTIGRAPH_NO_COMPATIBLE_CONFIGURATION
 VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
 SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0
+DEVICE_CATALOG_INVALID_CONTROLS rejected=5 selections=0
 SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
 VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
 ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=1
 MULTIGRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=1 stages=1 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
 MULTIGRAPH_REQUEST sets=1 stages=1 buffers=5 bindings=3 mapped=3 noncoherent=0
 DESCRIPTOR_ACCEPT sets=1 bindings=3 storage=2 uniform=1
 MULTI_INJECT_FAULT acquisition=2 resource=buffer
 MULTI_DESTROY acquisitions=2 buffers=1 memories=0 maps=0 layouts=0 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+DEVICE_CATALOG_CLOSE devices=1 selections=1
 FAULT_CASE sets=1 stages=1 point=3 exit=42
 MULTIGRAPH_CREATE_FAILED result=-3 fail_after=3
 MULTIGRAPH_NO_COMPATIBLE_CONFIGURATION
 VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
 SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0
+DEVICE_CATALOG_INVALID_CONTROLS rejected=5 selections=0
 SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
 VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
 ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=1
 MULTIGRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=1 stages=1 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
 MULTIGRAPH_REQUEST sets=1 stages=1 buffers=5 bindings=3 mapped=3 noncoherent=0
 DESCRIPTOR_ACCEPT sets=1 bindings=3 storage=2 uniform=1
 MULTI_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
 MULTI_INJECT_FAULT acquisition=3 resource=buffer
 MULTI_DESTROY acquisitions=3 buffers=2 memories=0 maps=0 layouts=0 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+DEVICE_CATALOG_CLOSE devices=1 selections=1
 FAULT_CASE sets=1 stages=1 point=4 exit=42
 MULTIGRAPH_CREATE_FAILED result=-3 fail_after=4
 MULTIGRAPH_NO_COMPATIBLE_CONFIGURATION
 VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
 SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0
+DEVICE_CATALOG_INVALID_CONTROLS rejected=5 selections=0
 SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
 VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
 ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=1
 MULTIGRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=1 stages=1 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
 MULTIGRAPH_REQUEST sets=1 stages=1 buffers=5 bindings=3 mapped=3 noncoherent=0
 DESCRIPTOR_ACCEPT sets=1 bindings=3 storage=2 uniform=1
@@ -56,14 +71,18 @@ MULTI_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x0000000
 MULTI_REQUIREMENTS index=1 label=gpu-stage-a size=8192 alignment=64 bits=0x00000003
 MULTI_INJECT_FAULT acquisition=4 resource=buffer
 MULTI_DESTROY acquisitions=4 buffers=3 memories=0 maps=0 layouts=0 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+DEVICE_CATALOG_CLOSE devices=1 selections=1
 FAULT_CASE sets=1 stages=1 point=5 exit=42
 MULTIGRAPH_CREATE_FAILED result=-3 fail_after=5
 MULTIGRAPH_NO_COMPATIBLE_CONFIGURATION
 VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
 SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0
+DEVICE_CATALOG_INVALID_CONTROLS rejected=5 selections=0
 SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
 VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
 ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=1
 MULTIGRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=1 stages=1 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
 MULTIGRAPH_REQUEST sets=1 stages=1 buffers=5 bindings=3 mapped=3 noncoherent=0
 DESCRIPTOR_ACCEPT sets=1 bindings=3 storage=2 uniform=1
@@ -72,14 +91,18 @@ MULTI_REQUIREMENTS index=1 label=gpu-stage-a size=8192 alignment=64 bits=0x00000
 MULTI_REQUIREMENTS index=2 label=staging-upload size=8192 alignment=64 bits=0x00000003
 MULTI_INJECT_FAULT acquisition=5 resource=buffer
 MULTI_DESTROY acquisitions=5 buffers=4 memories=0 maps=0 layouts=0 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+DEVICE_CATALOG_CLOSE devices=1 selections=1
 FAULT_CASE sets=1 stages=1 point=6 exit=42
 MULTIGRAPH_CREATE_FAILED result=-3 fail_after=6
 MULTIGRAPH_NO_COMPATIBLE_CONFIGURATION
 VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
 SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0
+DEVICE_CATALOG_INVALID_CONTROLS rejected=5 selections=0
 SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
 VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
 ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=1
 MULTIGRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=1 stages=1 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
 MULTIGRAPH_REQUEST sets=1 stages=1 buffers=5 bindings=3 mapped=3 noncoherent=0
 DESCRIPTOR_ACCEPT sets=1 bindings=3 storage=2 uniform=1
@@ -89,14 +112,18 @@ MULTI_REQUIREMENTS index=2 label=staging-upload size=8192 alignment=64 bits=0x00
 MULTI_REQUIREMENTS index=3 label=staging-stage-output size=8192 alignment=64 bits=0x00000003
 MULTI_INJECT_FAULT acquisition=6 resource=buffer
 MULTI_DESTROY acquisitions=6 buffers=5 memories=0 maps=0 layouts=0 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+DEVICE_CATALOG_CLOSE devices=1 selections=1
 FAULT_CASE sets=1 stages=1 point=7 exit=42
 MULTIGRAPH_CREATE_FAILED result=-3 fail_after=7
 MULTIGRAPH_NO_COMPATIBLE_CONFIGURATION
 VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
 SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0
+DEVICE_CATALOG_INVALID_CONTROLS rejected=5 selections=0
 SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
 VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
 ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=1
 MULTIGRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=1 stages=1 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
 MULTIGRAPH_REQUEST sets=1 stages=1 buffers=5 bindings=3 mapped=3 noncoherent=0
 DESCRIPTOR_ACCEPT sets=1 bindings=3 storage=2 uniform=1
@@ -114,14 +141,18 @@ GRAPH_PLAN_HEAP index=0 reserved=32784 declared=16101965824
 GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
 MULTI_INJECT_FAULT acquisition=7 resource=memory
 MULTI_DESTROY acquisitions=7 buffers=5 memories=1 maps=0 layouts=0 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+DEVICE_CATALOG_CLOSE devices=1 selections=1
 FAULT_CASE sets=1 stages=1 point=8 exit=42
 MULTIGRAPH_CREATE_FAILED result=-3 fail_after=8
 MULTIGRAPH_NO_COMPATIBLE_CONFIGURATION
 VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
 SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0
+DEVICE_CATALOG_INVALID_CONTROLS rejected=5 selections=0
 SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
 VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
 ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=1
 MULTIGRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=1 stages=1 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
 MULTIGRAPH_REQUEST sets=1 stages=1 buffers=5 bindings=3 mapped=3 noncoherent=0
 DESCRIPTOR_ACCEPT sets=1 bindings=3 storage=2 uniform=1
@@ -139,14 +170,18 @@ GRAPH_PLAN_HEAP index=0 reserved=32784 declared=16101965824
 GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
 MULTI_INJECT_FAULT acquisition=8 resource=memory
 MULTI_DESTROY acquisitions=8 buffers=5 memories=2 maps=0 layouts=0 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+DEVICE_CATALOG_CLOSE devices=1 selections=1
 FAULT_CASE sets=1 stages=1 point=9 exit=42
 MULTIGRAPH_CREATE_FAILED result=-3 fail_after=9
 MULTIGRAPH_NO_COMPATIBLE_CONFIGURATION
 VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
 SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0
+DEVICE_CATALOG_INVALID_CONTROLS rejected=5 selections=0
 SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
 VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
 ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=1
 MULTIGRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=1 stages=1 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
 MULTIGRAPH_REQUEST sets=1 stages=1 buffers=5 bindings=3 mapped=3 noncoherent=0
 DESCRIPTOR_ACCEPT sets=1 bindings=3 storage=2 uniform=1
@@ -164,14 +199,18 @@ GRAPH_PLAN_HEAP index=0 reserved=32784 declared=16101965824
 GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
 MULTI_INJECT_FAULT acquisition=9 resource=memory
 MULTI_DESTROY acquisitions=9 buffers=5 memories=3 maps=0 layouts=0 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+DEVICE_CATALOG_CLOSE devices=1 selections=1
 FAULT_CASE sets=1 stages=1 point=10 exit=42
 MULTIGRAPH_CREATE_FAILED result=-3 fail_after=10
 MULTIGRAPH_NO_COMPATIBLE_CONFIGURATION
 VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
 SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0
+DEVICE_CATALOG_INVALID_CONTROLS rejected=5 selections=0
 SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
 VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
 ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=1
 MULTIGRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=1 stages=1 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
 MULTIGRAPH_REQUEST sets=1 stages=1 buffers=5 bindings=3 mapped=3 noncoherent=0
 DESCRIPTOR_ACCEPT sets=1 bindings=3 storage=2 uniform=1
@@ -189,14 +228,18 @@ GRAPH_PLAN_HEAP index=0 reserved=32784 declared=16101965824
 GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
 MULTI_INJECT_FAULT acquisition=10 resource=memory
 MULTI_DESTROY acquisitions=10 buffers=5 memories=4 maps=0 layouts=0 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+DEVICE_CATALOG_CLOSE devices=1 selections=1
 FAULT_CASE sets=1 stages=1 point=11 exit=42
 MULTIGRAPH_CREATE_FAILED result=-3 fail_after=11
 MULTIGRAPH_NO_COMPATIBLE_CONFIGURATION
 VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
 SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0
+DEVICE_CATALOG_INVALID_CONTROLS rejected=5 selections=0
 SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
 VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
 ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=1
 MULTIGRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=1 stages=1 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
 MULTIGRAPH_REQUEST sets=1 stages=1 buffers=5 bindings=3 mapped=3 noncoherent=0
 DESCRIPTOR_ACCEPT sets=1 bindings=3 storage=2 uniform=1
@@ -214,14 +257,18 @@ GRAPH_PLAN_HEAP index=0 reserved=32784 declared=16101965824
 GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
 MULTI_INJECT_FAULT acquisition=11 resource=memory
 MULTI_DESTROY acquisitions=11 buffers=5 memories=5 maps=0 layouts=0 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+DEVICE_CATALOG_CLOSE devices=1 selections=1
 FAULT_CASE sets=1 stages=1 point=12 exit=42
 MULTIGRAPH_CREATE_FAILED result=-3 fail_after=12
 MULTIGRAPH_NO_COMPATIBLE_CONFIGURATION
 VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
 SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0
+DEVICE_CATALOG_INVALID_CONTROLS rejected=5 selections=0
 SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
 VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
 ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=1
 MULTIGRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=1 stages=1 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
 MULTIGRAPH_REQUEST sets=1 stages=1 buffers=5 bindings=3 mapped=3 noncoherent=0
 DESCRIPTOR_ACCEPT sets=1 bindings=3 storage=2 uniform=1
@@ -239,14 +286,18 @@ GRAPH_PLAN_HEAP index=0 reserved=32784 declared=16101965824
 GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
 MULTI_INJECT_FAULT acquisition=12 resource=mapped-buffer
 MULTI_DESTROY acquisitions=12 buffers=5 memories=5 maps=1 layouts=0 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+DEVICE_CATALOG_CLOSE devices=1 selections=1
 FAULT_CASE sets=1 stages=1 point=13 exit=42
 MULTIGRAPH_CREATE_FAILED result=-3 fail_after=13
 MULTIGRAPH_NO_COMPATIBLE_CONFIGURATION
 VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
 SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0
+DEVICE_CATALOG_INVALID_CONTROLS rejected=5 selections=0
 SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
 VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
 ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=1
 MULTIGRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=1 stages=1 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
 MULTIGRAPH_REQUEST sets=1 stages=1 buffers=5 bindings=3 mapped=3 noncoherent=0
 DESCRIPTOR_ACCEPT sets=1 bindings=3 storage=2 uniform=1
@@ -265,14 +316,18 @@ GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
 MULTI_MAPPED index=2 type=0 coherent=1
 MULTI_INJECT_FAULT acquisition=13 resource=mapped-buffer
 MULTI_DESTROY acquisitions=13 buffers=5 memories=5 maps=2 layouts=0 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+DEVICE_CATALOG_CLOSE devices=1 selections=1
 FAULT_CASE sets=1 stages=1 point=14 exit=42
 MULTIGRAPH_CREATE_FAILED result=-3 fail_after=14
 MULTIGRAPH_NO_COMPATIBLE_CONFIGURATION
 VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
 SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0
+DEVICE_CATALOG_INVALID_CONTROLS rejected=5 selections=0
 SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
 VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
 ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=1
 MULTIGRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=1 stages=1 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
 MULTIGRAPH_REQUEST sets=1 stages=1 buffers=5 bindings=3 mapped=3 noncoherent=0
 DESCRIPTOR_ACCEPT sets=1 bindings=3 storage=2 uniform=1
@@ -292,14 +347,18 @@ MULTI_MAPPED index=2 type=0 coherent=1
 MULTI_MAPPED index=3 type=0 coherent=1
 MULTI_INJECT_FAULT acquisition=14 resource=mapped-buffer
 MULTI_DESTROY acquisitions=14 buffers=5 memories=5 maps=3 layouts=0 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+DEVICE_CATALOG_CLOSE devices=1 selections=1
 FAULT_CASE sets=1 stages=1 point=15 exit=42
 MULTIGRAPH_CREATE_FAILED result=-3 fail_after=15
 MULTIGRAPH_NO_COMPATIBLE_CONFIGURATION
 VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
 SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0
+DEVICE_CATALOG_INVALID_CONTROLS rejected=5 selections=0
 SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
 VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
 ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=1
 MULTIGRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=1 stages=1 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
 MULTIGRAPH_REQUEST sets=1 stages=1 buffers=5 bindings=3 mapped=3 noncoherent=0
 DESCRIPTOR_ACCEPT sets=1 bindings=3 storage=2 uniform=1
@@ -320,14 +379,18 @@ MULTI_MAPPED index=3 type=0 coherent=1
 MULTI_MAPPED index=4 type=0 coherent=1
 MULTI_INJECT_FAULT acquisition=15 resource=set-layout
 MULTI_DESTROY acquisitions=15 buffers=5 memories=5 maps=3 layouts=1 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+DEVICE_CATALOG_CLOSE devices=1 selections=1
 FAULT_CASE sets=1 stages=1 point=16 exit=42
 MULTIGRAPH_CREATE_FAILED result=-3 fail_after=16
 MULTIGRAPH_NO_COMPATIBLE_CONFIGURATION
 VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
 SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0
+DEVICE_CATALOG_INVALID_CONTROLS rejected=5 selections=0
 SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
 VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
 ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=1
 MULTIGRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=1 stages=1 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
 MULTIGRAPH_REQUEST sets=1 stages=1 buffers=5 bindings=3 mapped=3 noncoherent=0
 DESCRIPTOR_ACCEPT sets=1 bindings=3 storage=2 uniform=1
@@ -349,14 +412,18 @@ MULTI_MAPPED index=4 type=0 coherent=1
 MULTI_SET_LAYOUT index=0 bindings=3
 MULTI_INJECT_FAULT acquisition=16 resource=pipeline-layout
 MULTI_DESTROY acquisitions=16 buffers=5 memories=5 maps=3 layouts=1 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+DEVICE_CATALOG_CLOSE devices=1 selections=1
 FAULT_CASE sets=1 stages=1 point=17 exit=42
 MULTIGRAPH_CREATE_FAILED result=-3 fail_after=17
 MULTIGRAPH_NO_COMPATIBLE_CONFIGURATION
 VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
 SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0
+DEVICE_CATALOG_INVALID_CONTROLS rejected=5 selections=0
 SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
 VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
 ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=1
 MULTIGRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=1 stages=1 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
 MULTIGRAPH_REQUEST sets=1 stages=1 buffers=5 bindings=3 mapped=3 noncoherent=0
 DESCRIPTOR_ACCEPT sets=1 bindings=3 storage=2 uniform=1
@@ -378,14 +445,18 @@ MULTI_MAPPED index=4 type=0 coherent=1
 MULTI_SET_LAYOUT index=0 bindings=3
 MULTI_INJECT_FAULT acquisition=17 resource=shader-module
 MULTI_DESTROY acquisitions=17 buffers=5 memories=5 maps=3 layouts=1 sets=0 shaders=1 pipelines=0 submissions=0 idle_result=0
+DEVICE_CATALOG_CLOSE devices=1 selections=1
 FAULT_CASE sets=1 stages=1 point=18 exit=42
 MULTIGRAPH_CREATE_FAILED result=-3 fail_after=18
 MULTIGRAPH_NO_COMPATIBLE_CONFIGURATION
 VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
 SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0
+DEVICE_CATALOG_INVALID_CONTROLS rejected=5 selections=0
 SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
 VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
 ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=1
 MULTIGRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=1 stages=1 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
 MULTIGRAPH_REQUEST sets=1 stages=1 buffers=5 bindings=3 mapped=3 noncoherent=0
 DESCRIPTOR_ACCEPT sets=1 bindings=3 storage=2 uniform=1
@@ -407,14 +478,18 @@ MULTI_MAPPED index=4 type=0 coherent=1
 MULTI_SET_LAYOUT index=0 bindings=3
 MULTI_INJECT_FAULT acquisition=18 resource=compute-pipeline
 MULTI_DESTROY acquisitions=18 buffers=5 memories=5 maps=3 layouts=1 sets=0 shaders=1 pipelines=1 submissions=0 idle_result=0
+DEVICE_CATALOG_CLOSE devices=1 selections=1
 FAULT_CASE sets=1 stages=1 point=19 exit=42
 MULTIGRAPH_CREATE_FAILED result=-3 fail_after=19
 MULTIGRAPH_NO_COMPATIBLE_CONFIGURATION
 VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
 SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0
+DEVICE_CATALOG_INVALID_CONTROLS rejected=5 selections=0
 SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
 VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
 ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=1
 MULTIGRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=1 stages=1 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
 MULTIGRAPH_REQUEST sets=1 stages=1 buffers=5 bindings=3 mapped=3 noncoherent=0
 DESCRIPTOR_ACCEPT sets=1 bindings=3 storage=2 uniform=1
@@ -436,14 +511,18 @@ MULTI_MAPPED index=4 type=0 coherent=1
 MULTI_SET_LAYOUT index=0 bindings=3
 MULTI_INJECT_FAULT acquisition=19 resource=descriptor-pool
 MULTI_DESTROY acquisitions=19 buffers=5 memories=5 maps=3 layouts=1 sets=0 shaders=1 pipelines=1 submissions=0 idle_result=0
+DEVICE_CATALOG_CLOSE devices=1 selections=1
 FAULT_CASE sets=1 stages=1 point=20 exit=42
 MULTIGRAPH_CREATE_FAILED result=-3 fail_after=20
 MULTIGRAPH_NO_COMPATIBLE_CONFIGURATION
 VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
 SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0
+DEVICE_CATALOG_INVALID_CONTROLS rejected=5 selections=0
 SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
 VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
 ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=1
 MULTIGRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=1 stages=1 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
 MULTIGRAPH_REQUEST sets=1 stages=1 buffers=5 bindings=3 mapped=3 noncoherent=0
 DESCRIPTOR_ACCEPT sets=1 bindings=3 storage=2 uniform=1
@@ -465,14 +544,18 @@ MULTI_MAPPED index=4 type=0 coherent=1
 MULTI_SET_LAYOUT index=0 bindings=3
 MULTI_INJECT_FAULT acquisition=20 resource=descriptor-set
 MULTI_DESTROY acquisitions=20 buffers=5 memories=5 maps=3 layouts=1 sets=1 shaders=1 pipelines=1 submissions=0 idle_result=0
+DEVICE_CATALOG_CLOSE devices=1 selections=1
 FAULT_CASE sets=1 stages=1 point=21 exit=42
 MULTIGRAPH_CREATE_FAILED result=-3 fail_after=21
 MULTIGRAPH_NO_COMPATIBLE_CONFIGURATION
 VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
 SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0
+DEVICE_CATALOG_INVALID_CONTROLS rejected=5 selections=0
 SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
 VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
 ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=1
 MULTIGRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=1 stages=1 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
 MULTIGRAPH_REQUEST sets=1 stages=1 buffers=5 bindings=3 mapped=3 noncoherent=0
 DESCRIPTOR_ACCEPT sets=1 bindings=3 storage=2 uniform=1
@@ -498,14 +581,18 @@ MULTI_DESCRIPTOR index=1 set=0 binding=4 type=storage buffer=1 range=8192
 MULTI_DESCRIPTOR index=2 set=0 binding=10 type=uniform buffer=4 range=16
 MULTI_INJECT_FAULT acquisition=21 resource=command-pool
 MULTI_DESTROY acquisitions=21 buffers=5 memories=5 maps=3 layouts=1 sets=1 shaders=1 pipelines=1 submissions=0 idle_result=0
+DEVICE_CATALOG_CLOSE devices=1 selections=1
 FAULT_CASE sets=1 stages=1 point=22 exit=42
 MULTIGRAPH_CREATE_FAILED result=-3 fail_after=22
 MULTIGRAPH_NO_COMPATIBLE_CONFIGURATION
 VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
 SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0
+DEVICE_CATALOG_INVALID_CONTROLS rejected=5 selections=0
 SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
 VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
 ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=1
 MULTIGRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=1 stages=1 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
 MULTIGRAPH_REQUEST sets=1 stages=1 buffers=5 bindings=3 mapped=3 noncoherent=0
 DESCRIPTOR_ACCEPT sets=1 bindings=3 storage=2 uniform=1
@@ -531,14 +618,18 @@ MULTI_DESCRIPTOR index=1 set=0 binding=4 type=storage buffer=1 range=8192
 MULTI_DESCRIPTOR index=2 set=0 binding=10 type=uniform buffer=4 range=16
 MULTI_INJECT_FAULT acquisition=22 resource=command-buffer
 MULTI_DESTROY acquisitions=22 buffers=5 memories=5 maps=3 layouts=1 sets=1 shaders=1 pipelines=1 submissions=0 idle_result=0
+DEVICE_CATALOG_CLOSE devices=1 selections=1
 FAULT_CASE sets=1 stages=1 point=23 exit=42
 MULTIGRAPH_CREATE_FAILED result=-3 fail_after=23
 MULTIGRAPH_NO_COMPATIBLE_CONFIGURATION
 VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
 SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0
+DEVICE_CATALOG_INVALID_CONTROLS rejected=5 selections=0
 SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
 VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
 ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=1
 MULTIGRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=1 stages=1 storage=2 uniform=1 workgroup=32 groups=64 features=0 extensions=0
 MULTIGRAPH_REQUEST sets=1 stages=1 buffers=5 bindings=3 mapped=3 noncoherent=0
 DESCRIPTOR_ACCEPT sets=1 bindings=3 storage=2 uniform=1
@@ -564,54 +655,70 @@ MULTI_DESCRIPTOR index=1 set=0 binding=4 type=storage buffer=1 range=8192
 MULTI_DESCRIPTOR index=2 set=0 binding=10 type=uniform buffer=4 range=16
 MULTI_INJECT_FAULT acquisition=23 resource=fence
 MULTI_DESTROY acquisitions=23 buffers=5 memories=5 maps=3 layouts=1 sets=1 shaders=1 pipelines=1 submissions=0 idle_result=0
+DEVICE_CATALOG_CLOSE devices=1 selections=1
 FAULT_CASE sets=2 stages=3 point=1 exit=42
 MULTIGRAPH_CREATE_FAILED result=-3 fail_after=1
 MULTIGRAPH_NO_COMPATIBLE_CONFIGURATION
 VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
 SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0
+DEVICE_CATALOG_INVALID_CONTROLS rejected=5 selections=0
 SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
 VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
 ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=1
 MULTIGRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=2 stages=3 storage=4 uniform=1 workgroup=32 groups=64 features=0 extensions=0
 MULTIGRAPH_REQUEST sets=2 stages=3 buffers=9 bindings=5 mapped=5 noncoherent=0
 DESCRIPTOR_ACCEPT sets=2 bindings=5 storage=4 uniform=1
 MULTI_INJECT_FAULT acquisition=1 resource=device
 MULTI_DESTROY acquisitions=1 buffers=0 memories=0 maps=0 layouts=0 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+DEVICE_CATALOG_CLOSE devices=1 selections=1
 FAULT_CASE sets=2 stages=3 point=2 exit=42
 MULTIGRAPH_CREATE_FAILED result=-3 fail_after=2
 MULTIGRAPH_NO_COMPATIBLE_CONFIGURATION
 VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
 SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0
+DEVICE_CATALOG_INVALID_CONTROLS rejected=5 selections=0
 SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
 VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
 ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=1
 MULTIGRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=2 stages=3 storage=4 uniform=1 workgroup=32 groups=64 features=0 extensions=0
 MULTIGRAPH_REQUEST sets=2 stages=3 buffers=9 bindings=5 mapped=5 noncoherent=0
 DESCRIPTOR_ACCEPT sets=2 bindings=5 storage=4 uniform=1
 MULTI_INJECT_FAULT acquisition=2 resource=buffer
 MULTI_DESTROY acquisitions=2 buffers=1 memories=0 maps=0 layouts=0 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+DEVICE_CATALOG_CLOSE devices=1 selections=1
 FAULT_CASE sets=2 stages=3 point=3 exit=42
 MULTIGRAPH_CREATE_FAILED result=-3 fail_after=3
 MULTIGRAPH_NO_COMPATIBLE_CONFIGURATION
 VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
 SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0
+DEVICE_CATALOG_INVALID_CONTROLS rejected=5 selections=0
 SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
 VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
 ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=1
 MULTIGRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=2 stages=3 storage=4 uniform=1 workgroup=32 groups=64 features=0 extensions=0
 MULTIGRAPH_REQUEST sets=2 stages=3 buffers=9 bindings=5 mapped=5 noncoherent=0
 DESCRIPTOR_ACCEPT sets=2 bindings=5 storage=4 uniform=1
 MULTI_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000003
 MULTI_INJECT_FAULT acquisition=3 resource=buffer
 MULTI_DESTROY acquisitions=3 buffers=2 memories=0 maps=0 layouts=0 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+DEVICE_CATALOG_CLOSE devices=1 selections=1
 FAULT_CASE sets=2 stages=3 point=4 exit=42
 MULTIGRAPH_CREATE_FAILED result=-3 fail_after=4
 MULTIGRAPH_NO_COMPATIBLE_CONFIGURATION
 VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
 SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0
+DEVICE_CATALOG_INVALID_CONTROLS rejected=5 selections=0
 SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
 VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
 ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=1
 MULTIGRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=2 stages=3 storage=4 uniform=1 workgroup=32 groups=64 features=0 extensions=0
 MULTIGRAPH_REQUEST sets=2 stages=3 buffers=9 bindings=5 mapped=5 noncoherent=0
 DESCRIPTOR_ACCEPT sets=2 bindings=5 storage=4 uniform=1
@@ -619,14 +726,18 @@ MULTI_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x0000000
 MULTI_REQUIREMENTS index=1 label=gpu-stage-a size=8192 alignment=64 bits=0x00000003
 MULTI_INJECT_FAULT acquisition=4 resource=buffer
 MULTI_DESTROY acquisitions=4 buffers=3 memories=0 maps=0 layouts=0 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+DEVICE_CATALOG_CLOSE devices=1 selections=1
 FAULT_CASE sets=2 stages=3 point=5 exit=42
 MULTIGRAPH_CREATE_FAILED result=-3 fail_after=5
 MULTIGRAPH_NO_COMPATIBLE_CONFIGURATION
 VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
 SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0
+DEVICE_CATALOG_INVALID_CONTROLS rejected=5 selections=0
 SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
 VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
 ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=1
 MULTIGRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=2 stages=3 storage=4 uniform=1 workgroup=32 groups=64 features=0 extensions=0
 MULTIGRAPH_REQUEST sets=2 stages=3 buffers=9 bindings=5 mapped=5 noncoherent=0
 DESCRIPTOR_ACCEPT sets=2 bindings=5 storage=4 uniform=1
@@ -635,14 +746,18 @@ MULTI_REQUIREMENTS index=1 label=gpu-stage-a size=8192 alignment=64 bits=0x00000
 MULTI_REQUIREMENTS index=2 label=gpu-stage-b size=8192 alignment=64 bits=0x00000003
 MULTI_INJECT_FAULT acquisition=5 resource=buffer
 MULTI_DESTROY acquisitions=5 buffers=4 memories=0 maps=0 layouts=0 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+DEVICE_CATALOG_CLOSE devices=1 selections=1
 FAULT_CASE sets=2 stages=3 point=6 exit=42
 MULTIGRAPH_CREATE_FAILED result=-3 fail_after=6
 MULTIGRAPH_NO_COMPATIBLE_CONFIGURATION
 VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
 SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0
+DEVICE_CATALOG_INVALID_CONTROLS rejected=5 selections=0
 SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
 VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
 ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=1
 MULTIGRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=2 stages=3 storage=4 uniform=1 workgroup=32 groups=64 features=0 extensions=0
 MULTIGRAPH_REQUEST sets=2 stages=3 buffers=9 bindings=5 mapped=5 noncoherent=0
 DESCRIPTOR_ACCEPT sets=2 bindings=5 storage=4 uniform=1
@@ -652,14 +767,18 @@ MULTI_REQUIREMENTS index=2 label=gpu-stage-b size=8192 alignment=64 bits=0x00000
 MULTI_REQUIREMENTS index=3 label=gpu-stage-c size=8192 alignment=64 bits=0x00000003
 MULTI_INJECT_FAULT acquisition=6 resource=buffer
 MULTI_DESTROY acquisitions=6 buffers=5 memories=0 maps=0 layouts=0 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+DEVICE_CATALOG_CLOSE devices=1 selections=1
 FAULT_CASE sets=2 stages=3 point=7 exit=42
 MULTIGRAPH_CREATE_FAILED result=-3 fail_after=7
 MULTIGRAPH_NO_COMPATIBLE_CONFIGURATION
 VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
 SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0
+DEVICE_CATALOG_INVALID_CONTROLS rejected=5 selections=0
 SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
 VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
 ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=1
 MULTIGRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=2 stages=3 storage=4 uniform=1 workgroup=32 groups=64 features=0 extensions=0
 MULTIGRAPH_REQUEST sets=2 stages=3 buffers=9 bindings=5 mapped=5 noncoherent=0
 DESCRIPTOR_ACCEPT sets=2 bindings=5 storage=4 uniform=1
@@ -670,14 +789,18 @@ MULTI_REQUIREMENTS index=3 label=gpu-stage-c size=8192 alignment=64 bits=0x00000
 MULTI_REQUIREMENTS index=4 label=staging-upload size=8192 alignment=64 bits=0x00000003
 MULTI_INJECT_FAULT acquisition=7 resource=buffer
 MULTI_DESTROY acquisitions=7 buffers=6 memories=0 maps=0 layouts=0 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+DEVICE_CATALOG_CLOSE devices=1 selections=1
 FAULT_CASE sets=2 stages=3 point=8 exit=42
 MULTIGRAPH_CREATE_FAILED result=-3 fail_after=8
 MULTIGRAPH_NO_COMPATIBLE_CONFIGURATION
 VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
 SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0
+DEVICE_CATALOG_INVALID_CONTROLS rejected=5 selections=0
 SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
 VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
 ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=1
 MULTIGRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=2 stages=3 storage=4 uniform=1 workgroup=32 groups=64 features=0 extensions=0
 MULTIGRAPH_REQUEST sets=2 stages=3 buffers=9 bindings=5 mapped=5 noncoherent=0
 DESCRIPTOR_ACCEPT sets=2 bindings=5 storage=4 uniform=1
@@ -689,14 +812,18 @@ MULTI_REQUIREMENTS index=4 label=staging-upload size=8192 alignment=64 bits=0x00
 MULTI_REQUIREMENTS index=5 label=staging-stage-output size=8192 alignment=64 bits=0x00000003
 MULTI_INJECT_FAULT acquisition=8 resource=buffer
 MULTI_DESTROY acquisitions=8 buffers=7 memories=0 maps=0 layouts=0 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+DEVICE_CATALOG_CLOSE devices=1 selections=1
 FAULT_CASE sets=2 stages=3 point=9 exit=42
 MULTIGRAPH_CREATE_FAILED result=-3 fail_after=9
 MULTIGRAPH_NO_COMPATIBLE_CONFIGURATION
 VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
 SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0
+DEVICE_CATALOG_INVALID_CONTROLS rejected=5 selections=0
 SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
 VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
 ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=1
 MULTIGRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=2 stages=3 storage=4 uniform=1 workgroup=32 groups=64 features=0 extensions=0
 MULTIGRAPH_REQUEST sets=2 stages=3 buffers=9 bindings=5 mapped=5 noncoherent=0
 DESCRIPTOR_ACCEPT sets=2 bindings=5 storage=4 uniform=1
@@ -709,14 +836,18 @@ MULTI_REQUIREMENTS index=5 label=staging-stage-output size=8192 alignment=64 bit
 MULTI_REQUIREMENTS index=6 label=staging-stage-output size=8192 alignment=64 bits=0x00000003
 MULTI_INJECT_FAULT acquisition=9 resource=buffer
 MULTI_DESTROY acquisitions=9 buffers=8 memories=0 maps=0 layouts=0 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+DEVICE_CATALOG_CLOSE devices=1 selections=1
 FAULT_CASE sets=2 stages=3 point=10 exit=42
 MULTIGRAPH_CREATE_FAILED result=-3 fail_after=10
 MULTIGRAPH_NO_COMPATIBLE_CONFIGURATION
 VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
 SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0
+DEVICE_CATALOG_INVALID_CONTROLS rejected=5 selections=0
 SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
 VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
 ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=1
 MULTIGRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=2 stages=3 storage=4 uniform=1 workgroup=32 groups=64 features=0 extensions=0
 MULTIGRAPH_REQUEST sets=2 stages=3 buffers=9 bindings=5 mapped=5 noncoherent=0
 DESCRIPTOR_ACCEPT sets=2 bindings=5 storage=4 uniform=1
@@ -730,14 +861,18 @@ MULTI_REQUIREMENTS index=6 label=staging-stage-output size=8192 alignment=64 bit
 MULTI_REQUIREMENTS index=7 label=staging-stage-output size=8192 alignment=64 bits=0x00000003
 MULTI_INJECT_FAULT acquisition=10 resource=buffer
 MULTI_DESTROY acquisitions=10 buffers=9 memories=0 maps=0 layouts=0 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+DEVICE_CATALOG_CLOSE devices=1 selections=1
 FAULT_CASE sets=2 stages=3 point=11 exit=42
 MULTIGRAPH_CREATE_FAILED result=-3 fail_after=11
 MULTIGRAPH_NO_COMPATIBLE_CONFIGURATION
 VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
 SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0
+DEVICE_CATALOG_INVALID_CONTROLS rejected=5 selections=0
 SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
 VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
 ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=1
 MULTIGRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=2 stages=3 storage=4 uniform=1 workgroup=32 groups=64 features=0 extensions=0
 MULTIGRAPH_REQUEST sets=2 stages=3 buffers=9 bindings=5 mapped=5 noncoherent=0
 DESCRIPTOR_ACCEPT sets=2 bindings=5 storage=4 uniform=1
@@ -763,14 +898,18 @@ GRAPH_PLAN_HEAP index=0 reserved=65552 declared=16101965824
 GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
 MULTI_INJECT_FAULT acquisition=11 resource=memory
 MULTI_DESTROY acquisitions=11 buffers=9 memories=1 maps=0 layouts=0 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+DEVICE_CATALOG_CLOSE devices=1 selections=1
 FAULT_CASE sets=2 stages=3 point=12 exit=42
 MULTIGRAPH_CREATE_FAILED result=-3 fail_after=12
 MULTIGRAPH_NO_COMPATIBLE_CONFIGURATION
 VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
 SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0
+DEVICE_CATALOG_INVALID_CONTROLS rejected=5 selections=0
 SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
 VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
 ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=1
 MULTIGRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=2 stages=3 storage=4 uniform=1 workgroup=32 groups=64 features=0 extensions=0
 MULTIGRAPH_REQUEST sets=2 stages=3 buffers=9 bindings=5 mapped=5 noncoherent=0
 DESCRIPTOR_ACCEPT sets=2 bindings=5 storage=4 uniform=1
@@ -796,14 +935,18 @@ GRAPH_PLAN_HEAP index=0 reserved=65552 declared=16101965824
 GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
 MULTI_INJECT_FAULT acquisition=12 resource=memory
 MULTI_DESTROY acquisitions=12 buffers=9 memories=2 maps=0 layouts=0 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+DEVICE_CATALOG_CLOSE devices=1 selections=1
 FAULT_CASE sets=2 stages=3 point=13 exit=42
 MULTIGRAPH_CREATE_FAILED result=-3 fail_after=13
 MULTIGRAPH_NO_COMPATIBLE_CONFIGURATION
 VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
 SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0
+DEVICE_CATALOG_INVALID_CONTROLS rejected=5 selections=0
 SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
 VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
 ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=1
 MULTIGRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=2 stages=3 storage=4 uniform=1 workgroup=32 groups=64 features=0 extensions=0
 MULTIGRAPH_REQUEST sets=2 stages=3 buffers=9 bindings=5 mapped=5 noncoherent=0
 DESCRIPTOR_ACCEPT sets=2 bindings=5 storage=4 uniform=1
@@ -829,14 +972,18 @@ GRAPH_PLAN_HEAP index=0 reserved=65552 declared=16101965824
 GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
 MULTI_INJECT_FAULT acquisition=13 resource=memory
 MULTI_DESTROY acquisitions=13 buffers=9 memories=3 maps=0 layouts=0 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+DEVICE_CATALOG_CLOSE devices=1 selections=1
 FAULT_CASE sets=2 stages=3 point=14 exit=42
 MULTIGRAPH_CREATE_FAILED result=-3 fail_after=14
 MULTIGRAPH_NO_COMPATIBLE_CONFIGURATION
 VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
 SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0
+DEVICE_CATALOG_INVALID_CONTROLS rejected=5 selections=0
 SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
 VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
 ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=1
 MULTIGRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=2 stages=3 storage=4 uniform=1 workgroup=32 groups=64 features=0 extensions=0
 MULTIGRAPH_REQUEST sets=2 stages=3 buffers=9 bindings=5 mapped=5 noncoherent=0
 DESCRIPTOR_ACCEPT sets=2 bindings=5 storage=4 uniform=1
@@ -862,14 +1009,18 @@ GRAPH_PLAN_HEAP index=0 reserved=65552 declared=16101965824
 GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
 MULTI_INJECT_FAULT acquisition=14 resource=memory
 MULTI_DESTROY acquisitions=14 buffers=9 memories=4 maps=0 layouts=0 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+DEVICE_CATALOG_CLOSE devices=1 selections=1
 FAULT_CASE sets=2 stages=3 point=15 exit=42
 MULTIGRAPH_CREATE_FAILED result=-3 fail_after=15
 MULTIGRAPH_NO_COMPATIBLE_CONFIGURATION
 VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
 SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0
+DEVICE_CATALOG_INVALID_CONTROLS rejected=5 selections=0
 SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
 VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
 ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=1
 MULTIGRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=2 stages=3 storage=4 uniform=1 workgroup=32 groups=64 features=0 extensions=0
 MULTIGRAPH_REQUEST sets=2 stages=3 buffers=9 bindings=5 mapped=5 noncoherent=0
 DESCRIPTOR_ACCEPT sets=2 bindings=5 storage=4 uniform=1
@@ -895,14 +1046,18 @@ GRAPH_PLAN_HEAP index=0 reserved=65552 declared=16101965824
 GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
 MULTI_INJECT_FAULT acquisition=15 resource=memory
 MULTI_DESTROY acquisitions=15 buffers=9 memories=5 maps=0 layouts=0 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+DEVICE_CATALOG_CLOSE devices=1 selections=1
 FAULT_CASE sets=2 stages=3 point=16 exit=42
 MULTIGRAPH_CREATE_FAILED result=-3 fail_after=16
 MULTIGRAPH_NO_COMPATIBLE_CONFIGURATION
 VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
 SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0
+DEVICE_CATALOG_INVALID_CONTROLS rejected=5 selections=0
 SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
 VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
 ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=1
 MULTIGRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=2 stages=3 storage=4 uniform=1 workgroup=32 groups=64 features=0 extensions=0
 MULTIGRAPH_REQUEST sets=2 stages=3 buffers=9 bindings=5 mapped=5 noncoherent=0
 DESCRIPTOR_ACCEPT sets=2 bindings=5 storage=4 uniform=1
@@ -928,14 +1083,18 @@ GRAPH_PLAN_HEAP index=0 reserved=65552 declared=16101965824
 GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
 MULTI_INJECT_FAULT acquisition=16 resource=memory
 MULTI_DESTROY acquisitions=16 buffers=9 memories=6 maps=0 layouts=0 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+DEVICE_CATALOG_CLOSE devices=1 selections=1
 FAULT_CASE sets=2 stages=3 point=17 exit=42
 MULTIGRAPH_CREATE_FAILED result=-3 fail_after=17
 MULTIGRAPH_NO_COMPATIBLE_CONFIGURATION
 VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
 SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0
+DEVICE_CATALOG_INVALID_CONTROLS rejected=5 selections=0
 SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
 VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
 ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=1
 MULTIGRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=2 stages=3 storage=4 uniform=1 workgroup=32 groups=64 features=0 extensions=0
 MULTIGRAPH_REQUEST sets=2 stages=3 buffers=9 bindings=5 mapped=5 noncoherent=0
 DESCRIPTOR_ACCEPT sets=2 bindings=5 storage=4 uniform=1
@@ -961,14 +1120,18 @@ GRAPH_PLAN_HEAP index=0 reserved=65552 declared=16101965824
 GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
 MULTI_INJECT_FAULT acquisition=17 resource=memory
 MULTI_DESTROY acquisitions=17 buffers=9 memories=7 maps=0 layouts=0 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+DEVICE_CATALOG_CLOSE devices=1 selections=1
 FAULT_CASE sets=2 stages=3 point=18 exit=42
 MULTIGRAPH_CREATE_FAILED result=-3 fail_after=18
 MULTIGRAPH_NO_COMPATIBLE_CONFIGURATION
 VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
 SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0
+DEVICE_CATALOG_INVALID_CONTROLS rejected=5 selections=0
 SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
 VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
 ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=1
 MULTIGRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=2 stages=3 storage=4 uniform=1 workgroup=32 groups=64 features=0 extensions=0
 MULTIGRAPH_REQUEST sets=2 stages=3 buffers=9 bindings=5 mapped=5 noncoherent=0
 DESCRIPTOR_ACCEPT sets=2 bindings=5 storage=4 uniform=1
@@ -994,14 +1157,18 @@ GRAPH_PLAN_HEAP index=0 reserved=65552 declared=16101965824
 GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
 MULTI_INJECT_FAULT acquisition=18 resource=memory
 MULTI_DESTROY acquisitions=18 buffers=9 memories=8 maps=0 layouts=0 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+DEVICE_CATALOG_CLOSE devices=1 selections=1
 FAULT_CASE sets=2 stages=3 point=19 exit=42
 MULTIGRAPH_CREATE_FAILED result=-3 fail_after=19
 MULTIGRAPH_NO_COMPATIBLE_CONFIGURATION
 VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
 SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0
+DEVICE_CATALOG_INVALID_CONTROLS rejected=5 selections=0
 SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
 VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
 ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=1
 MULTIGRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=2 stages=3 storage=4 uniform=1 workgroup=32 groups=64 features=0 extensions=0
 MULTIGRAPH_REQUEST sets=2 stages=3 buffers=9 bindings=5 mapped=5 noncoherent=0
 DESCRIPTOR_ACCEPT sets=2 bindings=5 storage=4 uniform=1
@@ -1027,14 +1194,18 @@ GRAPH_PLAN_HEAP index=0 reserved=65552 declared=16101965824
 GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
 MULTI_INJECT_FAULT acquisition=19 resource=memory
 MULTI_DESTROY acquisitions=19 buffers=9 memories=9 maps=0 layouts=0 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+DEVICE_CATALOG_CLOSE devices=1 selections=1
 FAULT_CASE sets=2 stages=3 point=20 exit=42
 MULTIGRAPH_CREATE_FAILED result=-3 fail_after=20
 MULTIGRAPH_NO_COMPATIBLE_CONFIGURATION
 VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
 SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0
+DEVICE_CATALOG_INVALID_CONTROLS rejected=5 selections=0
 SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
 VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
 ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=1
 MULTIGRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=2 stages=3 storage=4 uniform=1 workgroup=32 groups=64 features=0 extensions=0
 MULTIGRAPH_REQUEST sets=2 stages=3 buffers=9 bindings=5 mapped=5 noncoherent=0
 DESCRIPTOR_ACCEPT sets=2 bindings=5 storage=4 uniform=1
@@ -1060,14 +1231,18 @@ GRAPH_PLAN_HEAP index=0 reserved=65552 declared=16101965824
 GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
 MULTI_INJECT_FAULT acquisition=20 resource=mapped-buffer
 MULTI_DESTROY acquisitions=20 buffers=9 memories=9 maps=1 layouts=0 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+DEVICE_CATALOG_CLOSE devices=1 selections=1
 FAULT_CASE sets=2 stages=3 point=21 exit=42
 MULTIGRAPH_CREATE_FAILED result=-3 fail_after=21
 MULTIGRAPH_NO_COMPATIBLE_CONFIGURATION
 VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
 SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0
+DEVICE_CATALOG_INVALID_CONTROLS rejected=5 selections=0
 SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
 VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
 ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=1
 MULTIGRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=2 stages=3 storage=4 uniform=1 workgroup=32 groups=64 features=0 extensions=0
 MULTIGRAPH_REQUEST sets=2 stages=3 buffers=9 bindings=5 mapped=5 noncoherent=0
 DESCRIPTOR_ACCEPT sets=2 bindings=5 storage=4 uniform=1
@@ -1094,14 +1269,18 @@ GRAPH_PLAN_HEAP index=1 reserved=0 declared=104857600
 MULTI_MAPPED index=4 type=0 coherent=1
 MULTI_INJECT_FAULT acquisition=21 resource=mapped-buffer
 MULTI_DESTROY acquisitions=21 buffers=9 memories=9 maps=2 layouts=0 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+DEVICE_CATALOG_CLOSE devices=1 selections=1
 FAULT_CASE sets=2 stages=3 point=22 exit=42
 MULTIGRAPH_CREATE_FAILED result=-3 fail_after=22
 MULTIGRAPH_NO_COMPATIBLE_CONFIGURATION
 VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
 SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0
+DEVICE_CATALOG_INVALID_CONTROLS rejected=5 selections=0
 SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
 VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
 ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=1
 MULTIGRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=2 stages=3 storage=4 uniform=1 workgroup=32 groups=64 features=0 extensions=0
 MULTIGRAPH_REQUEST sets=2 stages=3 buffers=9 bindings=5 mapped=5 noncoherent=0
 DESCRIPTOR_ACCEPT sets=2 bindings=5 storage=4 uniform=1
@@ -1129,14 +1308,18 @@ MULTI_MAPPED index=4 type=0 coherent=1
 MULTI_MAPPED index=5 type=0 coherent=1
 MULTI_INJECT_FAULT acquisition=22 resource=mapped-buffer
 MULTI_DESTROY acquisitions=22 buffers=9 memories=9 maps=3 layouts=0 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+DEVICE_CATALOG_CLOSE devices=1 selections=1
 FAULT_CASE sets=2 stages=3 point=23 exit=42
 MULTIGRAPH_CREATE_FAILED result=-3 fail_after=23
 MULTIGRAPH_NO_COMPATIBLE_CONFIGURATION
 VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
 SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0
+DEVICE_CATALOG_INVALID_CONTROLS rejected=5 selections=0
 SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
 VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
 ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=1
 MULTIGRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=2 stages=3 storage=4 uniform=1 workgroup=32 groups=64 features=0 extensions=0
 MULTIGRAPH_REQUEST sets=2 stages=3 buffers=9 bindings=5 mapped=5 noncoherent=0
 DESCRIPTOR_ACCEPT sets=2 bindings=5 storage=4 uniform=1
@@ -1165,14 +1348,18 @@ MULTI_MAPPED index=5 type=0 coherent=1
 MULTI_MAPPED index=6 type=0 coherent=1
 MULTI_INJECT_FAULT acquisition=23 resource=mapped-buffer
 MULTI_DESTROY acquisitions=23 buffers=9 memories=9 maps=4 layouts=0 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+DEVICE_CATALOG_CLOSE devices=1 selections=1
 FAULT_CASE sets=2 stages=3 point=24 exit=42
 MULTIGRAPH_CREATE_FAILED result=-3 fail_after=24
 MULTIGRAPH_NO_COMPATIBLE_CONFIGURATION
 VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
 SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0
+DEVICE_CATALOG_INVALID_CONTROLS rejected=5 selections=0
 SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
 VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
 ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=1
 MULTIGRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=2 stages=3 storage=4 uniform=1 workgroup=32 groups=64 features=0 extensions=0
 MULTIGRAPH_REQUEST sets=2 stages=3 buffers=9 bindings=5 mapped=5 noncoherent=0
 DESCRIPTOR_ACCEPT sets=2 bindings=5 storage=4 uniform=1
@@ -1202,14 +1389,18 @@ MULTI_MAPPED index=6 type=0 coherent=1
 MULTI_MAPPED index=7 type=0 coherent=1
 MULTI_INJECT_FAULT acquisition=24 resource=mapped-buffer
 MULTI_DESTROY acquisitions=24 buffers=9 memories=9 maps=5 layouts=0 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+DEVICE_CATALOG_CLOSE devices=1 selections=1
 FAULT_CASE sets=2 stages=3 point=25 exit=42
 MULTIGRAPH_CREATE_FAILED result=-3 fail_after=25
 MULTIGRAPH_NO_COMPATIBLE_CONFIGURATION
 VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
 SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0
+DEVICE_CATALOG_INVALID_CONTROLS rejected=5 selections=0
 SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
 VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
 ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=1
 MULTIGRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=2 stages=3 storage=4 uniform=1 workgroup=32 groups=64 features=0 extensions=0
 MULTIGRAPH_REQUEST sets=2 stages=3 buffers=9 bindings=5 mapped=5 noncoherent=0
 DESCRIPTOR_ACCEPT sets=2 bindings=5 storage=4 uniform=1
@@ -1240,14 +1431,18 @@ MULTI_MAPPED index=7 type=0 coherent=1
 MULTI_MAPPED index=8 type=0 coherent=1
 MULTI_INJECT_FAULT acquisition=25 resource=set-layout
 MULTI_DESTROY acquisitions=25 buffers=9 memories=9 maps=5 layouts=1 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+DEVICE_CATALOG_CLOSE devices=1 selections=1
 FAULT_CASE sets=2 stages=3 point=26 exit=42
 MULTIGRAPH_CREATE_FAILED result=-3 fail_after=26
 MULTIGRAPH_NO_COMPATIBLE_CONFIGURATION
 VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
 SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0
+DEVICE_CATALOG_INVALID_CONTROLS rejected=5 selections=0
 SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
 VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
 ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=1
 MULTIGRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=2 stages=3 storage=4 uniform=1 workgroup=32 groups=64 features=0 extensions=0
 MULTIGRAPH_REQUEST sets=2 stages=3 buffers=9 bindings=5 mapped=5 noncoherent=0
 DESCRIPTOR_ACCEPT sets=2 bindings=5 storage=4 uniform=1
@@ -1279,14 +1474,18 @@ MULTI_MAPPED index=8 type=0 coherent=1
 MULTI_SET_LAYOUT index=0 bindings=1
 MULTI_INJECT_FAULT acquisition=26 resource=set-layout
 MULTI_DESTROY acquisitions=26 buffers=9 memories=9 maps=5 layouts=2 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+DEVICE_CATALOG_CLOSE devices=1 selections=1
 FAULT_CASE sets=2 stages=3 point=27 exit=42
 MULTIGRAPH_CREATE_FAILED result=-3 fail_after=27
 MULTIGRAPH_NO_COMPATIBLE_CONFIGURATION
 VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
 SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0
+DEVICE_CATALOG_INVALID_CONTROLS rejected=5 selections=0
 SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
 VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
 ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=1
 MULTIGRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=2 stages=3 storage=4 uniform=1 workgroup=32 groups=64 features=0 extensions=0
 MULTIGRAPH_REQUEST sets=2 stages=3 buffers=9 bindings=5 mapped=5 noncoherent=0
 DESCRIPTOR_ACCEPT sets=2 bindings=5 storage=4 uniform=1
@@ -1319,14 +1518,18 @@ MULTI_SET_LAYOUT index=0 bindings=1
 MULTI_SET_LAYOUT index=1 bindings=4
 MULTI_INJECT_FAULT acquisition=27 resource=pipeline-layout
 MULTI_DESTROY acquisitions=27 buffers=9 memories=9 maps=5 layouts=2 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+DEVICE_CATALOG_CLOSE devices=1 selections=1
 FAULT_CASE sets=2 stages=3 point=28 exit=42
 MULTIGRAPH_CREATE_FAILED result=-3 fail_after=28
 MULTIGRAPH_NO_COMPATIBLE_CONFIGURATION
 VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
 SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0
+DEVICE_CATALOG_INVALID_CONTROLS rejected=5 selections=0
 SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
 VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
 ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=1
 MULTIGRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=2 stages=3 storage=4 uniform=1 workgroup=32 groups=64 features=0 extensions=0
 MULTIGRAPH_REQUEST sets=2 stages=3 buffers=9 bindings=5 mapped=5 noncoherent=0
 DESCRIPTOR_ACCEPT sets=2 bindings=5 storage=4 uniform=1
@@ -1359,14 +1562,18 @@ MULTI_SET_LAYOUT index=0 bindings=1
 MULTI_SET_LAYOUT index=1 bindings=4
 MULTI_INJECT_FAULT acquisition=28 resource=shader-module
 MULTI_DESTROY acquisitions=28 buffers=9 memories=9 maps=5 layouts=2 sets=0 shaders=1 pipelines=0 submissions=0 idle_result=0
+DEVICE_CATALOG_CLOSE devices=1 selections=1
 FAULT_CASE sets=2 stages=3 point=29 exit=42
 MULTIGRAPH_CREATE_FAILED result=-3 fail_after=29
 MULTIGRAPH_NO_COMPATIBLE_CONFIGURATION
 VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
 SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0
+DEVICE_CATALOG_INVALID_CONTROLS rejected=5 selections=0
 SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
 VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
 ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=1
 MULTIGRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=2 stages=3 storage=4 uniform=1 workgroup=32 groups=64 features=0 extensions=0
 MULTIGRAPH_REQUEST sets=2 stages=3 buffers=9 bindings=5 mapped=5 noncoherent=0
 DESCRIPTOR_ACCEPT sets=2 bindings=5 storage=4 uniform=1
@@ -1399,14 +1606,18 @@ MULTI_SET_LAYOUT index=0 bindings=1
 MULTI_SET_LAYOUT index=1 bindings=4
 MULTI_INJECT_FAULT acquisition=29 resource=compute-pipeline
 MULTI_DESTROY acquisitions=29 buffers=9 memories=9 maps=5 layouts=2 sets=0 shaders=1 pipelines=1 submissions=0 idle_result=0
+DEVICE_CATALOG_CLOSE devices=1 selections=1
 FAULT_CASE sets=2 stages=3 point=30 exit=42
 MULTIGRAPH_CREATE_FAILED result=-3 fail_after=30
 MULTIGRAPH_NO_COMPATIBLE_CONFIGURATION
 VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
 SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0
+DEVICE_CATALOG_INVALID_CONTROLS rejected=5 selections=0
 SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
 VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
 ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=1
 MULTIGRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=2 stages=3 storage=4 uniform=1 workgroup=32 groups=64 features=0 extensions=0
 MULTIGRAPH_REQUEST sets=2 stages=3 buffers=9 bindings=5 mapped=5 noncoherent=0
 DESCRIPTOR_ACCEPT sets=2 bindings=5 storage=4 uniform=1
@@ -1439,14 +1650,18 @@ MULTI_SET_LAYOUT index=0 bindings=1
 MULTI_SET_LAYOUT index=1 bindings=4
 MULTI_INJECT_FAULT acquisition=30 resource=shader-module
 MULTI_DESTROY acquisitions=30 buffers=9 memories=9 maps=5 layouts=2 sets=0 shaders=2 pipelines=1 submissions=0 idle_result=0
+DEVICE_CATALOG_CLOSE devices=1 selections=1
 FAULT_CASE sets=2 stages=3 point=31 exit=42
 MULTIGRAPH_CREATE_FAILED result=-3 fail_after=31
 MULTIGRAPH_NO_COMPATIBLE_CONFIGURATION
 VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
 SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0
+DEVICE_CATALOG_INVALID_CONTROLS rejected=5 selections=0
 SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
 VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
 ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=1
 MULTIGRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=2 stages=3 storage=4 uniform=1 workgroup=32 groups=64 features=0 extensions=0
 MULTIGRAPH_REQUEST sets=2 stages=3 buffers=9 bindings=5 mapped=5 noncoherent=0
 DESCRIPTOR_ACCEPT sets=2 bindings=5 storage=4 uniform=1
@@ -1479,14 +1694,18 @@ MULTI_SET_LAYOUT index=0 bindings=1
 MULTI_SET_LAYOUT index=1 bindings=4
 MULTI_INJECT_FAULT acquisition=31 resource=compute-pipeline
 MULTI_DESTROY acquisitions=31 buffers=9 memories=9 maps=5 layouts=2 sets=0 shaders=2 pipelines=2 submissions=0 idle_result=0
+DEVICE_CATALOG_CLOSE devices=1 selections=1
 FAULT_CASE sets=2 stages=3 point=32 exit=42
 MULTIGRAPH_CREATE_FAILED result=-3 fail_after=32
 MULTIGRAPH_NO_COMPATIBLE_CONFIGURATION
 VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
 SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0
+DEVICE_CATALOG_INVALID_CONTROLS rejected=5 selections=0
 SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
 VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
 ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=1
 MULTIGRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=2 stages=3 storage=4 uniform=1 workgroup=32 groups=64 features=0 extensions=0
 MULTIGRAPH_REQUEST sets=2 stages=3 buffers=9 bindings=5 mapped=5 noncoherent=0
 DESCRIPTOR_ACCEPT sets=2 bindings=5 storage=4 uniform=1
@@ -1519,14 +1738,18 @@ MULTI_SET_LAYOUT index=0 bindings=1
 MULTI_SET_LAYOUT index=1 bindings=4
 MULTI_INJECT_FAULT acquisition=32 resource=shader-module
 MULTI_DESTROY acquisitions=32 buffers=9 memories=9 maps=5 layouts=2 sets=0 shaders=3 pipelines=2 submissions=0 idle_result=0
+DEVICE_CATALOG_CLOSE devices=1 selections=1
 FAULT_CASE sets=2 stages=3 point=33 exit=42
 MULTIGRAPH_CREATE_FAILED result=-3 fail_after=33
 MULTIGRAPH_NO_COMPATIBLE_CONFIGURATION
 VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
 SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0
+DEVICE_CATALOG_INVALID_CONTROLS rejected=5 selections=0
 SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
 VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
 ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=1
 MULTIGRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=2 stages=3 storage=4 uniform=1 workgroup=32 groups=64 features=0 extensions=0
 MULTIGRAPH_REQUEST sets=2 stages=3 buffers=9 bindings=5 mapped=5 noncoherent=0
 DESCRIPTOR_ACCEPT sets=2 bindings=5 storage=4 uniform=1
@@ -1559,14 +1782,18 @@ MULTI_SET_LAYOUT index=0 bindings=1
 MULTI_SET_LAYOUT index=1 bindings=4
 MULTI_INJECT_FAULT acquisition=33 resource=compute-pipeline
 MULTI_DESTROY acquisitions=33 buffers=9 memories=9 maps=5 layouts=2 sets=0 shaders=3 pipelines=3 submissions=0 idle_result=0
+DEVICE_CATALOG_CLOSE devices=1 selections=1
 FAULT_CASE sets=2 stages=3 point=34 exit=42
 MULTIGRAPH_CREATE_FAILED result=-3 fail_after=34
 MULTIGRAPH_NO_COMPATIBLE_CONFIGURATION
 VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
 SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0
+DEVICE_CATALOG_INVALID_CONTROLS rejected=5 selections=0
 SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
 VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
 ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=1
 MULTIGRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=2 stages=3 storage=4 uniform=1 workgroup=32 groups=64 features=0 extensions=0
 MULTIGRAPH_REQUEST sets=2 stages=3 buffers=9 bindings=5 mapped=5 noncoherent=0
 DESCRIPTOR_ACCEPT sets=2 bindings=5 storage=4 uniform=1
@@ -1599,14 +1826,18 @@ MULTI_SET_LAYOUT index=0 bindings=1
 MULTI_SET_LAYOUT index=1 bindings=4
 MULTI_INJECT_FAULT acquisition=34 resource=descriptor-pool
 MULTI_DESTROY acquisitions=34 buffers=9 memories=9 maps=5 layouts=2 sets=0 shaders=3 pipelines=3 submissions=0 idle_result=0
+DEVICE_CATALOG_CLOSE devices=1 selections=1
 FAULT_CASE sets=2 stages=3 point=35 exit=42
 MULTIGRAPH_CREATE_FAILED result=-3 fail_after=35
 MULTIGRAPH_NO_COMPATIBLE_CONFIGURATION
 VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
 SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0
+DEVICE_CATALOG_INVALID_CONTROLS rejected=5 selections=0
 SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
 VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
 ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=1
 MULTIGRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=2 stages=3 storage=4 uniform=1 workgroup=32 groups=64 features=0 extensions=0
 MULTIGRAPH_REQUEST sets=2 stages=3 buffers=9 bindings=5 mapped=5 noncoherent=0
 DESCRIPTOR_ACCEPT sets=2 bindings=5 storage=4 uniform=1
@@ -1639,14 +1870,18 @@ MULTI_SET_LAYOUT index=0 bindings=1
 MULTI_SET_LAYOUT index=1 bindings=4
 MULTI_INJECT_FAULT acquisition=35 resource=descriptor-set
 MULTI_DESTROY acquisitions=35 buffers=9 memories=9 maps=5 layouts=2 sets=1 shaders=3 pipelines=3 submissions=0 idle_result=0
+DEVICE_CATALOG_CLOSE devices=1 selections=1
 FAULT_CASE sets=2 stages=3 point=36 exit=42
 MULTIGRAPH_CREATE_FAILED result=-3 fail_after=36
 MULTIGRAPH_NO_COMPATIBLE_CONFIGURATION
 VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
 SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0
+DEVICE_CATALOG_INVALID_CONTROLS rejected=5 selections=0
 SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
 VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
 ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=1
 MULTIGRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=2 stages=3 storage=4 uniform=1 workgroup=32 groups=64 features=0 extensions=0
 MULTIGRAPH_REQUEST sets=2 stages=3 buffers=9 bindings=5 mapped=5 noncoherent=0
 DESCRIPTOR_ACCEPT sets=2 bindings=5 storage=4 uniform=1
@@ -1680,14 +1915,18 @@ MULTI_SET_LAYOUT index=1 bindings=4
 MULTI_SET_ALLOCATED index=0
 MULTI_INJECT_FAULT acquisition=36 resource=descriptor-set
 MULTI_DESTROY acquisitions=36 buffers=9 memories=9 maps=5 layouts=2 sets=2 shaders=3 pipelines=3 submissions=0 idle_result=0
+DEVICE_CATALOG_CLOSE devices=1 selections=1
 FAULT_CASE sets=2 stages=3 point=37 exit=42
 MULTIGRAPH_CREATE_FAILED result=-3 fail_after=37
 MULTIGRAPH_NO_COMPATIBLE_CONFIGURATION
 VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
 SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0
+DEVICE_CATALOG_INVALID_CONTROLS rejected=5 selections=0
 SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
 VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
 ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=1
 MULTIGRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=2 stages=3 storage=4 uniform=1 workgroup=32 groups=64 features=0 extensions=0
 MULTIGRAPH_REQUEST sets=2 stages=3 buffers=9 bindings=5 mapped=5 noncoherent=0
 DESCRIPTOR_ACCEPT sets=2 bindings=5 storage=4 uniform=1
@@ -1727,14 +1966,18 @@ MULTI_DESCRIPTOR index=3 set=1 binding=8 type=storage buffer=3 range=8192
 MULTI_DESCRIPTOR index=4 set=1 binding=10 type=uniform buffer=8 range=16
 MULTI_INJECT_FAULT acquisition=37 resource=command-pool
 MULTI_DESTROY acquisitions=37 buffers=9 memories=9 maps=5 layouts=2 sets=2 shaders=3 pipelines=3 submissions=0 idle_result=0
+DEVICE_CATALOG_CLOSE devices=1 selections=1
 FAULT_CASE sets=2 stages=3 point=38 exit=42
 MULTIGRAPH_CREATE_FAILED result=-3 fail_after=38
 MULTIGRAPH_NO_COMPATIBLE_CONFIGURATION
 VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
 SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0
+DEVICE_CATALOG_INVALID_CONTROLS rejected=5 selections=0
 SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
 VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
 ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=1
 MULTIGRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=2 stages=3 storage=4 uniform=1 workgroup=32 groups=64 features=0 extensions=0
 MULTIGRAPH_REQUEST sets=2 stages=3 buffers=9 bindings=5 mapped=5 noncoherent=0
 DESCRIPTOR_ACCEPT sets=2 bindings=5 storage=4 uniform=1
@@ -1774,14 +2017,18 @@ MULTI_DESCRIPTOR index=3 set=1 binding=8 type=storage buffer=3 range=8192
 MULTI_DESCRIPTOR index=4 set=1 binding=10 type=uniform buffer=8 range=16
 MULTI_INJECT_FAULT acquisition=38 resource=command-buffer
 MULTI_DESTROY acquisitions=38 buffers=9 memories=9 maps=5 layouts=2 sets=2 shaders=3 pipelines=3 submissions=0 idle_result=0
+DEVICE_CATALOG_CLOSE devices=1 selections=1
 FAULT_CASE sets=2 stages=3 point=39 exit=42
 MULTIGRAPH_CREATE_FAILED result=-3 fail_after=39
 MULTIGRAPH_NO_COMPATIBLE_CONFIGURATION
 VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
 SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0
+DEVICE_CATALOG_INVALID_CONTROLS rejected=5 selections=0
 SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
 VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
 ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=1
 MULTIGRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=2 stages=3 storage=4 uniform=1 workgroup=32 groups=64 features=0 extensions=0
 MULTIGRAPH_REQUEST sets=2 stages=3 buffers=9 bindings=5 mapped=5 noncoherent=0
 DESCRIPTOR_ACCEPT sets=2 bindings=5 storage=4 uniform=1
@@ -1821,3 +2068,4 @@ MULTI_DESCRIPTOR index=3 set=1 binding=8 type=storage buffer=3 range=8192
 MULTI_DESCRIPTOR index=4 set=1 binding=10 type=uniform buffer=8 range=16
 MULTI_INJECT_FAULT acquisition=39 resource=fence
 MULTI_DESTROY acquisitions=39 buffers=9 memories=9 maps=5 layouts=2 sets=2 shaders=3 pipelines=3 submissions=0 idle_result=0
+DEVICE_CATALOG_CLOSE devices=1 selections=1

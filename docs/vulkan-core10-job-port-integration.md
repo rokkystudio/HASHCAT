@@ -22,9 +22,11 @@ OpenCL paths remain unchanged.
 
 `vulkan_core10_job_port_t` borrows `vulkan_core10_multiset_t`. It owns one
 host allocation: a copy of each declared stage's readback buffer index.
-The Vulkan instance, physical device, queue, allocations, descriptor sets,
-pipelines, command pool, primary command buffer and fence belong to the
-existing runtime/caller, **not** to the port.
+The Vulkan instance and enumerated physical-device handles belong to the
+caller's `vulkan_core10_device_catalog_t`. The logical device, queue,
+allocations, descriptor sets, pipelines, command pool, primary command
+buffer and fence belong to the existing multi-set runtime, **not** to
+the task port.
 
 The caller allocates and initializes its Vulkan runtime and stage graph,
 then opens the port once:
@@ -66,12 +68,28 @@ Each caller-owned job is submitted by:
 
 `vulkan_core10_job_port_close(port)` releases the copied readback indices,
 zeroes all port state and leaves the Vulkan resources intact. The caller
-then executes `vulkan_core10_multiset_destroy` and destroys its instance.
-Closing an already empty port succeeds; passing NULL fails.
+then executes `vulkan_core10_multiset_destroy`, followed by
+`vulkan_core10_device_catalog_close` to release the physical-device
+array and `VkInstance`. Closing an already empty port succeeds;
+passing NULL fails.
 
 `VkResult` values are propagated unchanged. No retry, silent downgrade,
 vendor-specific device selection, asynchronous queue, implicit allocation,
 hashcat scheduler callback or shader reflection is implemented.
+
+## Vulkan instance and physical-device ownership
+
+`vulkan_core10_device_catalog_open` creates and owns the Vulkan 1.0
+instance, enumerates the real physical devices, and supports explicit
+workload-validated `vulkan_core10_device_catalog_select` calls. The
+multi-set runtime owns `VkDevice`; the task port borrows that runtime.
+After the final task, the port closes, then the runtime destroys the
+logical device and only then does
+`vulkan_core10_device_catalog_close` destroy `VkInstance`. Exactly
+330 catalogue lifecycles, including 186 controlled device-resource
+failures, and 1,650 rejected invalid catalogue requests were tested
+across RedMagic ARM64/ARMv7 and Pixel ARM64. Detailed ownership and
+hardware records are in `docs/vulkan-core10-device-catalog-portability.md`.
 
 ## Verified task lifecycle
 
@@ -200,10 +218,10 @@ Relevant existing host-side lifecycle functions in
 | Production owner | Conceptual future Vulkan responsibility |
 | --- | --- |
 | `backend_ctx_init` | Load and validate Vulkan backend availability |
-| `backend_ctx_devices_init` | Enumerate suitable Vulkan physical devices and identify compute queues |
+| `backend_ctx_devices_init` | Open a device catalogue, enumerate suitable Vulkan physical devices and identify compute queues |
 | `backend_session_begin` | Establish device-owned Vulkan resources and a validated Compute session |
 | `backend_session_destroy` | Close the active job port before releasing the device and instance |
-| `backend_ctx_devices_destroy` | Release per-device Vulkan data and cross-backend discovery state |
+| `backend_ctx_devices_destroy` | Close the Vulkan device catalogue after releasing dependent VkDevices, then release cross-backend discovery state |
 
 These are **integration targets, not active call sites**. No production
 hashcat source file links to the new port yet. The port does not accept
