@@ -1,0 +1,85 @@
+#version 450
+
+/*
+ * Execute one explicitly selected stage of a public integer Compute graph.
+ *
+ * GRAPH_STAGE selects one of three successive storage-buffer transforms.
+ * GRAPH_SETS selects an exact one-set or two-set descriptor interface.
+ * All stages consume the same std140 parameters, refreshed by the CPU
+ * between completed command-buffer submissions.
+ */
+#ifndef GRAPH_STAGE
+#error GRAPH_STAGE must be specified
+#endif
+#ifndef GRAPH_SETS
+#error GRAPH_SETS must be specified
+#endif
+#if GRAPH_STAGE < 0 || GRAPH_STAGE > 2
+#error GRAPH_STAGE must be 0, 1 or 2
+#endif
+#if GRAPH_SETS < 1 || GRAPH_SETS > 2
+#error GRAPH_SETS must be 1 or 2
+#endif
+
+#if GRAPH_SETS == 1
+#define GRAPH_OUTPUT_SET 0
+#else
+#define GRAPH_OUTPUT_SET 1
+#endif
+
+layout (local_size_x = 32, local_size_y = 1, local_size_z = 1) in;
+
+#if GRAPH_STAGE == 0
+layout (set = 0, binding = 2, std430) readonly buffer Source
+{
+  uint values[];
+} source;
+
+layout (set = GRAPH_OUTPUT_SET, binding = 4, std430) writeonly buffer Destination
+{
+  uint values[];
+} destination;
+#elif GRAPH_STAGE == 1
+layout (set = GRAPH_OUTPUT_SET, binding = 4, std430) readonly buffer Source
+{
+  uint values[];
+} source;
+
+layout (set = GRAPH_OUTPUT_SET, binding = 6, std430) writeonly buffer Destination
+{
+  uint values[];
+} destination;
+#else
+layout (set = GRAPH_OUTPUT_SET, binding = 6, std430) readonly buffer Source
+{
+  uint values[];
+} source;
+
+layout (set = GRAPH_OUTPUT_SET, binding = 8, std430) writeonly buffer Destination
+{
+  uint values[];
+} destination;
+#endif
+
+layout (set = GRAPH_OUTPUT_SET, binding = 10, std140) uniform Parameters
+{
+  uvec4 values;
+} parameters;
+
+void main ()
+{
+  const uint index = gl_GlobalInvocationID.x;
+  const uint step = uint (GRAPH_STAGE);
+  const uint value = source.values[index];
+  const uint mixed =
+    value * (parameters.values.x + step * 17u)
+    + parameters.values.y + step * 12345u;
+  const uint shift = parameters.values.z;
+  const uint rotated =
+    (mixed << shift) | (mixed >> (32u - shift));
+
+  destination.values[index] =
+    (mixed ^ rotated)
+    + (index ^ parameters.values.w)
+    + step * 0x9e3779b9u;
+}

@@ -44,3 +44,7 @@ tests/fixtures/android-gpu/vulkan-dynamic-graph-20261031/manifest.json text eol=
 # Preserve original Vulkan 1.0 multi-set storage/uniform GPU and CPU logs.
 tests/fixtures/android-gpu/vulkan-multiset-20261031/*.log text eol=lf
 tests/fixtures/android-gpu/vulkan-multiset-20261031/manifest.json text eol=lf
+
+# Preserve public Vulkan 1.0 sequential multi-stage descriptor graph GPU evidence.
+tests/fixtures/android-gpu/vulkan-multiset-graph-20261031/*.log text eol=lf
+tests/fixtures/android-gpu/vulkan-multiset-graph-20261031/manifest.json text eol=lf

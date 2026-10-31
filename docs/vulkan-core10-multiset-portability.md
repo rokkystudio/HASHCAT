@@ -152,6 +152,10 @@ python -B tools/test-vulkan-core10-multiset-evidence.py --artifacts build/diagno
 
 Without `--artifacts`, the same independent verifier needs only the archived logs, sources and memory surveys; it does not invoke GPU drivers. The archiver `tools/archive-vulkan-core10-multiset-evidence.py` copies already recorded local results without altering their bytes.
 
+## Sequential multi-stage graph extension
+
+The separate `vulkan-core10-multiset-graph.c` recorder accepts explicit stage dependencies, per-stage readbacks, 1–3 Compute pipelines and one or two mixed storage/uniform descriptor sets. It uses the resource-owner API documented above and records Vulkan 1.0 transfer/compute and shader-write→shader-read barriers. The new public integer three-stage GPU matrix executed on RedMagic ARM64, with **36 successful GPU runs, 144 fence-separated submits, 589,824 scalar-CPU-verified stage words** and 12 exact incompatible noncoherent-memory requests. Source, build, hardware coverage and archived evidence are detailed in `docs/vulkan-core10-multiset-graph-portability.md`. ARMv7 and Pixel multi-stage hardware validation remain open.
+
 ## Explicit limits
 
 The resource owner can create more than two sets when supplied an exact supported layout, but the two public shaders exercise only **one and two**. Uniform and storage descriptors are the only supported types; dynamic descriptors, sampled images, texel buffers and samplers are not implemented. There is one queue, one command buffer and one fence per runtime, without concurrent multi-queue dispatch.

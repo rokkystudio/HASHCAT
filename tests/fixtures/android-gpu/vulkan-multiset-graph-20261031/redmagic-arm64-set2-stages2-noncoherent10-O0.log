@@ -1,0 +1,27 @@
+TEST=vulkan-core10-multiset-graph
+SETS=2
+STAGES=2
+MODE=noncoherent10
+OPTIMIZATION=O0
+ABI=arm64-v8a
+ADB_EXIT_CODE=1
+MULTIGRAPH_CREATE_FAILED result=-8 fail_after=0
+MULTIGRAPH_NO_COMPATIBLE_CONFIGURATION
+VULKAN_LOADER_VERSION=1.3.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=3 cap=1.1
+SELECT_DEVICE_API=1.0 reported_minor=1 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Adreno (TM) 730 vendor=0x5143 device=0x7030002 api=1.1.128 driver=0x80267000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=65535 shared_max=32768 storage_range_max=134217728 descriptor_max=524288 non_coherent_atom=1
+MULTIGRAPH_SELECTED_DEVICE index=0 requested_api=1.0 effective_api=1.0 sets=2 stages=2 storage=3 uniform=1 workgroup=32 groups=64 features=0 extensions=0
+MULTIGRAPH_REQUEST sets=2 stages=2 buffers=7 bindings=4 mapped=4 noncoherent=1
+DESCRIPTOR_ACCEPT sets=2 bindings=4 storage=3 uniform=1
+MULTI_REQUIREMENTS index=0 label=gpu-input size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=1 label=gpu-stage-a size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=2 label=gpu-stage-b size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=3 label=staging-upload size=8192 alignment=64 bits=0x00000041
+MULTI_REQUIREMENTS index=4 label=staging-stage-output size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=5 label=staging-stage-output size=8192 alignment=64 bits=0x00000049
+MULTI_REQUIREMENTS index=6 label=uniform-parameters size=64 alignment=64 bits=0x00000041
+GRAPH_REJECT_MEMORY_TYPE index=3 role=1 bits=0x00000041 forbidden=0x00000064
+MULTI_DESTROY acquisitions=8 buffers=7 memories=0 maps=0 layouts=0 sets=0 shaders=0 pipelines=0 submissions=0 idle_result=0
+MULTIGRAPH_SKIP_DEVICE index=0 reason=memory_or_descriptor_or_dispatch
