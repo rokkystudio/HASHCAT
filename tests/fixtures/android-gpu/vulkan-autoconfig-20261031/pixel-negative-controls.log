@@ -1,0 +1,4 @@
+TEST=portable-vulkan1.0-auto-config
+INVALID_INPUT_CONTROLS=2
+NEGATIVE no-shader-argument exit=2
+NEGATIVE missing-shader-file exit=2

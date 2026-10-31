@@ -1,0 +1,40 @@
+TEST=portable-vulkan1.0-auto-config
+OPTIMIZATION=O
+ADB_EXIT_CODE=0
+PASS_POLICY preferred_coherent_type=2
+PASS_POLICY fallback_noncoherent_type=1
+AUTO_BUFFER index=0 offset=0 required=384 driver_alignment=64 effective_alignment=256 compatible_bits=0x00000002
+AUTO_BUFFER index=1 offset=512 required=257 driver_alignment=64 effective_alignment=256 compatible_bits=0x00000002
+AUTO_MEMORY type=1 coherent=0 bytes=769 compatible_bits=0x00000002 atom=256
+PASS_POLICY noncoherent_atom=256 offset_1=512 allocation=769
+AUTO_BUFFER index=0 offset=0 required=384 driver_alignment=64 effective_alignment=64 compatible_bits=0x00000006
+AUTO_BUFFER index=1 offset=384 required=257 driver_alignment=64 effective_alignment=64 compatible_bits=0x00000006
+AUTO_MEMORY type=2 coherent=1 bytes=641 compatible_bits=0x00000006 atom=256
+PASS_POLICY coherent_offset_1=384
+PASS_POLICY unsupported_memory_error=-8
+REJECT_MEMORY_REQUIREMENTS index=0
+PASS_POLICY invalid_requirements_error=-3
+AUTO_BUFFER index=0 offset=0 required=18446744073709551552 driver_alignment=64 effective_alignment=64 compatible_bits=0x00000006
+PASS_POLICY overflow_error=-2
+WORKLOAD_PROFILE vulkan_min=1.0 local_x=32 groups_x=64 descriptors=4 largest_range=32768 shared_bytes=128
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+REJECT_COMPUTE dimension=0 local=0 max_local=1024 groups=64 max_groups=4294967295
+PASS_CAPABILITY_REJECTION zero_local_size vkresult=-8
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+REJECT_COMPUTE dimension=0 local=32 max_local=1024 groups=0 max_groups=4294967295
+PASS_CAPABILITY_REJECTION zero_workgroups vkresult=-8
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+REJECT_STORAGE descriptors=0 max_descriptor_set=8388608 max_stage=8388608 requested_range=32768 max_storage_range=2147483648 requested_shared=128 max_shared=32768
+PASS_CAPABILITY_REJECTION missing_descriptors vkresult=-8
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+REJECT_STORAGE descriptors=4 max_descriptor_set=8388608 max_stage=8388608 requested_range=32768 max_storage_range=2147483648 requested_shared=32769 max_shared=32768
+PASS_CAPABILITY_REJECTION shared_memory_limit vkresult=-8
+AUTO_BUFFER index=0 offset=0 required=8192 driver_alignment=64 effective_alignment=64 compatible_bits=0x00000003
+AUTO_BUFFER index=1 offset=8192 required=8192 driver_alignment=64 effective_alignment=64 compatible_bits=0x00000003
+AUTO_BUFFER index=2 offset=16384 required=8192 driver_alignment=64 effective_alignment=64 compatible_bits=0x00000003
+AUTO_BUFFER index=3 offset=24576 required=32768 driver_alignment=64 effective_alignment=64 compatible_bits=0x00000003
+AUTO_MEMORY type=0 coherent=1 bytes=57344 compatible_bits=0x00000003 atom=64
+PASS_VULKAN_GPU_STAGE device_index=0 local_size=32 groups=64 words=2048 memory_type=0 coherent=1 fnv1a64=00d6d6e4837edebc
+PASS_VULKAN_AUTO_CONFIG device_index=0 queue_family=0 memory_type=0 coherent=1 allocation_bytes=57344 buffers=4 verified_cpu_words=14336 gpu_dispatches=1 verified_gpu_words=2048

@@ -115,3 +115,9 @@ The offline evidence checker can run without locally compiled artifacts, or with
 This is a validated **generic Vulkan Compute memory management pattern**, not a functioning Vulkan implementation of bcrypt or a hashcat Vulkan backend. Driver-internal leaks, noncoherent memory, memory defragmentation, actual `VK_ERROR_DEVICE_LOST`, concurrent GPU submissions and production-scale allocation pressure have **not** been tested.
 
 The RedMagic Qualcomm OpenCL bcrypt self-test failure (archived exit code **245**) remains separate and unresolved. The current original bcrypt module and OpenCL kernel are not part of this test.
+
+## Follow-up: portable runtime capability and memory selection
+
+The reusable `tools/vulkan-auto-config.h` / `tools/vulkan-auto-config.c` module selects Compute-capable Vulkan devices and shared storage-memory layouts using `VkPhysicalDeviceLimits`, actual queue-family flags, `VkMemoryRequirements` and `VkPhysicalDeviceMemoryProperties`. It prefers compatible host-coherent memory, supports host-visible noncoherent memory with full-allocation flush/invalidate and cache-atom alignment, and returns an explicit staging-required error when no compatible host-visible type exists. There are no vendor-ID or handset-model conditions.
+
+A separate Vulkan **1.0** synthetic test executes stage A with both `-O0` and `-O` on Adreno 730 and Mali-G715 after this automatic configuration. All four real GPU runs pass 2,048 CPU comparisons, with FNV-1a output checksum `00d6d6e4837edebc`. Precise GPU properties, invalid-workload tests, build identities and original logs are recorded in `docs/vulkan-portable-auto-configuration.md` and `tests/fixtures/android-gpu/vulkan-autoconfig-20261031/`. This remains an isolated diagnostic, not an integrated hashcat Vulkan backend.

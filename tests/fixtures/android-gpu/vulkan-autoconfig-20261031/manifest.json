@@ -1,0 +1,159 @@
+{
+  "date": "2026-10-31",
+  "scope": "Vulkan 1.0 synthetic compute using API-discovered device, queue and memory; no hashcat, cryptographic shader or password input",
+  "toolchain": {
+    "ndk": "29.0.14206865",
+    "target": "aarch64-linux-android26",
+    "native_clang": "21.0.0",
+    "shader_target": "vulkan1.0",
+    "shaderc": "glslc"
+  },
+  "workload": {
+    "vulkan_minimum": "1.0",
+    "local_size": [
+      32,
+      1,
+      1
+    ],
+    "workgroups": [
+      64,
+      1,
+      1
+    ],
+    "storage_buffer_descriptors": 4,
+    "max_storage_buffer_bytes": 32768,
+    "shared_memory_bytes": 128,
+    "buffer_payload_bytes": [
+      8192,
+      8192,
+      8192,
+      32768
+    ],
+    "gpu_output_words": 2048,
+    "cpu_mapped_words": 14336,
+    "expected_gpu_fnv1a64": "00d6d6e4837edebc",
+    "device_capability_rejections": [
+      "zero_local_size",
+      "zero_workgroups",
+      "missing_descriptors",
+      "shared_memory_limit"
+    ],
+    "mock_memory_policy_checks": [
+      "preferred_coherent_type",
+      "fallback_noncoherent_type",
+      "noncoherent_atom",
+      "coherent_offset_1",
+      "unsupported_memory_error",
+      "invalid_requirements_error",
+      "overflow_error"
+    ]
+  },
+  "device_profiles": {
+    "redmagic": {
+      "model": "RedMagic NX709S",
+      "gpu": "Adreno (TM) 730",
+      "vendor_id": "0x5143",
+      "device_id": "0x7030002",
+      "driver_version": "0x80267000",
+      "vulkan_api_version": "1.1.128",
+      "queue_family": 0,
+      "shared_memory_limit": 32768
+    },
+    "pixel": {
+      "model": "Pixel 9 Pro XL",
+      "gpu": "Mali-G715",
+      "vendor_id": "0x13b5",
+      "device_id": "0xb8a20000",
+      "driver_version": "0x0d802000",
+      "vulkan_api_version": "1.4.305",
+      "queue_family": 0,
+      "shared_memory_limit": 32768
+    }
+  },
+  "memory_profiles": {
+    "redmagic": {
+      "memory_type_index": 6,
+      "coherent": 1,
+      "allocation_bytes": 57344,
+      "compatible_type_bits": "0x00000041",
+      "non_coherent_atom_size": 1
+    },
+    "pixel": {
+      "memory_type_index": 0,
+      "coherent": 1,
+      "allocation_bytes": 57344,
+      "compatible_type_bits": "0x00000003",
+      "non_coherent_atom_size": 64
+    }
+  },
+  "source_sha256": {
+    "tools/vulkan-auto-config.c": "7dda45d969c6fd092c31821cc8022f69a4dd8b748e852fcb7a2bd23552a571dd",
+    "tools/vulkan-auto-config.h": "1329f5b833bd8a0ffed9e3eadddead210665a1e8fba2f051e6f4259d63385086",
+    "tools/vulkan-auto-config-diagnostic.c": "226a478cc2567b0458d7fd09063fa9eb9e1dfe67485f58709c773bcdde0eac19",
+    "tools/build-vulkan-auto-config.ps1": "5fd5a2ba4b3edacf3e2d960cea61c7b4612ca609c8899148daa15af99e71e37b",
+    "tools/run-vulkan-auto-config.ps1": "5620b2c745b60872b7d50cc40cd209e81e3da3ab6834f3c52cfd2674cb495d8b",
+    "tools/vulkan-pipeline-stage-a.comp": "e9c8ba8d1502a0120ad05043096cc02400221f3099d7c8432307c6cef2caeec8",
+    "tools/vulkan-pipeline-stage-b.comp": "d79344b2d4c22514da50bbf716c20e5b3bba413d88b21d2a166fdee19e39aca4",
+    "tools/vulkan-pipeline-stage-c.comp": "800ac35354741e9dd01b7e8d2f2922e3f9f62f8e7e0f99095f63e2bbd1ee26c1"
+  },
+  "artifact_sha256": {
+    "vulkan-autoconfig-arm64": "4f0bcd4030a8c35136ee86855360ba7090af21d0d551d8042b18216c4d627628",
+    "stage-a-O0-vk1.0.spv": "b597688dc435d15816557aaa098602ef60b2f084d924633af64e89767ba819f1",
+    "stage-a-O-vk1.0.spv": "244700759a984dc12dc89b6b5aa58191f75345532af5daea18c03357dfef8a28",
+    "stage-b-O0-vk1.0.spv": "2780dfaac1317884617be534e339982bd862d1a8884f455d1f64d69470bb2ba0",
+    "stage-b-O-vk1.0.spv": "ec0fa6f18e07c75c5cce4235b9b0d681c7b4016e5ecb519563c3395b48975378",
+    "stage-c-O0-vk1.0.spv": "8311c92f2c8f4f2f6eb61ebfed7e41864b353535123998109e14f067bdcfd648",
+    "stage-c-O-vk1.0.spv": "fd311a3f826a204d0dd70d62b1fa6ebd23eea44efe7e8b122247d0a65519cf3d"
+  },
+  "runs": [
+    {
+      "device": "redmagic",
+      "optimization": "O0",
+      "file": "redmagic-O0.log",
+      "exit_code": 0,
+      "sha256": "517a9d720dd721d1aabe56fb6a74bda83ea10ded139f533ccc2fcc74787cc49e"
+    },
+    {
+      "device": "redmagic",
+      "optimization": "O",
+      "file": "redmagic-O.log",
+      "exit_code": 0,
+      "sha256": "c830a3c2f942cc252057ecc6b7246227abb0e5d93f512c3e11a76b7c6f6f9a20"
+    },
+    {
+      "device": "pixel",
+      "optimization": "O0",
+      "file": "pixel-O0.log",
+      "exit_code": 0,
+      "sha256": "14511b342197963ddb4c08508a114ba61cbbf02dddfecbe6edbf797b897deb25"
+    },
+    {
+      "device": "pixel",
+      "optimization": "O",
+      "file": "pixel-O.log",
+      "exit_code": 0,
+      "sha256": "e15cce884d9e63da8bdf3e18029bdb198cd4f66f140323b488daff3c1dbdd692"
+    }
+  ],
+  "negative_control_runs": [
+    {
+      "device": "redmagic",
+      "file": "redmagic-negative-controls.log",
+      "expected_errors": 2,
+      "sha256": "0524c668d16086ef1acfd3b284f66ad9851ebf012b534ecf11ef0a4311ddd01b"
+    },
+    {
+      "device": "pixel",
+      "file": "pixel-negative-controls.log",
+      "expected_errors": 2,
+      "sha256": "0524c668d16086ef1acfd3b284f66ad9851ebf012b534ecf11ef0a4311ddd01b"
+    }
+  ],
+  "limitations": [
+    "The actual GPU execution on both connected devices chose HOST_COHERENT memory, not a noncoherent allocation",
+    "The noncoherent HOST_VISIBLE path is tested with mock memory properties and exact cache-atom alignment but not a real noncoherent GPU mapping",
+    "Devices without any host-visible compatible storage-buffer memory explicitly reject this direct-mapping strategy; staging buffer support is a separate capability",
+    "The public synthetic stage-A shader is not bcrypt and no hashcat Vulkan backend has been integrated",
+    "Original RedMagic OpenCL bcrypt self-test exit 245 remains unresolved"
+  ]
+}
