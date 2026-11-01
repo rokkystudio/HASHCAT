@@ -91,7 +91,12 @@ without causing or simulating GPU device loss. The independent
 accepts real nonfatal fence statuses and verifies that an explicitly
 labeled, application-generated terminal result prevents further GPU
 submissions by callers consulting the policy. This is not an actual
-device-loss or HASHCAT production-backend recovery test.
+device-loss or HASHCAT production-backend recovery test. A separate
+[test-linked Vulkan API boundary matrix](docs/vulkan-core10-api-fault-boundary-android.md)
+returns controlled errors directly from intercepted `vkQueueSubmit` or
+`vkWaitForFences` calls to the existing transfer method; it verifies
+strict rejection of further GPU submissions and a fresh-device copy
+on real Adreno and Mali hardware, without inducing physical device loss.
 
 ## Working on hashcat source
 

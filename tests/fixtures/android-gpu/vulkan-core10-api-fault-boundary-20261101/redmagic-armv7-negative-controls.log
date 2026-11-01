@@ -1,0 +1,10 @@
+TEST=vulkan-core10-api-fault-boundary-invalid-inputs
+ABI=armeabi-v7a
+INVALID_CASES=7
+INVALID_CASE=missing-options exit=2
+INVALID_CASE=unsupported-api exit=2
+INVALID_CASE=invalid-memory exit=2
+INVALID_CASE=invalid-site exit=2
+INVALID_CASE=invalid-result exit=2
+INVALID_CASE=wrong-flag exit=2
+INVALID_CASE=extra-argument exit=2

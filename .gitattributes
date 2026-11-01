@@ -80,3 +80,7 @@ tests/fixtures/android-gpu/vulkan-core10-transfer-fence-status-20261101/manifest
 # Preserve actual Android GPU copy results and explicitly synthetic terminal policy trials.
 tests/fixtures/android-gpu/vulkan-core10-result-gate-20261101/*.log -text whitespace=-blank-at-eol
 tests/fixtures/android-gpu/vulkan-core10-result-gate-20261101/manifest.json text eol=lf
+
+# Preserve public Android Vulkan API-boundary test interception and real GPU evidence.
+tests/fixtures/android-gpu/vulkan-core10-api-fault-boundary-20261101/*.log -text whitespace=-blank-at-eol
+tests/fixtures/android-gpu/vulkan-core10-api-fault-boundary-20261101/manifest.json text eol=lf

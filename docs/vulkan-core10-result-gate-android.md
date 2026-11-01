@@ -271,6 +271,15 @@ ADB output was normalized to LF by the PowerShell runner and the
 resulting saved UTF-8 files were archived unchanged. These are not
 claimed to be raw, unprocessed ADB byte streams.
 
+The follow-on
+[test-linked Vulkan API boundary report](vulkan-core10-api-fault-boundary-android.md)
+connects the same strict VkResult policy to actual intercepted
+`vkQueueSubmit` and `vkWaitForFences` call returns in the existing
+public buffer transfer method. Unlike this original policy-only
+milestone, its evidence includes real ARM64 and ARMv7 Android native
+runs; the injected negative values still do not originate from the
+genuine Vulkan driver.
+
 ## Verification boundaries
 
 This milestone establishes a strict, non-retrying **host policy**
