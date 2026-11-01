@@ -97,6 +97,11 @@ returns controlled errors directly from intercepted `vkQueueSubmit` or
 `vkWaitForFences` calls to the existing transfer method; it verifies
 strict rejection of further GPU submissions and a fresh-device copy
 on real Adreno and Mali hardware, without inducing physical device loss.
+The [first production-owned Vulkan SPIR-V Compute kernel](docs/vulkan-backend-public-kernel-android.md)
+now runs inside the real Android `hashcat -I` process: it loads one
+noncryptographic shader, binds two storage buffers, dispatches 64 GPU
+threads and checks every public integer result against a CPU reference.
+Hashcat's password-processing kernels and scheduler remain separate.
 
 ## Working on hashcat source
 

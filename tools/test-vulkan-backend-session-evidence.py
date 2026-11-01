@@ -15,6 +15,8 @@ import hashlib
 import json
 from pathlib import Path
 import re
+
+from vulkan_archive_provenance import source_sha256_at_archive_commit
 import subprocess
 
 
@@ -45,13 +47,6 @@ def sha256(path: Path) -> str:
     assert path.is_file(), path
 
     return hashlib.sha256(path.read_bytes()).hexdigest()
-
-
-def source_sha256(path: Path) -> str:
-    """Return the manifest's canonical LF-normalized source digest."""
-    return hashlib.sha256(
-        path.read_bytes().replace(b"\r\n", b"\n")
-    ).hexdigest()
 
 
 def exact(lines: list[str], item: str) -> None:
@@ -483,7 +478,9 @@ def main() -> None:
     assert len(manifest["invalid_cli_runs"]) == 3
 
     for source, digest in manifest["source_sha256"].items():
-        assert source_sha256(ROOT / source) == digest, source
+        assert source_sha256_at_archive_commit(
+            ROOT, ARCHIVE / "manifest.json", ROOT / source
+        ) == digest, source
 
     for row in manifest["device_runs"]:
         path = ARCHIVE / row["file"]

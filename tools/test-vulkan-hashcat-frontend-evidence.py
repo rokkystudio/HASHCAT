@@ -13,6 +13,8 @@ import hashlib
 import json
 from pathlib import Path
 import re
+
+from vulkan_archive_provenance import source_sha256_at_archive_commit
 import subprocess
 
 
@@ -26,13 +28,6 @@ def sha256(path: Path) -> str:
     assert path.is_file(), path
 
     return hashlib.sha256(path.read_bytes()).hexdigest()
-
-
-def source_sha256(path: Path) -> str:
-    """Return the LF-normalized SHA-256 digest of a UTF-8 source file."""
-    return hashlib.sha256(
-        path.read_bytes().replace(b"\r\n", b"\n")
-    ).hexdigest()
 
 
 def verify_native_info(
@@ -228,7 +223,9 @@ def main() -> None:
     assert len(manifest["source_sha256"]) >= 9
 
     for source, digest in manifest["source_sha256"].items():
-        assert source_sha256(ROOT / source) == digest, source
+        assert source_sha256_at_archive_commit(
+            ROOT, ARCHIVE / "manifest.json", ROOT / source
+        ) == digest, source
 
     expected = {
         "redmagic-arm64": ("arm64-v8a", "QUALCOMM", "QUALCOMM Adreno(TM)", 3),

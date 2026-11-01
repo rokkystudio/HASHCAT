@@ -1,0 +1,53 @@
+TEST=vulkan-hashcat-public-kernel
+DEVICE=pixel-arm64
+ABI=arm64-v8a
+COMMAND=-I
+ADB_EXIT_CODE=0
+hashcat (v7.1.2) starting in backend information mode
+
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0
+BACKEND_VULKAN_CATALOG_READY devices=1 requested_api=1.0 scheduled=0
+Vulkan 1.0 discovery found 1 physical device(s); Vulkan Compute scheduling is not enabled.
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=1
+BACKEND_VULKAN_SESSION_READY index=0 queue_family=0 effective_api=1.0 command_buffers=1 empty_submissions=1 features=0 extensions=0 scheduled=0
+Vulkan 1.0 Compute device session verified with an empty queue submission; Vulkan hashing remains disabled.
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=2
+BACKEND_VULKAN_KERNEL_READY index=0 queue_family=0 api=1.0 shader_words=326 descriptors=2 local=32 groups=2 features=0 extensions=0 scheduled=0
+BACKEND_VULKAN_KERNEL_DISPATCH_PASS kernel=public_u32_transform words=64 local=32 groups=2 verified=64 coherent_input=1 coherent_output=1 shaders=1 password_inputs=0 scheduled=0
+BACKEND_VULKAN_KERNEL_CLOSE index=0 result=0 released=1 scheduled=0
+Vulkan 1.0 public SPIR-V Compute kernel dispatched and verified; hashing remains disabled.
+OpenCL Info:
+============
+
+OpenCL Platform ID #1
+  Vendor..: ARM
+  Name....: ARM Platform
+  Version.: OpenCL 3.0 v1.r54p2-00eac0.7001668a7a05889fc53765c682b36a3f
+
+  Backend Device ID #01
+    Type...........: GPU
+    Vendor.ID......: 2147483648
+    Vendor.........: ARM
+    Name...........: Mali-G715 r0p0
+    Version........: OpenCL 3.0 v1.r54p2-00eac0.7001668a7a05889fc53765c682b36a3f
+    Processor(s)...: 7
+    Preferred.Thrd.: 32
+    Clock..........: 940
+    Memory.Total...: 15356 MB (limited to 3839 MB allocatable in one block)
+    Memory.Free....: 7678 MB
+    Memory.Unified.: 1
+    Local.Memory...: 32 KB
+    OpenCL.Version.: OpenCL C 1.2 v1.r54p2-00eac0.7001668a7a05889fc53765c682b36a3f
+    Driver.Version.: 3.0
+
+BACKEND_VULKAN_SESSION_CLOSE index=0 queue_family=0 empty_submissions=1 wait_result=0
+DEVICE_CATALOG_CLOSE devices=1 selections=2
+HASHCAT_KERNEL_EXIT=0

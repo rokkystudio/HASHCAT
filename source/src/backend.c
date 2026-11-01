@@ -29,6 +29,7 @@
 
 #if defined (WITH_VULKAN_DISCOVERY)
 #include "backend_vulkan.h"
+#include "backend_vulkan_kernel.h"
 #endif
 
 #if defined (__linux__)
@@ -9090,7 +9091,7 @@ int backend_ctx_devices_init (hashcat_ctx_t *hashcat_ctx, const int comptime)
   backend_ctx->comptime = comptime;
 
   #if defined (WITH_VULKAN_DISCOVERY)
-  // Information mode opens an isolated empty Compute session without kernel scheduling.
+  // Information mode verifies a Compute session and a public SPIR-V kernel without hash scheduling.
 
   if (user_options->backend_info > 0 && backend_ctx->vulkan_catalog != NULL)
   {
@@ -9121,6 +9122,26 @@ int backend_ctx_devices_init (hashcat_ctx_t *hashcat_ctx, const int comptime)
         hashcat_ctx,
         "Vulkan 1.0 Compute device session verified with an empty queue submission; Vulkan hashing remains disabled."
       );
+
+      const VkResult kernel_result = backend_vulkan_kernel_verify (
+        backend_ctx, 0u, stderr
+      );
+
+      if (kernel_result != VK_SUCCESS)
+      {
+        event_log_warning (
+          hashcat_ctx,
+          "Vulkan 1.0 public SPIR-V Compute kernel verification failed with VkResult %d; hashing remains disabled.",
+          kernel_result
+        );
+      }
+      else
+      {
+        event_log_info (
+          hashcat_ctx,
+          "Vulkan 1.0 public SPIR-V Compute kernel dispatched and verified; hashing remains disabled."
+        );
+      }
     }
   }
   #endif

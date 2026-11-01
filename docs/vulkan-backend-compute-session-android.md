@@ -234,6 +234,12 @@ Vulkan device sessions, device-loss recovery, validation-layer
 tracking, Vulkan hashing kernels and production hashing-scheduler
 integration remain outside this milestone.
 
+The follow-on [production-owned public SPIR-V Compute kernel](vulkan-backend-public-kernel-android.md)
+executes an actual shader and verifies 64 GPU outputs from `hashcat -I`
+on Android ARM64 and ARMv7. The earlier session log remains an exact
+historical snapshot of the empty-submission-only milestone; its source
+hashes are not reinterpreted as evidence of this later shader.
+
 An independent public-integer Vulkan 1.0 buffer-transfer diagnostic is
 available in `docs/vulkan-core10-transfer-buffer-portability.md`.
 It verifies actual VkBuffer allocations, queue copying and noncoherent

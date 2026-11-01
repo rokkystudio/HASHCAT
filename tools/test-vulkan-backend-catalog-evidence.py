@@ -15,6 +15,8 @@ import json
 from pathlib import Path
 import re
 
+from vulkan_archive_provenance import source_sha256_at_archive_commit
+
 
 ROOT = Path(__file__).resolve().parents[1]
 ARCHIVE = ROOT / "tests/fixtures/android-gpu/vulkan-backend-catalog-20261031"
@@ -39,13 +41,6 @@ CANDIDATE = re.compile(
 def sha256(path: Path) -> str:
     """Calculate SHA-256 for all bytes of one file."""
     return hashlib.sha256(path.read_bytes()).hexdigest()
-
-
-def source_sha256(path: Path) -> str:
-    """Calculate the manifest's LF-normalized source SHA-256."""
-    return hashlib.sha256(
-        path.read_bytes().replace(b"\r\n", b"\n")
-    ).hexdigest()
 
 
 def exact_line(lines: list[str], value: str) -> None:
@@ -317,7 +312,9 @@ def main() -> None:
     assert manifest["tested_apis"] == ["1.0", "1.1"]
 
     for name, digest in manifest["source_sha256"].items():
-        assert source_sha256(ROOT / name) == digest, name
+        assert source_sha256_at_archive_commit(
+            ROOT, ARCHIVE / "manifest.json", ROOT / name
+        ) == digest, name
 
     assert len(manifest["source_sha256"]) == 16
     assert len(manifest["runs"]) == 6

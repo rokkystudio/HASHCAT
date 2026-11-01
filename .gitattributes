@@ -84,3 +84,7 @@ tests/fixtures/android-gpu/vulkan-core10-result-gate-20261101/manifest.json text
 # Preserve public Android Vulkan API-boundary test interception and real GPU evidence.
 tests/fixtures/android-gpu/vulkan-core10-api-fault-boundary-20261101/*.log -text whitespace=-blank-at-eol
 tests/fixtures/android-gpu/vulkan-core10-api-fault-boundary-20261101/manifest.json text eol=lf
+
+# Preserve actual Android HASHCAT -I SPIR-V Compute and public GPU output evidence.
+tests/fixtures/android-gpu/vulkan-backend-public-kernel-20261101/*.log -text whitespace=-blank-at-eol
+tests/fixtures/android-gpu/vulkan-backend-public-kernel-20261101/manifest.json text eol=lf
