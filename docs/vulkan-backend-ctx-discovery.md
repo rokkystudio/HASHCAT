@@ -2,6 +2,10 @@
 
 Date: 2026-10-31
 
+The archived standalone catalogue evidence belongs to the initial opt-in
+backend discovery milestone. Its manifest identifies the captured build
+commit separately from current-source SHA-256 regression identities.
+
 ## Scope
 
 HASHCAT now has an **opt-in Android Vulkan device-discovery path** in the
@@ -9,10 +13,15 @@ actual production backend context. It uses the generic Vulkan 1.0 device
 catalogue already exercised on real Adreno/Mali GPUs and stores its owner
 in hashcat's existing backend_ctx_t.
 
-The integration is **discovery only**. Vulkan physical devices are not
-registered as hashcat hashing devices. This change does not implement
-Vulkan password kernels, change hashcat's CUDA/HIP/Metal/OpenCL scheduler
-or make a Vulkan-only phone a working hashcat execution target.
+The catalogue discovers Vulkan devices for HASHCAT without registering
+them as hashcat hashing devices. In backend-information mode an
+independent Vulkan Compute session also owns VkDevice, one Compute
+queue, a primary command buffer and a fence, and completes one
+shader-free empty submission. Neither component implements hashcat
+kernels, changes the CUDA/HIP/Metal/OpenCL scheduler or makes a
+Vulkan-only phone a functioning hashcat execution target. See
+`docs/vulkan-backend-compute-session-android.md` for the active
+session ownership contract and real mobile GPU tests.
 
 Existing normal builds do not enable the experimental Vulkan discovery.
 The Android build must explicitly specify ENABLE_VULKAN_DISCOVERY=1.
@@ -21,11 +30,12 @@ The Android build must explicitly specify ENABLE_VULKAN_DISCOVERY=1.
 
 | File | Responsibility |
 | --- | --- |
-| source/include/types.h | Appends a typed Vulkan catalogue pointer, physical device count and VkResult status to backend_ctx_t, preserving offsets of existing backend fields |
-| source/include/backend_vulkan.h | Declares three backend-facing Vulkan catalogue lifecycle and device-selection methods |
-| source/src/backend_vulkan.c | Owns the Vulkan catalogue heap allocation, records Vulkan discovery state in backend_ctx_t and exposes exact Compute-device selection |
-| source/src/backend.c | During a successful ordinary backend_ctx_init, opens the optional Vulkan 1.0 catalogue and reports its result. During backend_ctx_destroy, closes the catalogue before clearing backend state |
-| source/src/Makefile | Enables the Android-only build flag, compiles the Vulkan 1.0 device discovery sources, and links the Android Vulkan loader |
+| source/include/types.h | Holds the typed Vulkan catalogue pointer, logical-device session pointer, physical-device count and VkResult status within backend_ctx_t |
+| source/include/backend_vulkan.h | Declares the catalogue lifecycle/device selection and isolated Compute session lifecycle methods |
+| source/src/backend_vulkan.c | Owns the Vulkan catalogue heap allocation and physical-device selection, and rejects instance closure while a logical-device session is active |
+| source/src/backend_vulkan_session.c | Owns VkDevice, queue, pool, primary command buffer, fence and a single empty queue submission |
+| source/src/backend.c | Owns Vulkan catalogue creation/destruction, verifies an isolated Vulkan Compute device session in backend-information mode, and closes the logical device before VkInstance |
+| source/src/Makefile | Enables the Android-only build flag, compiles the Vulkan 1.0 discovery/session sources and links the Android Vulkan loader only into the owning HASHCAT binary/library |
 | tools/vulkan-core10-device-catalog.c/.h | Own VkInstance, enumerate physical devices, select requested device indices and close the instance |
 | tools/vulkan-backend-catalog-diagnostic.c | Exercises two complete Vulkan backend_ctx discovery lifecycles with exact public Compute requirements and invalid-call controls |
 | tools/build-vulkan-backend-catalog.ps1 | Compiles actual source/src/backend.c and links an independent backend_ctx diagnostic for Android API 24 ARM64 and ARMv7 |
@@ -38,6 +48,9 @@ The fields appended to backend_ctx_t are:
 - vulkan_catalog: the owned Vulkan physical-device catalogue; NULL when not
   available. Its VkInstance remains valid for the complete owning backend
   context lifetime.
+- vulkan_session: one optional owned logical-device Compute queue session,
+  used in `hashcat -I` to verify empty Vulkan command submission and
+  fence completion; NULL otherwise.
 - vulkan_devices_cnt: the number of physically enumerated Vulkan devices,
   not the number of hashcat password-processing GPU devices.
 - rc_vulkan_init: the actual VkResult of the optional discovery operation.
@@ -78,8 +91,9 @@ VkResult backend_vulkan_catalog_close(backend_ctx_t *backend_ctx)
 
 Closes the owned catalogue and VkInstance, frees the catalogue allocation
 and clears the pointer/count/status fields. It is safe for an empty
-catalogue. Existing GPU backend allocations are unaffected. All future
-logical Vulkan devices must be destroyed before this operation.
+catalogue. An active Vulkan logical-device session returns
+VK_ERROR_INITIALIZATION_FAILED and retains the instance until session
+closure. Existing GPU backend allocations are unaffected.
 
 ## Actual production hook and ownership
 
@@ -94,9 +108,12 @@ successful backend_ctx_init performs:
 4. Leaves the backend's password-processing device list and active
    scheduling counts unchanged.
 
-The beginning of backend_ctx_destroy closes the Vulkan catalogue before
-freeing ordinary backend state. A failed optional Vulkan discovery does
-not claim to provide a working Vulkan kernel backend.
+During `hashcat -I`, backend_ctx_devices_init creates the isolated
+logical-device session and waits for its empty queue submission.
+backend_ctx_devices_destroy closes that session before the catalogue.
+backend_ctx_destroy also closes any active session as a backstop before
+it closes VkInstance. A failed optional Vulkan session is reported with
+the actual VkResult without registering a hashing device.
 
 The ordinary hashcat initialization still requires at least one existing
 supported runtime to activate the production backend. On a Vulkan-only
@@ -106,8 +123,9 @@ experimental path does not bypass that condition.
 
 Source and ownership are intentionally unambiguous: backend_ctx_t owns
 the catalogue; vulkan_core10_device_catalog_t owns VkInstance; the
-separate vulkan_core10_multiset_t owns VkDevice and buffers when used
-by the standalone synthetic Compute diagnostic. No logic infers
+backend-owned Compute session owns its own VkDevice, queue and fence.
+The separate vulkan_core10_multiset_t owns its own VkDevice and buffers
+when used by the standalone synthetic Compute diagnostic. No logic infers
 supported hashes or capabilities from a GPU vendor name.
 
 ## Android build

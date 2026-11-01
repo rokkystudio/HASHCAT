@@ -1,0 +1,39 @@
+TEST=vulkan-backend-session
+ABI=arm64-v8a
+API=1.0
+ADB_EXIT_CODE=0
+VULKAN_LOADER_VERSION=1.3.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=3 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0
+BACKEND_VULKAN_CATALOG_READY devices=1 requested_api=1.0 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=1 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Adreno (TM) 730 vendor=0x5143 device=0x7030002 api=1.1.128 driver=0x80267000
+REJECT_COMPUTE dimension=0 local=4294967295 max_local=1024 groups=1 max_groups=65535
+BACKEND_SESSION_INVALID_CONTROLS trial=0 invalid=4 unsupported=1 active=0
+SELECT_DEVICE_API=1.0 reported_minor=1 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Adreno (TM) 730 vendor=0x5143 device=0x7030002 api=1.1.128 driver=0x80267000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=65535 shared_max=32768 storage_range_max=134217728 descriptor_max=524288 non_coherent_atom=1
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=1
+BACKEND_VULKAN_SESSION_READY index=0 queue_family=0 effective_api=1.0 command_buffers=1 empty_submissions=1 features=0 extensions=0 scheduled=0
+BACKEND_SESSION_OWNER_CONTROLS trial=0 rejects=2 active=1
+BACKEND_VULKAN_SESSION_CLOSE index=0 queue_family=0 empty_submissions=1 wait_result=0
+DEVICE_CATALOG_CLOSE devices=1 selections=1
+BACKEND_SESSION_TRIAL_PASS trial=0 invalid=4 owner_rejects=2 empty_submissions=1 scheduled=0
+VULKAN_LOADER_VERSION=1.3.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=3 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0
+BACKEND_VULKAN_CATALOG_READY devices=1 requested_api=1.0 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=1 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Adreno (TM) 730 vendor=0x5143 device=0x7030002 api=1.1.128 driver=0x80267000
+REJECT_COMPUTE dimension=0 local=4294967295 max_local=1024 groups=1 max_groups=65535
+BACKEND_SESSION_INVALID_CONTROLS trial=1 invalid=4 unsupported=1 active=0
+SELECT_DEVICE_API=1.0 reported_minor=1 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Adreno (TM) 730 vendor=0x5143 device=0x7030002 api=1.1.128 driver=0x80267000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=65535 shared_max=32768 storage_range_max=134217728 descriptor_max=524288 non_coherent_atom=1
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=1
+BACKEND_VULKAN_SESSION_READY index=0 queue_family=0 effective_api=1.0 command_buffers=1 empty_submissions=1 features=0 extensions=0 scheduled=0
+BACKEND_SESSION_OWNER_CONTROLS trial=1 rejects=2 active=1
+BACKEND_VULKAN_SESSION_CLOSE index=0 queue_family=0 empty_submissions=1 wait_result=0
+DEVICE_CATALOG_CLOSE devices=1 selections=1
+BACKEND_SESSION_TRIAL_PASS trial=1 invalid=4 owner_rejects=2 empty_submissions=1 scheduled=0
+BACKEND_SESSION_DIAGNOSTIC_PASS api=1.0 trials=2 invalid=8 owner_rejects=4 unsupported=2 empty_submissions=2 scheduled=0

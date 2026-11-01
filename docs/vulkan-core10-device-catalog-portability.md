@@ -200,11 +200,14 @@ python -B tools/test-vulkan-core10-multiset-graph-evidence.py --artifacts build/
   Android 7.0/API-24 OS device was available for these tests.
 - The catalogue owns Vulkan instance/device discovery. When
   `ENABLE_VULKAN_DISCOVERY=1` is selected for Android, the production
-  `backend_ctx_t` owns a catalogue pointer and records the enumerated
-  physical-device count. It does not register Vulkan hashing devices in
-  `hc_device_param_t`, manage persistent Vulkan Compute jobs or execute
-  cryptographic kernels. See `docs/vulkan-backend-ctx-discovery.md`
-  for the actual opt-in production integration and hardware tests.
+  `backend_ctx_t` owns a catalogue pointer and the enumerated
+  physical-device count. In backend-information mode, it also owns an
+  isolated Vulkan logical-device session that submits one empty command
+  buffer and waits on a fence before closing its VkDevice. The session
+  does not register hashing devices in `hc_device_param_t`, execute
+  cryptographic shaders or schedule password jobs. See
+  `docs/vulkan-backend-compute-session-android.md` for the production
+  session and its verified device/instance cleanup order.
 - The GPU runtime synchronously submits one reusable command buffer;
   multi-queue scheduling, interrupted GPU/device loss, validation-layer
   tracking and concurrent sessions are not implemented or verified.

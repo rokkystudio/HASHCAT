@@ -144,7 +144,12 @@ def main() -> None:
         "android_7_api24_device_tested": False,
         "unrar_disabled_for_api24": True,
         "shared_assets_from_executable_directory": True,
+        "capture_source_commit": "32382a5487c470f1c4e2dfe4b96a58b307830c49",
         "source_hash_policy": "CRLF normalized to LF",
+        "source_sha256_scope": (
+            "Current checked-out source used for regression checking; "
+            "the capture_source_commit identifies the original native build inputs"
+        ),
         "capture_policy": (
             "Native HASHCAT stdout/stderr lines extracted from stored real "
             "ADB command transcripts, with enclosing host report headings "

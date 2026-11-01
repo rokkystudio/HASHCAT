@@ -2133,9 +2133,10 @@ typedef struct backend_ctx
 
   cl_device_type      opencl_device_types_filter;
 
-  // Vulkan discovery owns a catalogue but does not register kernel devices.
+  // Vulkan discovery owns an instance catalogue and one optional empty Compute session.
 
   struct vulkan_core10_device_catalog *vulkan_catalog;
+  struct backend_vulkan_compute_session *vulkan_session;
   u32                 vulkan_devices_cnt;
   int                 rc_vulkan_init;
 

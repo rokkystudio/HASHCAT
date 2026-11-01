@@ -2,6 +2,18 @@
 
 Date: 2026-11-01
 
+The archived manifest records the original build's Git commit separately from
+current-source SHA-256 regression identities, so historical binaries are
+not represented as newly compiled from later source revisions.
+
+This report preserves the **initial discovery-only hardware milestone**
+and the original three `hashcat -I` observations. The current opt-in
+backend also opens a Vulkan 1.0 Compute queue session during
+backend-information mode, submits a shader-free empty command buffer
+and closes that logical device before VkInstance. For current API
+contracts, Android builds and real device/session evidence see
+`docs/vulkan-backend-compute-session-android.md`.
+
 ## Result
 
 A complete native HASHCAT v7.1.2 frontend, built from the current source

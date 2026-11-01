@@ -218,28 +218,29 @@ Relevant existing host-side lifecycle functions in
 | Production owner | Vulkan lifecycle contract |
 | --- | --- |
 | `backend_ctx_init` | With `ENABLE_VULKAN_DISCOVERY=1` on Android, opens a Vulkan 1.0 catalogue after the ordinary backend initialization and stores it in `backend_ctx_t` |
-| `backend_ctx_destroy` | Closes the optional Vulkan catalogue and VkInstance before clearing the context |
-| `backend_ctx_devices_init` | Registers only CUDA/HIP/Metal/OpenCL kernel devices; Vulkan does not enter the active GPU list |
-| `backend_session_begin` | Future per-device Vulkan Compute session and buffer ownership |
+| `backend_ctx_destroy` | Closes any active Vulkan logical-device session, then the Vulkan catalogue and VkInstance before clearing the context |
+| `backend_ctx_devices_init` | In `hashcat -I`, creates an isolated Vulkan 1.0 logical-device session and verifies an empty fence-completed queue submission; never registers a Vulkan hashing device |
+| `backend_session_begin` | Future integration of actual Vulkan kernel/resource scheduling; the existing information-mode session does not participate |
 | `backend_session_destroy` | Future closing of active Vulkan jobs before logical-device destruction |
-| `backend_ctx_devices_destroy` | Future release of Vulkan per-device session resources |
+| `backend_ctx_devices_destroy` | Closes the information-mode Vulkan device session before normal backend device cleanup |
 
-The first two rows are **actual opt-in production call sites**.
+The catalogue and information-mode session rows are **actual opt-in production call sites**.
 `source/src/backend_vulkan.c` and `source/include/backend_vulkan.h`
 provide the backend-facing Vulkan catalogue API. Both Android API 24
 ABIs compile the actual production `backend.c` with this integration,
 and the real `backend_ctx_t` is tested with the Vulkan driver on
 RedMagic ARM64, RedMagic ARMv7 and Pixel ARM64.
 
-See `docs/vulkan-backend-ctx-discovery.md` for the build flag,
-full method contracts and hardware evidence.
+See `docs/vulkan-backend-ctx-discovery.md` for catalogue ownership and
+`docs/vulkan-backend-compute-session-android.md` for the full Vulkan
+Compute session lifecycle, Android builds and real device evidence.
 
 The job port remains an independent noncryptographic module. No
 production hashcat source file schedules jobs through it, and the
 catalogue never registers a Vulkan hashing device in `devices_param`.
-A complete backend still requires a native release build, Vulkan
-session/resource ownership, scheduler integration, kernel interfaces,
-task status/event accounting and Android package deployment.
+A complete Vulkan hashing backend still requires per-job Vulkan kernel
+sessions, scheduler integration, kernel interfaces, task status/event
+accounting and Android release package deployment.
 
 ## Limits
 

@@ -52,18 +52,26 @@ Clean generated outputs:
 .\scripts\CLEAN.ps1
 ```
 
-## Experimental Vulkan 1.0 discovery on Android
+## Experimental Vulkan 1.0 device and Compute-session verification
 
-The native hashcat backend includes opt-in Vulkan 1.0 physical-device discovery. It does not schedule hashcat kernels on Vulkan or replace CUDA, HIP, Metal or OpenCL.
+The native hashcat backend includes opt-in Vulkan 1.0 physical-device
+discovery and an isolated GPU session in `hashcat -I`. The session
+validates its queue with an empty fence-completed submission. It never
+schedules hashcat kernels on Vulkan or replaces CUDA, HIP, Metal or OpenCL.
 
 Build isolated Android API 24 ARM64/ARMv7 executables without publishing release packages:
 
 ```powershell
-.\scripts\BUILD.ps1 -Target android-arm64-v8a -AndroidApi 24 -EnableVulkanDiscovery -Package:$false
-.\scripts\BUILD.ps1 -Target android-armeabi-v7a -AndroidApi 24 -EnableVulkanDiscovery -Package:$false
+.\scripts\BUILD.ps1 -Target android-arm64-v8a -AndroidApi 24 -EnableVulkanDiscovery -VulkanOutputName vulkan-hashcat-session-20261101 -Package:$false
+.\scripts\BUILD.ps1 -Target android-armeabi-v7a -AndroidApi 24 -EnableVulkanDiscovery -VulkanOutputName vulkan-hashcat-session-20261101 -Package:$false
 ```
 
-The full native HASHCAT frontend passed `hashcat -I` on RedMagic ARM64, RedMagic ARMv7 and Pixel ARM64. Exact evidence, dependencies, compatibility limits and offline verification are in [the Android Vulkan frontend verification report](docs/vulkan-hashcat-frontend-android-verification.md).
+The full native HASHCAT frontend and its empty Vulkan Compute session
+passed `hashcat -I` on RedMagic ARM64, RedMagic ARMv7 and Pixel ARM64.
+Ownership, Android API24 build instructions, independent logs and
+limitations are in [the Vulkan Compute session report](docs/vulkan-backend-compute-session-android.md).
+The [initial physical-device discovery milestone](docs/vulkan-hashcat-frontend-android-verification.md)
+remains archived separately.
 
 ## Working on hashcat source
 

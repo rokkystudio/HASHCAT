@@ -13,6 +13,10 @@ param(
     [string]$SourceRef = '',
     [bool]$Package = $true,
     [switch]$EnableVulkanDiscovery,
+    [ValidatePattern('^vulkan-[a-z0-9-]+$')]
+    [string]$VulkanOutputName = 'vulkan-hashcat-frontend-20261101',
+    [ValidateRange(0, 2147483647)]
+    [long]$VulkanComptime = 1793491200,
     [switch]$Clean
 )
 
@@ -354,7 +358,7 @@ function Restore-SourceCheckout([string]$SourceDirectory) {
 Builds one Android ABI from the monorepo hashcat source tree.
 
 .DESCRIPTION
-Uses Android NDK Clang through MSYS2, builds the hashcat frontend and native modules/bridges, then copies ABI-specific binaries and shared runtime assets into build and release directories. With EnableVulkanDiscovery, passes the Android-only Vulkan 1.0 discovery flag to the native Makefile and places the resulting binaries in an isolated diagnostic output directory without creating a release package.
+Uses Android NDK Clang through MSYS2, builds the hashcat frontend and native modules/bridges, then copies ABI-specific binaries and shared runtime assets into build and release directories. With EnableVulkanDiscovery, passes the Android-only Vulkan 1.0 discovery flag to the native Makefile and places the resulting binaries under the explicitly selected VulkanOutputName diagnostic directory. This mode requires Package=false and produces no release archive. VulkanComptime supplies an explicit reproducible Unix-epoch build time; normal releases continue to use their existing Makefile COMPTIME policy.
 #>
 function Invoke-AndroidTarget([pscustomobject]$Config, [string]$ResolvedAndroidNdk, [string]$ResolvedMsys2Bash) {
     $ndkToolchainBin = Join-Path $ResolvedAndroidNdk 'toolchains\llvm\prebuilt\windows-x86_64\bin'
@@ -371,7 +375,7 @@ function Invoke-AndroidTarget([pscustomobject]$Config, [string]$ResolvedAndroidN
     $ndkBinForMsys = Convert-ToMsysPath $ndkToolchainBin
     $tempForMsys = Convert-ToMsysPath $TempDir
     $buildAbiDir = if ($EnableVulkanDiscovery) {
-        Join-Path $BuildRootDir "diagnostic-multimode\vulkan-hashcat-frontend-20261101\$($Config.Abi)"
+        Join-Path (Join-Path (Join-Path $BuildRootDir 'diagnostic-multimode') $VulkanOutputName) $Config.Abi
     } else {
         Join-Path $BuildRootDir $Config.Abi
     }
@@ -384,6 +388,8 @@ function Invoke-AndroidTarget([pscustomobject]$Config, [string]$ResolvedAndroidN
     if ($EnableVulkanDiscovery) {
         $makeVars += @(
             'ENABLE_VULKAN_DISCOVERY=1',
+            # The experimental frontend uses an explicitly reproducible build epoch.
+            "COMPTIME=$VulkanComptime",
             # Use the executable directory as the shared asset root on Android.
             'SHARED_FOLDER='
         )
@@ -500,6 +506,12 @@ function Invoke-AndroidTarget([pscustomobject]$Config, [string]$ResolvedAndroidN
 $ExpandedTargets = Expand-BuildTargets $Target $AndroidAbi
 $AndroidTargets = @($ExpandedTargets | Where-Object { $AndroidTargetSpecs.Contains($_) })
 $DesktopTargets = @($ExpandedTargets | Where-Object { -not $AndroidTargetSpecs.Contains($_) })
+
+if ($EnableVulkanDiscovery -eq $false) {
+    if ($PSBoundParameters.ContainsKey('VulkanOutputName') -or $PSBoundParameters.ContainsKey('VulkanComptime')) {
+        throw 'VulkanOutputName and VulkanComptime require -EnableVulkanDiscovery.'
+    }
+}
 
 if ($EnableVulkanDiscovery) {
     if ($Package) {

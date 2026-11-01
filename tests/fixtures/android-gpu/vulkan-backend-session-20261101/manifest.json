@@ -1,0 +1,203 @@
+{
+  "date": "2026-11-01",
+  "scope": "Vulkan 1.0 empty Compute queue session owned by backend_ctx_t, without any hashcat password/hash GPU kernel",
+  "minimum_android_api": 24,
+  "default_vulkan_api": "1.0",
+  "optional_api": "1.1",
+  "build_flag": "ENABLE_VULKAN_DISCOVERY=1",
+  "full_android_build_comptime": 1793491200,
+  "full_android_frontend_built": true,
+  "vulkan_hashing_scheduler_enabled": false,
+  "physically_vulkan10_only_gpu_tested": false,
+  "android_7_api24_os_tested": false,
+  "release_packages_modified": false,
+  "capture_policy": {
+    "session_diagnostic": "Native Android stdout/stderr returned through ADB and normalized CRLF to LF by the hardware runner; saved LF-only diagnostic logs are archived without further edits, not claimed as raw ADB byte streams",
+    "full_frontend": "Captured native Android hashcat -I stdout/stderr and process exit marker, with normalized CRLF->LF; not claimed as original unprocessed ADB bytes"
+  },
+  "source_hash_policy": "CRLF normalized to LF",
+  "source_sha256": {
+    "source/include/types.h": "aedb58a085178b1434e897f612792646e3bbeddcc9be0c7021c52f8bde006a20",
+    "source/include/backend_vulkan.h": "563be5227e892b1d4a2425f656d3afb2777bef694d416e8fb79836c8f58c5e65",
+    "source/src/backend.c": "fcc8a23fd3009cda7e6f96b4e404c2e9ef25511f451bab30cfc7f0d860a564fb",
+    "source/src/backend_vulkan.c": "799a73573ea33016a5238a1a64e00a18dddefe4d714716de6bf89626f4206354",
+    "source/src/backend_vulkan_session.c": "9b73ddac998abee95bb5509a5956668a592fd5b62079e95d3480358f2b143747",
+    "source/src/Makefile": "f6ed669376ce5bf50478a1f66c3898892ee59445e92349cb8a5859a4b7cc6ff8",
+    "scripts/BUILD.ps1": "40ef1f91ee731cd660da43427885c93b1e61312c5fd655cc9b7b711db542925f",
+    "tools/vulkan-core10-device-catalog.c": "7e454956b965356b1418e8730913b92304b78bab20b1cd3d510a90e19cc6ef6b",
+    "tools/vulkan-core10-device-catalog.h": "8c963d3b6dfaee7137a2d4269114448ec0521d8ee548e7daa83f273e2dde9c05",
+    "tools/vulkan-auto-config.c": "7dda45d969c6fd092c31821cc8022f69a4dd8b748e852fcb7a2bd23552a571dd",
+    "tools/vulkan-auto-config.h": "1329f5b833bd8a0ffed9e3eadddead210665a1e8fba2f051e6f4259d63385086",
+    "tools/vulkan-core11-policy.c": "ac4fd1bf17a4e61d801de94ee51f6df920e9ce1b9285168e94f2ea412305ede8",
+    "tools/vulkan-core11-policy.h": "e56989252c758b7e8289067540b7d04b9e534d85ae56a05e3f3a4d465662b0fa",
+    "tools/vulkan-backend-session-diagnostic.c": "e4648acfed43f0fe048292f3dbf9d41e14df4be089482eeee8e91138d6ea5b9e",
+    "tools/build-vulkan-backend-session.ps1": "3eaff36d450c2cdd11e48c78423f6a334f1c02b30fe56216bfe5068b1b2208d9",
+    "tools/run-vulkan-backend-session.ps1": "3323de6e0b42343b4ef5743e44bc3e8172fed263f21bc363f68b33a79f0e37ce",
+    "tools/archive-vulkan-backend-session-evidence.py": "fc49226f2a86a5e993c41f7881527de81d330ece6a6d908d2a4ee133eb7fd2c3",
+    "tools/test-vulkan-backend-session-evidence.py": "8fc406a2e92414bfc352368da746c5649c4f9117cbce121c6d7b55534d29015e"
+  },
+  "diagnostic_sha256": {
+    "hashcat-backend-vulkan-arm64.o": "2f9eed2cebb49f11e2d2dece5e17cc529f90e9138d4f6d9f17fe744f8e31fa35",
+    "hashcat-backend-vulkan-armv7.o": "b3790ab2981ffe9ac0ace79f2ad5fcbcb53716a08eaa6fff264dcf3b0e637c0d",
+    "vulkan-backend-session-arm64": "d020c3e28400168959917f72f936926c420f0a58ce0590ff7ac29a3683f04c25",
+    "vulkan-backend-session-armv7": "3d6d751b348ef9f9d8ace6654690796ee59a8f4021c0f8382fdcbb69bebfc783"
+  },
+  "full_binaries": {
+    "arm64-v8a": {
+      "sha256": "0b8b26cfc24f66d6ff3204a6b26fa780e6acd839a146ad272cc0230cf0adf003",
+      "bytes": 1527384,
+      "modules": 581,
+      "bridges": 4,
+      "opencl_files": 1595
+    },
+    "armeabi-v7a": {
+      "sha256": "090ee008f844979c9120ca83edb68ba87d171558ea1c5870e75b2daeb77b1caf",
+      "bytes": 1783060,
+      "modules": 581,
+      "bridges": 4,
+      "opencl_files": 1595
+    }
+  },
+  "device_runs": [
+    {
+      "device": "redmagic-arm64",
+      "abi": "arm64-v8a",
+      "api": "1.0",
+      "file": "redmagic-arm64-1.0.log",
+      "sha256": "2059013be2426f1fbe15305785898942b3b2972917660e0946b749b4a3e693d4",
+      "device_sessions": 2,
+      "empty_fence_submissions": 2,
+      "invalid_host_calls": 8,
+      "invalid_owner_order_calls": 4,
+      "driver_workload_refusals": 2
+    },
+    {
+      "device": "redmagic-arm64",
+      "abi": "arm64-v8a",
+      "api": "1.1",
+      "file": "redmagic-arm64-1.1.log",
+      "sha256": "84537180641cf85250d5fc34be260673d266dbf08dc71bd22f6b829590f69595",
+      "device_sessions": 2,
+      "empty_fence_submissions": 2,
+      "invalid_host_calls": 8,
+      "invalid_owner_order_calls": 4,
+      "driver_workload_refusals": 2
+    },
+    {
+      "device": "redmagic-armv7",
+      "abi": "armeabi-v7a",
+      "api": "1.0",
+      "file": "redmagic-armv7-1.0.log",
+      "sha256": "57999d553e0d1d38e120126d189fb9e00af874d4c935ff6291e4dbbc943da940",
+      "device_sessions": 2,
+      "empty_fence_submissions": 2,
+      "invalid_host_calls": 8,
+      "invalid_owner_order_calls": 4,
+      "driver_workload_refusals": 2
+    },
+    {
+      "device": "redmagic-armv7",
+      "abi": "armeabi-v7a",
+      "api": "1.1",
+      "file": "redmagic-armv7-1.1.log",
+      "sha256": "08b55fad761e8b2bebdd5f274f251f20891635b55161a0c32f73243c50ed4a14",
+      "device_sessions": 2,
+      "empty_fence_submissions": 2,
+      "invalid_host_calls": 8,
+      "invalid_owner_order_calls": 4,
+      "driver_workload_refusals": 2
+    },
+    {
+      "device": "pixel-arm64",
+      "abi": "arm64-v8a",
+      "api": "1.0",
+      "file": "pixel-arm64-1.0.log",
+      "sha256": "e56f8bd603c8c9973c2ab13574bb8482d240deeb7f640dace642ac3f47028336",
+      "device_sessions": 2,
+      "empty_fence_submissions": 2,
+      "invalid_host_calls": 8,
+      "invalid_owner_order_calls": 4,
+      "driver_workload_refusals": 2
+    },
+    {
+      "device": "pixel-arm64",
+      "abi": "arm64-v8a",
+      "api": "1.1",
+      "file": "pixel-arm64-1.1.log",
+      "sha256": "35216c0b5a7325108b9659b87b9fb80b05bcdd3e911d0137f7f90bfb922fa94a",
+      "device_sessions": 2,
+      "empty_fence_submissions": 2,
+      "invalid_host_calls": 8,
+      "invalid_owner_order_calls": 4,
+      "driver_workload_refusals": 2
+    }
+  ],
+  "frontend_runs": [
+    {
+      "device": "redmagic-arm64",
+      "abi": "arm64-v8a",
+      "opencl_vendor": "QUALCOMM",
+      "gpu_name": "QUALCOMM Adreno(TM)",
+      "loader_minor": 3,
+      "file": "redmagic-arm64-hashcat-info.log",
+      "sha256": "fab8235bf0022e532599fd7ff818f1c172ec84b5eb592c22c4df0a435838fb84",
+      "device_sessions": 1,
+      "empty_fence_submissions": 1,
+      "vulkan_kernel_scheduler_enabled": false
+    },
+    {
+      "device": "redmagic-armv7",
+      "abi": "armeabi-v7a",
+      "opencl_vendor": "QUALCOMM",
+      "gpu_name": "QUALCOMM Adreno(TM)",
+      "loader_minor": 3,
+      "file": "redmagic-armv7-hashcat-info.log",
+      "sha256": "b40efe81cdfa6c12ed95f4b3c81db4ef4b735bdfe6b94f03e9172ae79e894308",
+      "device_sessions": 1,
+      "empty_fence_submissions": 1,
+      "vulkan_kernel_scheduler_enabled": false
+    },
+    {
+      "device": "pixel-arm64",
+      "abi": "arm64-v8a",
+      "opencl_vendor": "ARM",
+      "gpu_name": "Mali-G715 r0p0",
+      "loader_minor": 4,
+      "file": "pixel-arm64-hashcat-info.log",
+      "sha256": "1b4ea2194c833a94d475d83fda2850e5de2ad45a27b2e1c0f966b6d65d613ef7",
+      "device_sessions": 1,
+      "empty_fence_submissions": 1,
+      "vulkan_kernel_scheduler_enabled": false
+    }
+  ],
+  "invalid_cli_runs": [
+    {
+      "device": "redmagic-arm64",
+      "abi": "arm64-v8a",
+      "file": "redmagic-arm64-negative-controls.log",
+      "sha256": "011e88ac79b097ad2e9192f81909ec4bb142425ec69efbc94aa0456945634145",
+      "invalid_commands": 3
+    },
+    {
+      "device": "redmagic-armv7",
+      "abi": "armeabi-v7a",
+      "file": "redmagic-armv7-negative-controls.log",
+      "sha256": "2e512bd5e552ecb52bd0e33a741fc6ca0c3e2f868aafcc4b10699cf785ac899a",
+      "invalid_commands": 3
+    },
+    {
+      "device": "pixel-arm64",
+      "abi": "arm64-v8a",
+      "file": "pixel-arm64-negative-controls.log",
+      "sha256": "011e88ac79b097ad2e9192f81909ec4bb142425ec69efbc94aa0456945634145",
+      "invalid_commands": 3
+    }
+  ],
+  "limitations": [
+    "The full hashcat executable is tested in backend information mode (-I), without attack-mode kernel scheduling.",
+    "One empty Vulkan primary command buffer is submitted and its fence completes, but no shader or password/hash candidate is processed.",
+    "The Vulkan device session does not enter hashcat's active hashing-device list or backend_session_begin attack workflow.",
+    "Android ARM64/ARMv7 binaries are stored in ignored diagnostic directories, not release or HASHCAT-APP packages.",
+    "Vulkan 1.0 is requested on newer Vulkan loaders; no physical Vulkan 1.0-only GPU or actual Android 7 device was available."
+  ]
+}

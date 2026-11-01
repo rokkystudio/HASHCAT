@@ -103,13 +103,16 @@ VkResult backend_vulkan_catalog_select (
 /**
  * Close the Vulkan-owned instance and release the catalogue allocation.
  *
- * This method does not access CUDA/HIP/Metal/OpenCL state or destroy
- * logical Vulkan devices, which must be released by their own owners.
+ * Requires every backend-owned Vulkan logical-device session to be
+ * closed before the physical-device catalogue. An active session returns
+ * VK_ERROR_INITIALIZATION_FAILED without destroying VkInstance.
+ * Ordinary CUDA/HIP/Metal/OpenCL state remains independent.
  */
 VkResult backend_vulkan_catalog_close (
   backend_ctx_t *backend_ctx)
 {
   if (backend_ctx == NULL) return VK_ERROR_INITIALIZATION_FAILED;
+  if (backend_ctx->vulkan_session != NULL) return VK_ERROR_INITIALIZATION_FAILED;
 
   VkResult result = VK_SUCCESS;
 

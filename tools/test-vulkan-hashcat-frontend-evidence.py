@@ -217,6 +217,8 @@ def main() -> None:
         (ARCHIVE / "manifest.json").read_text(encoding="utf-8")
     )
 
+    assert manifest["capture_source_commit"] == "32382a5487c470f1c4e2dfe4b96a58b307830c49"
+    assert "Current checked-out source" in manifest["source_sha256_scope"]
     assert manifest["target_android_api"] == 24
     assert manifest["required_vulkan_api"] == "1.0"
     assert manifest["hashcat_vulkan_kernel_scheduling"] is False

@@ -56,3 +56,7 @@ tests/fixtures/android-gpu/vulkan-backend-catalog-20261031/manifest.json text eo
 # Preserve extracted real Android HASHCAT -I Vulkan discovery transcripts as LF-only evidence.
 tests/fixtures/android-gpu/vulkan-hashcat-frontend-20261101/*.log -text whitespace=-blank-at-eol
 tests/fixtures/android-gpu/vulkan-hashcat-frontend-20261101/manifest.json text eol=lf
+
+# Preserve real Vulkan 1.0 logical-device Compute session and full HASHCAT -I evidence.
+tests/fixtures/android-gpu/vulkan-backend-session-20261101/*.log -text whitespace=-blank-at-eol
+tests/fixtures/android-gpu/vulkan-backend-session-20261101/manifest.json text eol=lf

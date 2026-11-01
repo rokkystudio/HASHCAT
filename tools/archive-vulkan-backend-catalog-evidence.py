@@ -157,7 +157,12 @@ def main() -> None:
         "backend_device_list_unchanged": True,
         "tested_device_abis": DEVICES,
         "tested_apis": list(MODES),
+        "capture_source_commit": "7eb41fda61fbc937dcce64f17645f8db0bb9501a",
         "source_hash_policy": "CRLF normalized to LF",
+        "source_sha256_scope": (
+            "Current checked-out source used for regression checking; "
+            "the capture_source_commit identifies the original native build inputs"
+        ),
         "source_sha256": {
             path: source_sha256(ROOT / path)
             for path in SOURCES

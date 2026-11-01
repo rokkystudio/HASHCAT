@@ -5578,6 +5578,17 @@ void backend_ctx_destroy (hashcat_ctx_t *hashcat_ctx)
   if (backend_ctx->enabled == false) return;
 
   #if defined (WITH_VULKAN_DISCOVERY)
+  const VkResult session_result = backend_vulkan_session_close (backend_ctx);
+
+  if (session_result != VK_SUCCESS)
+  {
+    event_log_warning (
+      hashcat_ctx,
+      "Vulkan 1.0 Compute session close failed with VkResult %d.",
+      session_result
+    );
+  }
+
   const VkResult vulkan_result = backend_vulkan_catalog_close (backend_ctx);
 
   if (vulkan_result != VK_SUCCESS)
@@ -9078,6 +9089,42 @@ int backend_ctx_devices_init (hashcat_ctx_t *hashcat_ctx, const int comptime)
 
   backend_ctx->comptime = comptime;
 
+  #if defined (WITH_VULKAN_DISCOVERY)
+  // Information mode opens an isolated empty Compute session without kernel scheduling.
+
+  if (user_options->backend_info > 0 && backend_ctx->vulkan_catalog != NULL)
+  {
+    const vulkan_auto_compute_requirements_t workload =
+    {
+      .local_size = { 1u, 1u, 1u },
+      .group_count = { 1u, 1u, 1u },
+      .storage_buffer_count = 1u,
+      .largest_storage_buffer_bytes = 4u,
+      .shared_memory_bytes = 0u
+    };
+
+    const VkResult session_result = backend_vulkan_session_open (
+      backend_ctx, 0u, &workload, stderr
+    );
+
+    if (session_result != VK_SUCCESS)
+    {
+      event_log_warning (
+        hashcat_ctx,
+        "Vulkan 1.0 Compute session verification failed with VkResult %d; Vulkan devices remain unscheduled.",
+        session_result
+      );
+    }
+    else
+    {
+      event_log_info (
+        hashcat_ctx,
+        "Vulkan 1.0 Compute device session verified with an empty queue submission; Vulkan hashing remains disabled."
+      );
+    }
+  }
+  #endif
+
   return 0;
 }
 
@@ -9086,6 +9133,19 @@ void backend_ctx_devices_destroy (hashcat_ctx_t *hashcat_ctx)
   backend_ctx_t *backend_ctx = hashcat_ctx->backend_ctx;
 
   if (backend_ctx->enabled == false) return;
+
+  #if defined (WITH_VULKAN_DISCOVERY)
+  const VkResult session_result = backend_vulkan_session_close (backend_ctx);
+
+  if (session_result != VK_SUCCESS)
+  {
+    event_log_warning (
+      hashcat_ctx,
+      "Vulkan 1.0 Compute session close failed with VkResult %d.",
+      session_result
+    );
+  }
+  #endif
 
   for (u32 opencl_platforms_idx = 0; opencl_platforms_idx < backend_ctx->opencl_platforms_cnt; opencl_platforms_idx++)
   {

@@ -11,23 +11,25 @@
   "android_7_api24_device_tested": false,
   "unrar_disabled_for_api24": true,
   "shared_assets_from_executable_directory": true,
+  "capture_source_commit": "32382a5487c470f1c4e2dfe4b96a58b307830c49",
   "source_hash_policy": "CRLF normalized to LF",
+  "source_sha256_scope": "Current checked-out source used for regression checking; the capture_source_commit identifies the original native build inputs",
   "capture_policy": "Native HASHCAT stdout/stderr lines extracted from stored real ADB command transcripts, with enclosing host report headings removed and line endings normalized to LF. The exit marker comes from the native Android process. These are not claimed to be byte-for-byte unmodified original ADB streams.",
   "source_sha256": {
-    "scripts/BUILD.ps1": "614cb5557152125f50e2593dadefb3f0d2cf6309917c900c03b749982869d66c",
-    "source/src/Makefile": "ae2ff1976f3daf006ac9f6453733dc5c09391e4d42d522656badeb1cdaf2abab",
-    "source/src/backend.c": "fe55d7f02ed0b096bcf6737f7560eea992340b71ece4590cd4be5440d517fb1a",
-    "source/src/backend_vulkan.c": "200c425874152a663031a9383331a80220fd8fb19fe63c2f3bef5f5da6d7d269",
-    "source/include/backend_vulkan.h": "fafdddc159e2e92aac85668c193ce818fab49b6b949bb7e3dc336c9570cf9557",
-    "source/include/types.h": "4b6801630b0c1199f35fcc976f6cf072c108e45a8ba029508c341f3bd4a0b270",
+    "scripts/BUILD.ps1": "40ef1f91ee731cd660da43427885c93b1e61312c5fd655cc9b7b711db542925f",
+    "source/src/Makefile": "f6ed669376ce5bf50478a1f66c3898892ee59445e92349cb8a5859a4b7cc6ff8",
+    "source/src/backend.c": "fcc8a23fd3009cda7e6f96b4e404c2e9ef25511f451bab30cfc7f0d860a564fb",
+    "source/src/backend_vulkan.c": "799a73573ea33016a5238a1a64e00a18dddefe4d714716de6bf89626f4206354",
+    "source/include/backend_vulkan.h": "563be5227e892b1d4a2425f656d3afb2777bef694d416e8fb79836c8f58c5e65",
+    "source/include/types.h": "aedb58a085178b1434e897f612792646e3bbeddcc9be0c7021c52f8bde006a20",
     "tools/vulkan-auto-config.c": "7dda45d969c6fd092c31821cc8022f69a4dd8b748e852fcb7a2bd23552a571dd",
     "tools/vulkan-auto-config.h": "1329f5b833bd8a0ffed9e3eadddead210665a1e8fba2f051e6f4259d63385086",
     "tools/vulkan-core11-policy.c": "ac4fd1bf17a4e61d801de94ee51f6df920e9ce1b9285168e94f2ea412305ede8",
     "tools/vulkan-core11-policy.h": "e56989252c758b7e8289067540b7d04b9e534d85ae56a05e3f3a4d465662b0fa",
     "tools/vulkan-core10-device-catalog.c": "7e454956b965356b1418e8730913b92304b78bab20b1cd3d510a90e19cc6ef6b",
     "tools/vulkan-core10-device-catalog.h": "8c963d3b6dfaee7137a2d4269114448ec0521d8ee548e7daa83f273e2dde9c05",
-    "tools/archive-vulkan-hashcat-frontend-evidence.py": "9a8f92b66e4a03a7c20145bd364cccbcba7f27f24732970763fd4768926e062d",
-    "tools/test-vulkan-hashcat-frontend-evidence.py": "1f4c0eebdfcaba1fa4c38a79cd48ff4613d98b8f08166e3686308a739f7f53c0"
+    "tools/archive-vulkan-hashcat-frontend-evidence.py": "6eada1a488f2006b6e7a292990e05890c544723ef4da5e98bdaca7eb0e333fe2",
+    "tools/test-vulkan-hashcat-frontend-evidence.py": "dc2cbcff73902cb1c4eba9a73651966cde30c52b2dbe004941a1ce80483574bc"
   },
   "binaries": {
     "arm64-v8a": {
