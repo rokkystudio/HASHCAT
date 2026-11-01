@@ -96,3 +96,7 @@ tests/fixtures/android-gpu/vulkan-backend-public-chain-20261101/manifest.json te
 # Preserve host-only Vulkan Compute program-graph contract evidence.
 tests/fixtures/android-gpu/vulkan-backend-program-20261101/*.log -text whitespace=-blank-at-eol
 tests/fixtures/android-gpu/vulkan-backend-program-20261101/manifest.json text eol=lf
+
+# Preserve current-revision program-declared Vulkan executor evidence.
+tests/fixtures/android-gpu/vulkan-backend-program-executor-20261101/*.log -text whitespace=-blank-at-eol
+tests/fixtures/android-gpu/vulkan-backend-program-executor-20261101/manifest.json text eol=lf

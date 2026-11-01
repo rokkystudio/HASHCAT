@@ -109,9 +109,12 @@ intermediate and final buffers against CPU arithmetic, and verifies
 three complete Android `hashcat -I` processes on Adreno ARM64/ARMv7
 and Mali ARM64. Password-processing Vulkan kernels remain disabled. A
 [declarative Vulkan program graph contract](docs/vulkan-backend-program-graph.md)
-now validates ordered SPIR-V stages, storage-buffer dependencies and
-exact Compute limits before executor integration, without linking the
-Vulkan loader or issuing GPU work.
+validates ordered SPIR-V stages, storage-buffer dependencies and exact
+Compute limits without a Vulkan driver call. The follow-on
+[program-declared executor](docs/vulkan-backend-program-executor-android.md)
+uses the same declarations for descriptor bindings, SPIR-V modules,
+dispatch counts and GPU barriers in a real Pixel Android `hashcat -I`
+process while HASHCAT hashing remains disconnected.
 
 ## Working on hashcat source
 

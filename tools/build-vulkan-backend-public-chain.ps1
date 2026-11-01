@@ -115,6 +115,7 @@ $diagnosticSources = @(
     (Join-Path $root 'source\src\backend_vulkan.c'),
     (Join-Path $root 'source\src\backend_vulkan_session.c'),
     (Join-Path $root 'source\src\backend_vulkan_kernel.c'),
+    (Join-Path $root 'source\src\backend_vulkan_program.c'),
     (Join-Path $root 'tools\vulkan-core10-device-catalog.c'),
     (Join-Path $root 'tools\vulkan-core11-policy.c'),
     (Join-Path $root 'tools\vulkan-auto-config.c')

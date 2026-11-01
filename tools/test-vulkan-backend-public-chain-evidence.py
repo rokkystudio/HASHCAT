@@ -21,6 +21,8 @@ import subprocess
 import sys
 import tempfile
 
+from vulkan_archive_provenance import source_sha256_at_archive_commit
+
 
 ROOT = Path(__file__).resolve().parents[1]
 ARCHIVE = ROOT / "tests/fixtures/android-gpu/vulkan-backend-public-chain-20261101"
@@ -670,7 +672,9 @@ def main() -> None:
     assert len(manifest["source_sha256"]) == 26
 
     for source, digest in manifest["source_sha256"].items():
-        assert normalized_source_sha256(ROOT / source) == digest, source
+        assert source_sha256_at_archive_commit(
+            ROOT, ARCHIVE / "manifest.json", ROOT / source
+        ) == digest, source
 
     assert len(manifest["native_runs"]) == 6
     assert len(manifest["full_hashcat_info_runs"]) == 3

@@ -1,0 +1,111 @@
+{
+  "date": "2026-11-01",
+  "scope": "Public one/two-stage Vulkan program declarations validated against real Mali-G715 limits and consumed by the production Android HASHCAT information-mode Compute executor",
+  "minimum_android_api": 24,
+  "physical_gpu_profiles": [
+    "pixel-arm64"
+  ],
+  "armv7_compile_only": true,
+  "adreno_current_revision_runtime_tested": false,
+  "hashcat_info_mode_only": true,
+  "hashcat_hashing_scheduler_connected": false,
+  "cryptographic_spirv_kernels_ported": 0,
+  "password_or_hash_inputs_processed": false,
+  "program_graph_connected_to_executor": true,
+  "source_hash_policy": "CRLF normalized to LF",
+  "source_sha256": {
+    "source/src/backend.c": "02f164669e715d72a7f557a742815312be54ac72e4a67a42906a7d3c28fefacb",
+    "source/src/backend_vulkan.c": "799a73573ea33016a5238a1a64e00a18dddefe4d714716de6bf89626f4206354",
+    "source/src/backend_vulkan_session.c": "9b73ddac998abee95bb5509a5956668a592fd5b62079e95d3480358f2b143747",
+    "source/src/backend_vulkan_kernel.c": "6a554554f3f86d584ac1b2dcd9d38e2da777120fde3bbe2469675115aa9be4dc",
+    "source/src/backend_vulkan_program.c": "f500bb60f93b88ecf362c11874fd2d440fb0cd2a1b5c2ee891588ea0c70bd5e4",
+    "source/src/Makefile": "8e84be3bc01e967462d6a1817264ecc5d99f1a4434bfa6bc6cb637f85ef47af9",
+    "source/include/backend_vulkan.h": "563be5227e892b1d4a2425f656d3afb2777bef694d416e8fb79836c8f58c5e65",
+    "source/include/backend_vulkan_kernel.h": "55eae3367247adeba64c8b016ecae192342139bb1a667d5dbb22fe044060537a",
+    "source/include/backend_vulkan_program.h": "a6005056fb7df7a9f7dea572e33e901dde3c7d419b0a9525a35ba5e9bc690693",
+    "source/include/backend_vulkan_public_spirv.h": "77ceebcd882df888f7c324a0ebd5deb29c1e482fa2872bf5a6b1d0ebc34ea316",
+    "source/include/backend_vulkan_public_stage2_spirv.h": "76056c2a69c9219708a76d321ef26aeb2fe90ce67f44bd81b456d3dc08ce10e1",
+    "tools/vulkan-backend-public-kernel.comp": "8a495c0e6c87441350bf40e9383aa82e07a8ae1cac227daadab3e5186b9b0791",
+    "tools/vulkan-backend-public-stage2.comp": "afb4a7d9d31d8aec9500e03e096b0d658e74077fcef6db88073d899af469f05b",
+    "tools/vulkan-backend-public-chain-diagnostic.c": "e4e626f8ed98d65798c67c8fdc151c6dd61195cecf213c8937c6053648b2a8e4",
+    "tools/build-vulkan-backend-public-chain.ps1": "bbd4d270c6371fc8ee336854c1009588231000f87b72581e4e3a08b2cb0b2539",
+    "tools/run-vulkan-backend-program-executor.ps1": "b2588702c578e1c10601af3524de6837db178174821236a31b191382fb4aecdf",
+    "tools/run-vulkan-hashcat-program-executor.ps1": "00470f99148cd3b5610e4172e07e60c2a0676230a419c7ac64b7640a5ef6cddc",
+    "tools/archive-vulkan-backend-program-executor-evidence.py": "804b86a810c10d614767dc7772b9cf028d4a7d3a57cdedda91effd3ccb92b386",
+    "tools/test-vulkan-backend-program-executor-evidence.py": "c107e7782aadde15d32d11469fa2fa65a7f1bbccd6f1be4345b378d5e4d87daa",
+    "tools/vulkan-core10-device-catalog.c": "7e454956b965356b1418e8730913b92304b78bab20b1cd3d510a90e19cc6ef6b",
+    "tools/vulkan-core11-policy.c": "ac4fd1bf17a4e61d801de94ee51f6df920e9ce1b9285168e94f2ea412305ede8",
+    "tools/vulkan-auto-config.c": "7dda45d969c6fd092c31821cc8022f69a4dd8b748e852fcb7a2bd23552a571dd",
+    "scripts/BUILD.ps1": "40ef1f91ee731cd660da43427885c93b1e61312c5fd655cc9b7b711db542925f"
+  },
+  "native_artifact_sha256": {
+    "arm64": {
+      "diagnostic": "85355199e0e6da11638457df7502e1fe3f30e8926f5fef01f1cc8e49a4ba3b52",
+      "backend_object": "4a04cde82b3b957330a9967249c806dec1c1e2d96163760383b3df468f86683a"
+    },
+    "armv7": {
+      "diagnostic": "15d60683c55dee82d1ee7769c0cdf414d015e453b384a34cddeee4d657728871",
+      "backend_object": "bd377852910cc2ae3f0fc9bf262285b219fbf5ca2dd2c62bc0d2940265e517f5"
+    }
+  },
+  "full_hashcat_artifact_sha256": {
+    "arm64-v8a": {
+      "frontend": "349bbf78656f83167e14aa77d00adb417366504847ce0109d33c5efff60545f4",
+      "module_00000": "373b743ea4078f920077ccecdc203313739e948e40bfa648ae5cffc1068d98ea"
+    },
+    "armeabi-v7a": {
+      "frontend": "840bbb357b66efe30d4d1b2a8db2820e875167c5e6a8e3acfa74ebc26872453f",
+      "module_00000": "7bd6c03e72d4a52a5c8124f7cc1ec7100541c4af4944b4ccbf0459e3f3ceb1e8"
+    }
+  },
+  "native_runs": [
+    {
+      "requested_api": "1.0",
+      "file": "pixel-arm64-1.0.log",
+      "sha256": "709776dec5df54e707bc195b728bbc254de357f3c18a3d50d39637095742a4f9",
+      "native_exit_code": 0,
+      "program_validations": 2,
+      "vk_instances": 2,
+      "compute_dispatches": 4,
+      "verified_words": 256
+    },
+    {
+      "requested_api": "1.1",
+      "file": "pixel-arm64-1.1.log",
+      "sha256": "ab332dcfdd32b108d80dabc8346d2304ce950de9e912b2b668e66ecc0640c6ba",
+      "native_exit_code": 0,
+      "program_validations": 2,
+      "vk_instances": 2,
+      "compute_dispatches": 4,
+      "verified_words": 256
+    }
+  ],
+  "full_hashcat_info_run": {
+    "file": "pixel-arm64-hashcat-program-info.log",
+    "sha256": "f10d62e564f01d3ee5e1d1379099524a879509598dede7187aee79c046c3364a",
+    "native_exit_code": 0,
+    "program_validations": 2,
+    "compute_dispatches": 3,
+    "verified_words": 192,
+    "normal_opencl_gpu_enumeration": true
+  },
+  "invalid_cli": {
+    "file": "pixel-arm64-negative-controls.log",
+    "sha256": "40462babe696dd71908c8eecf4d58f8495930d17963e869bc7e478d8abc7222b",
+    "invalid_requests": 3
+  },
+  "totals": {
+    "real_android_processes": 3,
+    "program_validations_against_real_gpu_limits": 6,
+    "real_spirv_vkcmd_dispatches": 11,
+    "public_integer_words_verified": 704,
+    "invalid_native_commands": 3
+  },
+  "limitations": [
+    "This current-revision executor integration was run only on Pixel 9 Pro XL Mali-G715 ARM64 because RedMagic was disconnected.",
+    "ARMv7 native diagnostic and full HASHCAT binaries were compiled and hashed but not executed on physical ARMv7 hardware for this revision.",
+    "Only the embedded public integer SPIR-V modules are accepted by the information-mode verification methods.",
+    "The normal HASHCAT hashing scheduler remains disconnected from Vulkan and no password candidate or target digest is processed.",
+    "The executor currently owns capacity for at most two public program stages even though the host-only program validator can validate longer linear graphs."
+  ]
+}

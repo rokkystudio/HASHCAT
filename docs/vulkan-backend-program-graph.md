@@ -258,16 +258,15 @@ password-processing claims.
 
 ## Current verification boundary
 
-This milestone establishes the declaration and validation layer only.
+This milestone itself establishes the declaration and validation layer only.
 
-The next executor milestone can consume
-`backend_vulkan_program_stage_t` declarations to create descriptor sets,
-pipelines and shader-write-to-shader-read barriers dynamically. That
-integration requires new physical GPU evidence because it modifies the
-production source currently covered by the published two-stage hardware
-archive.
+The follow-on [program-declared executor milestone](vulkan-backend-program-executor-android.md)
+uses these declarations for descriptor bindings, SPIR-V module creation,
+dispatch group counts and shader-write-to-shader-read dependencies in the
+real Android `hashcat -I` process. Its new evidence is explicitly Pixel
+ARM64 only; the earlier Adreno/Mali two-stage archive remains historical.
 
-ARMv7 compilation and ELF identity are verified, but the program-graph
-diagnostic was not run in an ARMv7 process for this milestone because
+ARMv7 compilation and ELF identity for this host-only contract are verified,
+but the program-graph diagnostic was not run in an ARMv7 process because
 the RedMagic device was disconnected. The Pixel ARM64 process completed
 all 16 host-only cases with native exit code zero.

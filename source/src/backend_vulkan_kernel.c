@@ -21,6 +21,7 @@
 #include "backend_vulkan_kernel.h"
 
 #include "backend_vulkan.h"
+#include "backend_vulkan_program.h"
 #include "backend_vulkan_public_spirv.h"
 #include "backend_vulkan_public_stage2_spirv.h"
 
@@ -32,6 +33,59 @@
 #define BACKEND_VULKAN_PUBLIC_LOCAL_SIZE 32u
 #define BACKEND_VULKAN_PUBLIC_GROUPS 2u
 #define BACKEND_VULKAN_PUBLIC_BYTES (BACKEND_VULKAN_PUBLIC_WORDS * sizeof (uint32_t))
+
+/**
+ * Declare the exact embedded public shader stages consumed by the executor.
+ *
+ * Stage zero reads buffer 0 and writes buffer 1. Stage one reads buffer 1
+ * and writes buffer 2. The declarations contain the immutable SPIR-V
+ * arrays and exact Compute topology used by both validation and command
+ * recording; no runtime heuristic rewrites these values.
+ */
+static const backend_vulkan_program_stage_t backend_vulkan_public_stages[2] =
+{
+  {
+    .name = "public_u32_transform",
+    .spirv = backend_vulkan_public_spirv,
+    .spirv_words = sizeof (backend_vulkan_public_spirv) / sizeof (uint32_t),
+    .source_buffer_index = 0u,
+    .destination_buffer_index = 1u,
+    .local_size = { BACKEND_VULKAN_PUBLIC_LOCAL_SIZE, 1u, 1u },
+    .group_count = { BACKEND_VULKAN_PUBLIC_GROUPS, 1u, 1u }
+  },
+  {
+    .name = "public_u32_rotate",
+    .spirv = backend_vulkan_public_stage2_spirv,
+    .spirv_words =
+      sizeof (backend_vulkan_public_stage2_spirv) / sizeof (uint32_t),
+    .source_buffer_index = 1u,
+    .destination_buffer_index = 2u,
+    .local_size = { BACKEND_VULKAN_PUBLIC_LOCAL_SIZE, 1u, 1u },
+    .group_count = { BACKEND_VULKAN_PUBLIC_GROUPS, 1u, 1u }
+  }
+};
+
+/**
+ * Describe the original one-stage public verification program.
+ */
+static const backend_vulkan_program_t backend_vulkan_public_single =
+{
+  .stages = backend_vulkan_public_stages,
+  .stage_count = 1u,
+  .buffer_count = 2u,
+  .buffer_bytes = BACKEND_VULKAN_PUBLIC_BYTES
+};
+
+/**
+ * Describe the dependent two-stage public verification program.
+ */
+static const backend_vulkan_program_t backend_vulkan_public_chain =
+{
+  .stages = backend_vulkan_public_stages,
+  .stage_count = 2u,
+  .buffer_count = 3u,
+  .buffer_bytes = BACKEND_VULKAN_PUBLIC_BYTES
+};
 
 /**
  * Own one host-visible storage buffer and the exact Vulkan memory plan.
@@ -69,7 +123,7 @@ typedef struct backend_vulkan_public_job
   VkDescriptorSet descriptor_set[2];
   VkShaderModule shader[2];
   VkPipeline pipeline[2];
-  uint32_t stages;
+  const backend_vulkan_program_t *program;
 } backend_vulkan_public_job_t;
 
 /**
@@ -90,7 +144,10 @@ static VkResult backend_vulkan_public_release (
 
   const VkResult result = vkDeviceWaitIdle (job->device);
 
-  for (uint32_t stage = 0u; stage < 2u; stage++)
+  const uint32_t stage_count =
+    job->program != NULL ? job->program->stage_count : 0u;
+
+  for (uint32_t stage = 0u; stage < stage_count; stage++)
   {
     if (job->pipeline[stage] != VK_NULL_HANDLE)
     {
@@ -143,7 +200,10 @@ static VkResult backend_vulkan_public_release (
     );
   }
 
-  for (uint32_t i = 0u; i < 3u; i++)
+  const uint32_t buffer_count =
+    job->program != NULL ? job->program->buffer_count : 0u;
+
+  for (uint32_t i = 0u; i < buffer_count; i++)
   {
     backend_vulkan_public_buffer_t *buffer = &job->buffers[i];
 
@@ -252,18 +312,22 @@ static VkResult backend_vulkan_public_buffer_open (
 }
 
 /**
- * Create one Vulkan 1.0 Compute pipeline and descriptor set per stage.
+ * Create one descriptor set and Vulkan 1.0 Compute pipeline per program stage.
  *
- * Both stages use one two-binding STORAGE_BUFFER descriptor layout.
- * Descriptor set zero binds buffers 0/1 and descriptor set one binds
- * buffers 1/2. Loads distinct immutable SPIR-V 1.0 modules and creates
- * one pipeline per stage, without enabling optional features or
- * extensions. Any partial resources belong to the outer job cleanup.
+ * The validated program supplies immutable SPIR-V bytes, exact source and
+ * destination buffer indices and stage count. Every stage uses one common
+ * two-binding STORAGE_BUFFER layout. Descriptor writes and shader-module
+ * creation therefore follow the explicit declaration instead of stage
+ * number conventions. This executor currently owns capacity for at most
+ * two public stages; larger valid declarations are rejected here.
  */
 static VkResult backend_vulkan_public_pipeline_open (
   backend_vulkan_public_job_t *job)
 {
-  if (job->stages != 1u && job->stages != 2u)
+  if (job->program == NULL
+   || job->program->stage_count == 0u
+   || job->program->stage_count > 2u
+   || job->program->buffer_count > 3u)
   {
     return VK_ERROR_INITIALIZATION_FAILED;
   }
@@ -313,13 +377,13 @@ static VkResult backend_vulkan_public_pipeline_open (
   const VkDescriptorPoolSize pool_size =
   {
     .type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
-    .descriptorCount = job->stages * 2u
+    .descriptorCount = job->program->stage_count * 2u
   };
 
   const VkDescriptorPoolCreateInfo pool_info =
   {
     .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
-    .maxSets = job->stages,
+    .maxSets = job->program->stage_count,
     .poolSizeCount = 1u,
     .pPoolSizes = &pool_size
   };
@@ -340,7 +404,7 @@ static VkResult backend_vulkan_public_pipeline_open (
   {
     .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
     .descriptorPool = job->descriptor_pool,
-    .descriptorSetCount = job->stages,
+    .descriptorSetCount = job->program->stage_count,
     .pSetLayouts = layouts
   };
 
@@ -350,19 +414,24 @@ static VkResult backend_vulkan_public_pipeline_open (
 
   if (result != VK_SUCCESS) return result;
 
-  for (uint32_t stage = 0u; stage < job->stages; stage++)
+  for (uint32_t stage_index = 0u;
+       stage_index < job->program->stage_count;
+       stage_index++)
   {
+    const backend_vulkan_program_stage_t *stage =
+      &job->program->stages[stage_index];
+
     const VkDescriptorBufferInfo buffer_info[2] =
     {
       {
-        .buffer = job->buffers[stage].buffer,
+        .buffer = job->buffers[stage->source_buffer_index].buffer,
         .offset = 0u,
-        .range = BACKEND_VULKAN_PUBLIC_BYTES
+        .range = job->program->buffer_bytes
       },
       {
-        .buffer = job->buffers[stage + 1u].buffer,
+        .buffer = job->buffers[stage->destination_buffer_index].buffer,
         .offset = 0u,
-        .range = BACKEND_VULKAN_PUBLIC_BYTES
+        .range = job->program->buffer_bytes
       }
     };
 
@@ -370,7 +439,7 @@ static VkResult backend_vulkan_public_pipeline_open (
     {
       {
         .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-        .dstSet = job->descriptor_set[stage],
+        .dstSet = job->descriptor_set[stage_index],
         .dstBinding = 0u,
         .descriptorCount = 1u,
         .descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
@@ -378,7 +447,7 @@ static VkResult backend_vulkan_public_pipeline_open (
       },
       {
         .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-        .dstSet = job->descriptor_set[stage],
+        .dstSet = job->descriptor_set[stage_index],
         .dstBinding = 1u,
         .descriptorCount = 1u,
         .descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
@@ -393,16 +462,12 @@ static VkResult backend_vulkan_public_pipeline_open (
     const VkShaderModuleCreateInfo shader_info =
     {
       .sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
-      .codeSize = stage == 0u
-        ? sizeof (backend_vulkan_public_spirv)
-        : sizeof (backend_vulkan_public_stage2_spirv),
-      .pCode = stage == 0u
-        ? backend_vulkan_public_spirv
-        : backend_vulkan_public_stage2_spirv
+      .codeSize = (size_t) stage->spirv_words * sizeof (uint32_t),
+      .pCode = stage->spirv
     };
 
     result = vkCreateShaderModule (
-      job->device, &shader_info, NULL, &job->shader[stage]
+      job->device, &shader_info, NULL, &job->shader[stage_index]
     );
 
     if (result != VK_SUCCESS) return result;
@@ -414,7 +479,7 @@ static VkResult backend_vulkan_public_pipeline_open (
       {
         .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
         .stage = VK_SHADER_STAGE_COMPUTE_BIT,
-        .module = job->shader[stage],
+        .module = job->shader[stage_index],
         .pName = "main"
       },
       .layout = job->pipeline_layout
@@ -422,7 +487,7 @@ static VkResult backend_vulkan_public_pipeline_open (
 
     result = vkCreateComputePipelines (
       job->device, VK_NULL_HANDLE, 1u, &compute_info,
-      NULL, &job->pipeline[stage]
+      NULL, &job->pipeline[stage_index]
     );
 
     if (result != VK_SUCCESS) return result;
@@ -432,21 +497,30 @@ static VkResult backend_vulkan_public_pipeline_open (
 }
 
 /**
- * Dispatch one or two public kernels with explicit GPU buffer barriers.
+ * Dispatch the validated public program with explicit declared dependencies.
  *
- * Flushes mapped CPU input, dispatches stage one, and when requested
- * inserts a COMPUTE_SHADER write-to-read barrier on its intermediate
- * buffer before dispatching stage two. Final COMPUTE-to-HOST barriers
- * cover both outputs. Waits for a real Vulkan fence, invalidates
- * noncoherent memory and compares every intermediate/final result
- * against independently computed public 32-bit CPU arithmetic.
+ * Writes the public CPU input to the first stage's declared source buffer.
+ * For every later stage, inserts a COMPUTE_SHADER write-to-read barrier on
+ * that stage's declared source buffer before binding its pipeline and set.
+ * Each dispatch uses the stage's exact group_count. Final shader-write-to-
+ * host-read barriers cover every declared destination buffer. A real fence
+ * precedes noncoherent invalidation and independent CPU verification.
  *
- * No passwords, salts, target digests or HASHCAT scheduler are touched.
+ * The current public verifier knows the arithmetic of its embedded one/two
+ * stages, but command recording itself follows the program declaration.
  */
 static VkResult backend_vulkan_public_dispatch (
   backend_vulkan_public_job_t *job,
   FILE *diagnostics)
 {
+  if (job == NULL || job->program == NULL)
+  {
+    return VK_ERROR_INITIALIZATION_FAILED;
+  }
+
+  const backend_vulkan_program_stage_t *first_stage =
+    &job->program->stages[0];
+
   uint32_t input[BACKEND_VULKAN_PUBLIC_WORDS] = { 0 };
 
   for (uint32_t i = 0u; i < BACKEND_VULKAN_PUBLIC_WORDS; i++)
@@ -455,13 +529,16 @@ static VkResult backend_vulkan_public_dispatch (
       UINT32_C (0x10203040) ^ (i * UINT32_C (0x01010101));
   }
 
+  backend_vulkan_public_buffer_t *input_buffer =
+    &job->buffers[first_stage->source_buffer_index];
+
   memcpy (
-    job->buffers[0].mapped, input, sizeof (input)
+    input_buffer->mapped, input, sizeof (input)
   );
 
   VkResult result = vulkan_auto_sync_mapped_memory (
-    job->device, job->buffers[0].memory,
-    &job->buffers[0].plan, VK_FALSE
+    job->device, input_buffer->memory,
+    &input_buffer->plan, VK_FALSE
   );
 
   if (result != VK_SUCCESS) return result;
@@ -476,9 +553,14 @@ static VkResult backend_vulkan_public_dispatch (
 
   if (result != VK_SUCCESS) return result;
 
-  for (uint32_t stage = 0u; stage < job->stages; stage++)
+  for (uint32_t stage_index = 0u;
+       stage_index < job->program->stage_count;
+       stage_index++)
   {
-    if (stage != 0u)
+    const backend_vulkan_program_stage_t *stage =
+      &job->program->stages[stage_index];
+
+    if (stage_index != 0u)
     {
       const VkBufferMemoryBarrier intermediate =
       {
@@ -487,9 +569,9 @@ static VkResult backend_vulkan_public_dispatch (
         .dstAccessMask = VK_ACCESS_SHADER_READ_BIT,
         .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
         .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-        .buffer = job->buffers[stage].buffer,
+        .buffer = job->buffers[stage->source_buffer_index].buffer,
         .offset = 0u,
-        .size = BACKEND_VULKAN_PUBLIC_BYTES
+        .size = job->program->buffer_bytes
       };
 
       vkCmdPipelineBarrier (
@@ -505,34 +587,42 @@ static VkResult backend_vulkan_public_dispatch (
 
     vkCmdBindPipeline (
       job->command, VK_PIPELINE_BIND_POINT_COMPUTE,
-      job->pipeline[stage]
+      job->pipeline[stage_index]
     );
 
     vkCmdBindDescriptorSets (
       job->command, VK_PIPELINE_BIND_POINT_COMPUTE,
       job->pipeline_layout, 0u, 1u,
-      &job->descriptor_set[stage], 0u, NULL
+      &job->descriptor_set[stage_index], 0u, NULL
     );
 
     vkCmdDispatch (
-      job->command, BACKEND_VULKAN_PUBLIC_GROUPS, 1u, 1u
+      job->command,
+      stage->group_count[0],
+      stage->group_count[1],
+      stage->group_count[2]
     );
   }
 
   VkBufferMemoryBarrier host_barriers[2] = { 0 };
 
-  for (uint32_t stage = 0u; stage < job->stages; stage++)
+  for (uint32_t stage_index = 0u;
+       stage_index < job->program->stage_count;
+       stage_index++)
   {
-    host_barriers[stage] = (VkBufferMemoryBarrier)
+    const backend_vulkan_program_stage_t *stage =
+      &job->program->stages[stage_index];
+
+    host_barriers[stage_index] = (VkBufferMemoryBarrier)
     {
       .sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER,
       .srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT,
       .dstAccessMask = VK_ACCESS_HOST_READ_BIT,
       .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
       .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-      .buffer = job->buffers[stage + 1u].buffer,
+      .buffer = job->buffers[stage->destination_buffer_index].buffer,
       .offset = 0u,
-      .size = BACKEND_VULKAN_PUBLIC_BYTES
+      .size = job->program->buffer_bytes
     };
   }
 
@@ -542,7 +632,7 @@ static VkResult backend_vulkan_public_dispatch (
     VK_PIPELINE_STAGE_HOST_BIT,
     0u,
     0u, NULL,
-    job->stages, host_barriers,
+    job->program->stage_count, host_barriers,
     0u, NULL
   );
 
@@ -569,18 +659,26 @@ static VkResult backend_vulkan_public_dispatch (
 
   if (result != VK_SUCCESS) return result;
 
-  for (uint32_t stage = 0u; stage < job->stages; stage++)
+  for (uint32_t stage_index = 0u;
+       stage_index < job->program->stage_count;
+       stage_index++)
   {
+    const uint32_t output_index =
+      job->program->stages[stage_index].destination_buffer_index;
+
     result = vulkan_auto_sync_mapped_memory (
-      job->device, job->buffers[stage + 1u].memory,
-      &job->buffers[stage + 1u].plan, VK_TRUE
+      job->device, job->buffers[output_index].memory,
+      &job->buffers[output_index].plan, VK_TRUE
     );
 
     if (result != VK_SUCCESS) return result;
   }
 
+  const uint32_t first_output_index =
+    job->program->stages[0].destination_buffer_index;
+
   const uint32_t *first =
-    (const uint32_t *) job->buffers[1].mapped;
+    (const uint32_t *) job->buffers[first_output_index].mapped;
 
   for (uint32_t i = 0u; i < BACKEND_VULKAN_PUBLIC_WORDS; i++)
   {
@@ -601,10 +699,13 @@ static VkResult backend_vulkan_public_dispatch (
       return VK_ERROR_INITIALIZATION_FAILED;
     }
 
-    if (job->stages == 2u)
+    if (job->program->stage_count == 2u)
     {
+      const uint32_t second_output_index =
+        job->program->stages[1].destination_buffer_index;
+
       const uint32_t *second =
-        (const uint32_t *) job->buffers[2].mapped;
+        (const uint32_t *) job->buffers[second_output_index].mapped;
 
       const uint32_t rotated =
         (expected << 9u) | (expected >> 23u);
@@ -629,35 +730,41 @@ static VkResult backend_vulkan_public_dispatch (
     }
   }
 
-  if (job->stages == 1u)
+  if (job->program->stage_count == 1u)
   {
     fprintf (
       diagnostics,
       "BACKEND_VULKAN_KERNEL_DISPATCH_PASS"
-      " kernel=public_u32_transform"
+      " kernel=%s"
       " words=64 local=32 groups=2"
       " verified=64"
       " coherent_input=%u coherent_output=%u"
       " shaders=1 password_inputs=0 scheduled=0\n",
-      job->buffers[0].plan.coherent,
-      job->buffers[1].plan.coherent
+      job->program->stages[0].name,
+      input_buffer->plan.coherent,
+      job->buffers[first_output_index].plan.coherent
     );
   }
   else
   {
+    const uint32_t second_output_index =
+      job->program->stages[1].destination_buffer_index;
+
     fprintf (
       diagnostics,
       "BACKEND_VULKAN_CHAIN_DISPATCH_PASS"
-      " stage1=public_u32_transform"
-      " stage2=public_u32_rotate"
+      " stage1=%s"
+      " stage2=%s"
       " words=64 local=32 groups=2"
       " dispatches=2 verified_first=64 verified_second=64"
       " coherent_input=%u coherent_intermediate=%u coherent_output=%u"
       " barrier=shader_write_to_shader_read"
       " shaders=2 password_inputs=0 scheduled=0\n",
-      job->buffers[0].plan.coherent,
-      job->buffers[1].plan.coherent,
-      job->buffers[2].plan.coherent
+      job->program->stages[0].name,
+      job->program->stages[1].name,
+      input_buffer->plan.coherent,
+      job->buffers[first_output_index].plan.coherent,
+      job->buffers[second_output_index].plan.coherent
     );
   }
 
@@ -665,14 +772,14 @@ static VkResult backend_vulkan_public_dispatch (
 }
 
 /**
- * Run one or two public Vulkan 1.0 stages using backend device discovery.
+ * Run one declared public Vulkan 1.0 program using backend device discovery.
  *
- * Validates the exact Compute limits and required storage descriptors,
- * opens a temporary VkDevice, allocates the stage buffers and pipelines,
- * performs one ordered Compute command-buffer submission and verifies
- * each GPU output against the independent public-integer CPU reference.
- * The temporary device is closed before returning and the backend's
- * ordinary HASHCAT hashing device list is not touched.
+ * Selects the one- or two-stage immutable program declaration, obtains the
+ * real physical-device properties from the backend catalogue and validates
+ * the graph against those exact limits before any temporary VkDevice is
+ * created. Buffer allocation, descriptor/pipeline construction and command
+ * recording then consume the same declaration. All temporary resources are
+ * released without registering a Vulkan HASHCAT hashing device.
  */
 static VkResult backend_vulkan_kernel_verify_stages (
   backend_ctx_t *backend_ctx,
@@ -688,12 +795,30 @@ static VkResult backend_vulkan_kernel_verify_stages (
     return VK_ERROR_INITIALIZATION_FAILED;
   }
 
+  const backend_vulkan_program_t *program =
+    stages == 1u
+      ? &backend_vulkan_public_single
+      : &backend_vulkan_public_chain;
+
+  const backend_vulkan_program_stage_t *first_stage =
+    &program->stages[0];
+
   const vulkan_auto_compute_requirements_t requirements =
   {
-    .local_size = { BACKEND_VULKAN_PUBLIC_LOCAL_SIZE, 1u, 1u },
-    .group_count = { BACKEND_VULKAN_PUBLIC_GROUPS, 1u, 1u },
-    .storage_buffer_count = stages * 2u,
-    .largest_storage_buffer_bytes = BACKEND_VULKAN_PUBLIC_BYTES,
+    .local_size =
+    {
+      first_stage->local_size[0],
+      first_stage->local_size[1],
+      first_stage->local_size[2]
+    },
+    .group_count =
+    {
+      first_stage->group_count[0],
+      first_stage->group_count[1],
+      first_stage->group_count[2]
+    },
+    .storage_buffer_count = program->stage_count * 2u,
+    .largest_storage_buffer_bytes = program->buffer_bytes,
     .shared_memory_bytes = 0u
   };
 
@@ -707,9 +832,15 @@ static VkResult backend_vulkan_kernel_verify_stages (
 
   if (result != VK_SUCCESS) return result;
 
+  result = backend_vulkan_program_validate (
+    program, &selected.properties.limits, diagnostics
+  );
+
+  if (result != VK_SUCCESS) return result;
+
   backend_vulkan_public_job_t job = { 0 };
 
-  job.stages = stages;
+  job.program = program;
 
   const float priority = 1.0f;
 
@@ -748,7 +879,7 @@ static VkResult backend_vulkan_kernel_verify_stages (
     goto cleanup;
   }
 
-  for (uint32_t i = 0u; i < stages + 1u; i++)
+  for (uint32_t i = 0u; i < program->buffer_count; i++)
   {
     result = backend_vulkan_public_buffer_open (
       &job, &selected, &job.buffers[i]
@@ -799,7 +930,7 @@ static VkResult backend_vulkan_kernel_verify_stages (
 
   if (result != VK_SUCCESS) goto cleanup;
 
-  if (stages == 1u)
+  if (program->stage_count == 1u)
   {
     fprintf (
       diagnostics,
@@ -807,14 +938,17 @@ static VkResult backend_vulkan_kernel_verify_stages (
       " index=%" PRIu32
       " queue_family=%" PRIu32
       " api=%" PRIu32 ".%" PRIu32
-      " shader_words=%" PRIu64
+      " shader_words=%" PRIu32
       " descriptors=2"
-      " local=32 groups=2"
+      " local=%" PRIu32 " groups=%" PRIu32
+      " program_validated=1"
       " features=0 extensions=0 scheduled=0\n",
       device_index, selected.compute_queue_family,
       VK_API_VERSION_MAJOR (effective_api),
       VK_API_VERSION_MINOR (effective_api),
-      (uint64_t) (sizeof (backend_vulkan_public_spirv) / sizeof (uint32_t))
+      program->stages[0].spirv_words,
+      program->stages[0].local_size[0],
+      program->stages[0].group_count[0]
     );
   }
   else
@@ -825,16 +959,19 @@ static VkResult backend_vulkan_kernel_verify_stages (
       " index=%" PRIu32
       " queue_family=%" PRIu32
       " api=%" PRIu32 ".%" PRIu32
-      " shader_words_first=%" PRIu64
-      " shader_words_second=%" PRIu64
+      " shader_words_first=%" PRIu32
+      " shader_words_second=%" PRIu32
       " descriptors=4 sets=2 buffers=3"
-      " local=32 groups=2"
+      " local=%" PRIu32 " groups=%" PRIu32
+      " program_validated=1"
       " features=0 extensions=0 scheduled=0\n",
       device_index, selected.compute_queue_family,
       VK_API_VERSION_MAJOR (effective_api),
       VK_API_VERSION_MINOR (effective_api),
-      (uint64_t) (sizeof (backend_vulkan_public_spirv) / sizeof (uint32_t)),
-      (uint64_t) (sizeof (backend_vulkan_public_stage2_spirv) / sizeof (uint32_t))
+      program->stages[0].spirv_words,
+      program->stages[1].spirv_words,
+      program->stages[0].local_size[0],
+      program->stages[0].group_count[0]
     );
   }
 
@@ -848,7 +985,7 @@ cleanup:
 
     if (result == VK_SUCCESS) result = released;
 
-    if (stages == 1u)
+    if (program->stage_count == 1u)
     {
       fprintf (
         diagnostics,

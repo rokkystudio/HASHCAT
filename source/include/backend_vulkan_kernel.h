@@ -10,8 +10,9 @@
  * Execute one or two opt-in public-data Vulkan SPIR-V 1.0 Compute stages.
  *
  * A real backend_ctx catalogue supplies the selected Vulkan GPU and
- * VkInstance. Temporary VkDevices own host-visible storage buffers,
- * descriptor sets, distinct Compute pipelines and ordered GPU work.
+ * VkInstance. Each method selects an explicit backend_vulkan_program_t,
+ * validates its SPIR-V headers, buffer graph and dispatch topology against
+ * real VkPhysicalDeviceLimits, then creates temporary VkDevice resources.
  * The first method verifies 64 unsigned integers; the two-stage method
  * verifies both 64-word intermediate and 64-word final outputs after
  * an explicit shader-write-to-shader-read barrier. Both methods release
@@ -33,11 +34,11 @@
  * Verify one real Vulkan 1.0 public Compute shader and its output.
  *
  * Requires an active backend-owned Vulkan catalogue, exact physical
- * device index and non-NULL diagnostics. Rejects devices lacking the
- * declared 32x2 workgroup limits or two 256-byte storage buffers.
- * Creates the Vulkan Compute pipeline, binds both storage descriptors,
- * executes vkCmdDispatch(2,1,1), makes shader writes host-visible,
- * waits for the actual queue fence and compares every output word.
+ * device index and non-NULL diagnostics. The one-stage program declaration
+ * supplies the immutable SPIR-V module, buffer indices, local size and
+ * dispatch groups. The declaration is validated against the physical GPU
+ * before VkDevice creation. The executor then builds its pipeline/set,
+ * executes the declared dispatch, waits on a real fence and verifies output.
  *
  * Returns VK_SUCCESS only for exact GPU/CPU output equality and
  * complete resource cleanup. Other VkResults propagate immediately;
@@ -52,13 +53,13 @@ VkResult backend_vulkan_kernel_verify (
 /**
  * Verify one ordered pair of public SPIR-V 1.0 Compute shader stages.
  *
- * Requires a live backend Vulkan catalogue, valid physical-device
- * index and diagnostic stream. Creates three 256-byte host-visible
- * storage buffers, two descriptor sets, and two VkComputePipelines.
- * Stage one writes 64 public integers; stage two reads those values
- * after an explicit COMPUTE_SHADER write-to-read buffer barrier and
- * writes 64 final integers. A real fence and HOST_READ barriers precede
- * independent CPU comparison of all 128 stage values.
+ * Requires a live backend Vulkan catalogue, valid physical-device index
+ * and diagnostic stream. The two-stage backend_vulkan_program_t explicitly
+ * declares both SPIR-V modules, buffer 0->1->2 dependencies and dispatch
+ * topology. After validating that graph against real device limits, the
+ * executor creates three buffers, two sets/pipelines and records the required
+ * COMPUTE write-to-read dependency before the second declared dispatch.
+ * A real fence precedes independent CPU comparison of all 128 stage values.
  *
  * VK_SUCCESS requires complete GPU/CPU equality and successful cleanup.
  * Any Vulkan error or mismatch propagates without scheduling HASHCAT
