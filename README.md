@@ -73,6 +73,11 @@ limitations are in [the Vulkan Compute session report](docs/vulkan-backend-compu
 The [initial physical-device discovery milestone](docs/vulkan-hashcat-frontend-android-verification.md)
 remains archived separately.
 
+A [standalone Vulkan 1.0 public GPU-buffer transfer diagnostic](docs/vulkan-core10-transfer-buffer-portability.md)
+validates real host-visible memory, buffer copies, fences and noncoherent
+flush/invalidate on Adreno and Mali. This diagnostic is deliberately
+independent of the HASHCAT hashing backend.
+
 ## Working on hashcat source
 
 Edit files directly under `source/`, then commit them in this repository:

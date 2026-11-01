@@ -233,3 +233,9 @@ GPU and actual Android 7.0/API-24 OS were unavailable. Concurrent
 Vulkan device sessions, device-loss recovery, validation-layer
 tracking, Vulkan hashing kernels and production hashing-scheduler
 integration remain outside this milestone.
+
+An independent public-integer Vulkan 1.0 buffer-transfer diagnostic is
+available in `docs/vulkan-core10-transfer-buffer-portability.md`.
+It verifies actual VkBuffer allocations, queue copying and noncoherent
+memory synchronization without linking these resources to HASHCAT's
+hashing-device list or production kernel scheduler.
