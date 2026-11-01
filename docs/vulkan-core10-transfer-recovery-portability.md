@@ -242,6 +242,12 @@ to UTF-8 LF by the PowerShell test runner. Archived files preserve
 the runner's output bytes; **they are not represented as original
 unprocessed ADB byte streams**.
 
+A separate standalone test of **actual driver-returned fence status**
+is documented in `docs/vulkan-core10-transfer-fence-status-portability.md`.
+It verifies VK_NOT_READY, zero/1 ms VK_TIMEOUT and successful fence
+signals during real GPU buffer transfers without injecting a Vulkan
+result or attempting to lose a physical device.
+
 ## Verification limits
 
 The failure is *injected by the application immediately after a real

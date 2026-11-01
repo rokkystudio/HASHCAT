@@ -83,6 +83,10 @@ Android GPU hardware. The independent
 [fault-to-live-session recovery matrix](docs/vulkan-core10-transfer-recovery-portability.md)
 verifies two working VkDevices and fence-completed public data copies
 under the same VkInstance after each controlled acquisition failure.
+A [real Vulkan fence-status test](docs/vulkan-core10-transfer-fence-status-portability.md)
+verifies driver-returned `VK_NOT_READY` and `VK_TIMEOUT`, subsequent
+GPU copy completion, fence resets and noncoherent memory synchronization
+without causing or simulating GPU device loss.
 
 ## Working on hashcat source
 

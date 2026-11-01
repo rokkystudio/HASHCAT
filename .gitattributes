@@ -72,3 +72,7 @@ tests/fixtures/android-gpu/vulkan-core10-transfer-faults-20261101/manifest.json 
 # Keep real Android Vulkan fault-to-live-device recovery transcripts byte-identical.
 tests/fixtures/android-gpu/vulkan-core10-transfer-recovery-20261101/*.log -text whitespace=-blank-at-eol
 tests/fixtures/android-gpu/vulkan-core10-transfer-recovery-20261101/manifest.json text eol=lf
+
+# Preserve real Vulkan core 1.0 fence NOT_READY/TIMEOUT driver evidence.
+tests/fixtures/android-gpu/vulkan-core10-transfer-fence-status-20261101/*.log -text whitespace=-blank-at-eol
+tests/fixtures/android-gpu/vulkan-core10-transfer-fence-status-20261101/manifest.json text eol=lf

@@ -1,0 +1,8 @@
+TEST=vulkan-core10-transfer-fence-status-invalid-inputs
+ABI=armeabi-v7a
+INVALID_CASES=5
+INVALID_CASE=missing-options exit=2
+INVALID_CASE=unsupported-api exit=2
+INVALID_CASE=unsupported-memory exit=2
+INVALID_CASE=wrong-flag exit=2
+INVALID_CASE=extra-parameter exit=2
