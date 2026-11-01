@@ -76,7 +76,10 @@ remains archived separately.
 A [standalone Vulkan 1.0 public GPU-buffer transfer diagnostic](docs/vulkan-core10-transfer-buffer-portability.md)
 validates real host-visible memory, buffer copies, fences and noncoherent
 flush/invalidate on Adreno and Mali. This diagnostic is deliberately
-independent of the HASHCAT hashing backend.
+independent of the HASHCAT hashing backend. The
+[resource-acquisition fault verification](docs/vulkan-core10-transfer-fault-portability.md)
+also tests ten real Vulkan creation/cleanup interruption points on
+Android GPU hardware.
 
 ## Working on hashcat source
 

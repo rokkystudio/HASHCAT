@@ -59,13 +59,17 @@ Failed partial opens use the same release ordering.
 
 ## Public C API
 
-`vulkan_core10_transfer_session_open(session, selected, buffer_bytes, memory_mode, diagnostics)`
+`vulkan_core10_transfer_session_open(session, selected, buffer_bytes, memory_mode, fail_after, diagnostics)`
 
 Requires a zero-initialized session, explicitly capability-checked
 physical device, exact in-range 4-byte-aligned buffer size and a
 supported memory mode. Creates VkDevice, queue, fence, command pool,
 buffer objects and driver-compatible mapped allocations. On any error
-the session is empty and the driver result is returned.
+the session is empty and the driver result is returned. The explicit
+`fail_after=0` runs normally; points `1..10` interrupt immediately
+after one successful Vulkan resource acquisition, release all partial
+ownership and report `VK_ERROR_INITIALIZATION_FAILED`. Values above 10
+are rejected before allocation.
 
 `vulkan_core10_transfer_session_copy(session, input, output, bytes)`
 
@@ -162,6 +166,13 @@ hashes, exact queue/fence/transfer lifecycles, noncoherent cache sync,
 driver capability refusals and **20 deliberate evidence corruptions**.
 
 ## Deliberate boundaries
+
+Ten real partial-resource acquisition fault points are independently
+verified in `docs/vulkan-core10-transfer-fault-portability.md`. The
+normal transfer matrix was also rerun with the fault-enabled Android
+executables and the archived source/binary identities refer to those
+actual new native runs. The previous commit `ba6dcc1` retains the
+original milestone evidence.
 
 There is no Vulkan Compute shader execution, hashing-device
 registration, candidate generation, crypto workload or APK

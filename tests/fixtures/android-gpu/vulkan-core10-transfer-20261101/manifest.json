@@ -19,9 +19,9 @@
   "capture_policy": "ADB native stdout/stderr was processed by the PowerShell runner to normalize CRLF into LF before saving public transcripts. The resulting LF-only test log is preserved byte-for-byte, not claimed to be the original raw ADB byte stream.",
   "source_hash_policy": "CRLF normalized to LF",
   "source_sha256": {
-    "tools/vulkan-core10-transfer-session.h": "9d7c6a051064464263dda781eba001b91abf5aedcdd48c19076fa7dedb0aaa21",
-    "tools/vulkan-core10-transfer-session.c": "8bb59599a63dc10697fbb8bca7c68f33c4c386a34efd4f4a12c5bbb6d5f5c53e",
-    "tools/vulkan-core10-transfer-diagnostic.c": "afed3a43740ca7b94ff6389e525184594b48785c3ccb29d129be763f206d2ed8",
+    "tools/vulkan-core10-transfer-session.h": "236fb06fbd41a78f35c85dc8a4e4c440095a77ab4edfceb6488269f415acfe04",
+    "tools/vulkan-core10-transfer-session.c": "ca34405b2e556a5f72f7223c4bebea79556b2e87d939808f1dd426e3f5ec7f13",
+    "tools/vulkan-core10-transfer-diagnostic.c": "541182428eefd08881e4ca702540efd4a65d55ba7ffa8c27ad077ec3d0b944e1",
     "tools/build-vulkan-core10-transfer.ps1": "859805d2eaba6f539462be0f2faffade6a10e9441b31b21c3c435b18a0e34bf6",
     "tools/run-vulkan-core10-transfer.ps1": "7b5079e7d64aa79861b7e736268c1bca5bbc756f9c49dca1eebc7d2bc5362c3e",
     "tools/archive-vulkan-core10-transfer-evidence.py": "84ce4b40af121ce81940cf9303ec04926d1b469eb7f3962d6747ef20494efedb",
@@ -34,8 +34,8 @@
     "tools/vulkan-core11-policy.c": "ac4fd1bf17a4e61d801de94ee51f6df920e9ce1b9285168e94f2ea412305ede8"
   },
   "native_elf_sha256": {
-    "arm64": "17d132088962a522e313c179a9ad7b6ca639c6de03ea535c1a48ceaae279c247",
-    "armv7": "d9b83780e8c2b882855835247d983194812e66971bb2dcf7f9da41312a90b0a4"
+    "arm64": "2cd7c114fecd08556b8dfe8ebbc68cecb44c286932d0fcd2c0a7b7bf8c0befd9",
+    "armv7": "61d578be1f3912a0645d5581d2129627599165bdba5aebae9859fd32a39a054d"
   },
   "runs": [
     {

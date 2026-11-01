@@ -23,11 +23,14 @@
  * transfer lengths. A noncoherent-only selection is allowed to return
  * VK_ERROR_FEATURE_NOT_PRESENT when the driver has no compatible memory
  * type. That refusal is reported distinctly from a successful transfer.
+ * A nonzero fail_after injects a test-only failure immediately after
+ * one of ten real Vulkan resource acquisitions; no queue copy occurs.
  */
 static int verify_transfer_trial (
   uint32_t trial,
   uint32_t minimum_api,
-  vulkan_core10_transfer_memory_mode_t memory_mode)
+  vulkan_core10_transfer_memory_mode_t memory_mode,
+  uint32_t fail_after)
 {
   const vulkan_auto_compute_requirements_t workload =
   {
@@ -50,7 +53,7 @@ static int verify_transfer_trial (
     &session, source, output, 4u
   ) != VK_ERROR_INITIALIZATION_FAILED
    || vulkan_core10_transfer_session_open (
-    &session, NULL, 4096u, memory_mode, stdout
+    &session, NULL, 4096u, memory_mode, 0u, stdout
   ) != VK_ERROR_INITIALIZATION_FAILED
    || vulkan_core10_transfer_session_close (
     NULL
@@ -108,18 +111,18 @@ static int verify_transfer_trial (
   }
 
   if (vulkan_core10_transfer_session_open (
-    &session, &selected, 0u, memory_mode, stdout
+    &session, &selected, 0u, memory_mode, 0u, stdout
   ) != VK_ERROR_INITIALIZATION_FAILED
    || vulkan_core10_transfer_session_open (
-    &session, &selected, 3u, memory_mode, stdout
+    &session, &selected, 3u, memory_mode, 0u, stdout
   ) != VK_ERROR_INITIALIZATION_FAILED
    || vulkan_core10_transfer_session_open (
     &session, &selected, 4096u,
     (vulkan_core10_transfer_memory_mode_t) 99u,
-    stdout
+    0u, stdout
   ) != VK_ERROR_INITIALIZATION_FAILED
    || vulkan_core10_transfer_session_open (
-    &session, &selected, 4096u, memory_mode, NULL
+    &session, &selected, 4096u, memory_mode, 0u, NULL
   ) != VK_ERROR_INITIALIZATION_FAILED
    || session.device != VK_NULL_HANDLE)
   {
@@ -136,8 +139,39 @@ static int verify_transfer_trial (
   );
 
   result = vulkan_core10_transfer_session_open (
-    &session, &selected, 4096u, memory_mode, stdout
+    &session, &selected, 4096u, memory_mode, fail_after, stdout
   );
+
+  if (fail_after != 0u)
+  {
+    if (result != VK_ERROR_INITIALIZATION_FAILED
+     || session.device != VK_NULL_HANDLE
+     || session.opened != VK_FALSE
+     || session.acquisitions != 0u
+     || session.buffers[0].buffer != VK_NULL_HANDLE
+     || session.buffers[1].buffer != VK_NULL_HANDLE)
+    {
+      fprintf (
+        stderr,
+        "TRANSFER_FAULT_OWNERSHIP_FAILED trial=%" PRIu32
+        " point=%" PRIu32 " result=%d\n",
+        trial, fail_after, result
+      );
+
+      goto cleanup_session;
+    }
+
+    fprintf (
+      stdout,
+      "TRANSFER_FAULT_TRIAL trial=%" PRIu32
+      " point=%" PRIu32 " injected=1 owned=0\n",
+      trial, fail_after
+    );
+
+    status = 42;
+
+    goto cleanup_catalog;
+  }
 
   if (result == VK_ERROR_FEATURE_NOT_PRESENT
    && memory_mode == VULKAN_CORE10_TRANSFER_REQUIRE_NONCOHERENT
@@ -168,7 +202,7 @@ static int verify_transfer_trial (
   }
 
   if (vulkan_core10_transfer_session_open (
-    &session, &selected, 4096u, memory_mode, stdout
+    &session, &selected, 4096u, memory_mode, 0u, stdout
   ) != VK_ERROR_INITIALIZATION_FAILED
    || vulkan_core10_transfer_session_copy (
     &session, source, output, 0u
@@ -319,21 +353,25 @@ cleanup_catalog:
  * Native exit 0 means ten fence-completed buffer copies were verified.
  * Native exit 3 explicitly indicates two driver refusals for requested
  * HOST_VISIBLE noncoherent memory. Exit 1 means driver/test failure;
- * exit 2 rejects malformed command-line input.
+ * exit 2 rejects malformed command-line input. With an explicit
+ * fault-after point from 1 through 10 and preferred memory, exit 42
+ * means two real Vulkan acquisition interruptions were cleaned up.
  */
 int main (int argc, char **argv)
 {
-  if (argc != 5
+  if ((argc != 5 && argc != 7)
    || strcmp (argv[1], "--minimum") != 0
    || strcmp (argv[3], "--memory") != 0
    || (strcmp (argv[2], "1.0") != 0
     && strcmp (argv[2], "1.1") != 0)
    || (strcmp (argv[4], "prefer") != 0
-    && strcmp (argv[4], "noncoherent") != 0))
+    && strcmp (argv[4], "noncoherent") != 0)
+   || (argc == 7 && strcmp (argv[5], "--fault-after") != 0))
   {
     fprintf (
       stderr,
-      "Usage: %s --minimum 1.0|1.1 --memory prefer|noncoherent\n",
+      "Usage: %s --minimum 1.0|1.1 --memory prefer|noncoherent"
+      " [--fault-after 1..10]\n",
       argv[0]
     );
 
@@ -348,15 +386,54 @@ int main (int argc, char **argv)
       ? VULKAN_CORE10_TRANSFER_PREFER_COHERENT
       : VULKAN_CORE10_TRANSFER_REQUIRE_NONCOHERENT;
 
+  uint32_t fail_after = 0u;
+
+  if (argc == 7)
+  {
+    if (strcmp (argv[4], "prefer") != 0
+     || argv[6][0] == '\0')
+    {
+      fprintf (stderr, "TRANSFER_REJECT_FAULT_MODE\n");
+
+      return 2;
+    }
+
+    for (const char *digit = argv[6]; *digit != '\0'; digit++)
+    {
+      if (*digit < '0' || *digit > '9')
+      {
+        fprintf (stderr, "TRANSFER_REJECT_FAULT_FORMAT\n");
+
+        return 2;
+      }
+
+      fail_after = fail_after * 10u + (uint32_t) (*digit - '0');
+
+      if (fail_after > 10u)
+      {
+        fprintf (stderr, "TRANSFER_REJECT_FAULT_RANGE\n");
+
+        return 2;
+      }
+    }
+
+    if (fail_after == 0u)
+    {
+      fprintf (stderr, "TRANSFER_REJECT_FAULT_RANGE\n");
+
+      return 2;
+    }
+  }
+
   int previous_status = -1;
 
   for (uint32_t trial = 0u; trial < 2u; trial++)
   {
     const int result = verify_transfer_trial (
-      trial, api, memory_mode
+      trial, api, memory_mode, fail_after
     );
 
-    if (result != 0 && result != 3) return 1;
+    if (result != 0 && result != 3 && result != 42) return 1;
 
     if (previous_status != -1 && result != previous_status)
     {
@@ -366,6 +443,20 @@ int main (int argc, char **argv)
     }
 
     previous_status = result;
+  }
+
+  if (previous_status == 42)
+  {
+    fprintf (
+      stdout,
+      "TRANSFER_DIAGNOSTIC_FAULT api=%s"
+      " mode=%" PRIu32
+      " point=%" PRIu32
+      " trials=2 injected=2 copies=0 shaders=0\n",
+      argv[2], (uint32_t) memory_mode, fail_after
+    );
+
+    return 42;
   }
 
   if (previous_status == 3)

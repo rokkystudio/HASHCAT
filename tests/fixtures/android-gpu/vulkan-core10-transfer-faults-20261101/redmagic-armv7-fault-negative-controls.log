@@ -1,0 +1,8 @@
+TEST=vulkan-core10-transfer-fault-invalid-inputs
+ABI=armeabi-v7a
+INVALID_CASES=5
+INVALID_CASE=zero-fault exit=2
+INVALID_CASE=fault-out-of-range exit=2
+INVALID_CASE=fault-nonnumeric exit=2
+INVALID_CASE=fault-noncoherent-mode exit=2
+INVALID_CASE=fault-extra-argument exit=2

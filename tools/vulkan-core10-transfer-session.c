@@ -68,6 +68,40 @@ static VkResult vulkan_core10_transfer_select_memory (
 }
 
 /**
+ * Record one genuinely acquired Vulkan handle and a requested test fault.
+ *
+ * The numbered fault points represent successful acquisitions of actual
+ * driver resources. A matching point requests VK_ERROR_INITIALIZATION_FAILED;
+ * the caller releases all acquired resources on its existing failure path.
+ * Normal creation passes fail_after=0 and does not inject errors.
+ */
+static VkBool32 vulkan_core10_transfer_acquired (
+  vulkan_core10_transfer_session_t *session,
+  uint32_t fail_after,
+  const char *resource)
+{
+  session->acquisitions++;
+
+  if (fail_after == 0u || session->acquisitions != fail_after)
+  {
+    return VK_FALSE;
+  }
+
+  session->injected_fault = session->acquisitions;
+
+  fprintf (
+    session->diagnostics,
+    "TRANSFER_INJECT_FAULT point=%" PRIu32
+    " acquisition=%" PRIu32
+    " resource=%s result=%d\n",
+    fail_after, session->acquisitions,
+    resource, VK_ERROR_INITIALIZATION_FAILED
+  );
+
+  return VK_TRUE;
+}
+
+/**
  * Release every partially or fully acquired Vulkan resource in order.
  *
  * Waits once for VkDevice idle, releases mappings before their memory,
@@ -88,6 +122,13 @@ VkResult vulkan_core10_transfer_session_close (
   }
 
   const VkResult wait_result = vkDeviceWaitIdle (session->device);
+
+  uint32_t released_mappings = 0u;
+  uint32_t released_buffers = 0u;
+  uint32_t released_memory = 0u;
+  uint32_t released_fence = 0u;
+  uint32_t released_command = 0u;
+  uint32_t released_pool = 0u;
 
   if (session->diagnostics != NULL)
   {
@@ -119,6 +160,8 @@ VkResult vulkan_core10_transfer_session_close (
       vkUnmapMemory (session->device, buffer->memory);
 
       buffer->mapped = NULL;
+
+      released_mappings++;
     }
 
     if (buffer->buffer != VK_NULL_HANDLE)
@@ -126,6 +169,8 @@ VkResult vulkan_core10_transfer_session_close (
       vkDestroyBuffer (session->device, buffer->buffer, NULL);
 
       buffer->buffer = VK_NULL_HANDLE;
+
+      released_buffers++;
     }
 
     if (buffer->memory != VK_NULL_HANDLE)
@@ -133,6 +178,8 @@ VkResult vulkan_core10_transfer_session_close (
       vkFreeMemory (session->device, buffer->memory, NULL);
 
       buffer->memory = VK_NULL_HANDLE;
+
+      released_memory++;
     }
   }
 
@@ -141,6 +188,8 @@ VkResult vulkan_core10_transfer_session_close (
     vkDestroyFence (session->device, session->fence, NULL);
 
     session->fence = VK_NULL_HANDLE;
+
+    released_fence++;
   }
 
   if (session->command != VK_NULL_HANDLE)
@@ -150,6 +199,8 @@ VkResult vulkan_core10_transfer_session_close (
     );
 
     session->command = VK_NULL_HANDLE;
+
+    released_command++;
   }
 
   if (session->command_pool != VK_NULL_HANDLE)
@@ -159,9 +210,35 @@ VkResult vulkan_core10_transfer_session_close (
     );
 
     session->command_pool = VK_NULL_HANDLE;
+
+    released_pool++;
   }
 
   vkDestroyDevice (session->device, NULL);
+
+  if (session->injected_fault != 0u && session->diagnostics != NULL)
+  {
+    fprintf (
+      session->diagnostics,
+      "TRANSFER_RELEASE point=%" PRIu32
+      " acquired=%" PRIu32
+      " mapped=%" PRIu32
+      " buffers=%" PRIu32
+      " memory=%" PRIu32
+      " fence=%" PRIu32
+      " command=%" PRIu32
+      " pool=%" PRIu32
+      " device=1\n",
+      session->injected_fault,
+      session->acquisitions,
+      released_mappings,
+      released_buffers,
+      released_memory,
+      released_fence,
+      released_command,
+      released_pool
+    );
+  }
 
   memset (session, 0, sizeof (*session));
 
@@ -175,13 +252,17 @@ VkResult vulkan_core10_transfer_session_close (
  * must have already passed the caller's Vulkan API and Compute capability
  * checks. Each independent VkBuffer uses its own actual memoryTypeBits
  * and VkMemoryRequirements.size, with no vendor-specific assumptions.
- * A failed acquisition closes all previous resources.
+ * A failed acquisition closes all previous resources. fail_after=0
+ * performs normal creation, and a point from 1 through 10 interrupts
+ * directly after the corresponding successful Vulkan acquisition.
+ * Each injected error releases all partial ownership in close.
  */
 VkResult vulkan_core10_transfer_session_open (
   vulkan_core10_transfer_session_t *session,
   const vulkan_auto_device_t *selected,
   VkDeviceSize buffer_bytes,
   vulkan_core10_transfer_memory_mode_t memory_mode,
+  uint32_t fail_after,
   FILE *diagnostics)
 {
   if (session == NULL || selected == NULL || diagnostics == NULL
@@ -190,6 +271,7 @@ VkResult vulkan_core10_transfer_session_open (
    || session->opened != VK_FALSE
    || session->buffers[0].buffer != VK_NULL_HANDLE
    || session->buffers[1].buffer != VK_NULL_HANDLE
+   || fail_after > 10u
    || buffer_bytes == 0u || (buffer_bytes % 4u) != 0u
    || buffer_bytes > SIZE_MAX
    || buffer_bytes > selected->properties.limits.maxStorageBufferRange
@@ -234,6 +316,15 @@ VkResult vulkan_core10_transfer_session_open (
 
   if (result != VK_SUCCESS) goto failed;
 
+  if (vulkan_core10_transfer_acquired (
+    session, fail_after, "device"
+  ) == VK_TRUE)
+  {
+    result = VK_ERROR_INITIALIZATION_FAILED;
+
+    goto failed;
+  }
+
   vkGetDeviceQueue (
     session->device, selected->compute_queue_family, 0u,
     &session->queue
@@ -259,6 +350,15 @@ VkResult vulkan_core10_transfer_session_open (
 
   if (result != VK_SUCCESS) goto failed;
 
+  if (vulkan_core10_transfer_acquired (
+    session, fail_after, "command_pool"
+  ) == VK_TRUE)
+  {
+    result = VK_ERROR_INITIALIZATION_FAILED;
+
+    goto failed;
+  }
+
   const VkCommandBufferAllocateInfo command_info =
   {
     .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
@@ -273,6 +373,15 @@ VkResult vulkan_core10_transfer_session_open (
 
   if (result != VK_SUCCESS) goto failed;
 
+  if (vulkan_core10_transfer_acquired (
+    session, fail_after, "command_buffer"
+  ) == VK_TRUE)
+  {
+    result = VK_ERROR_INITIALIZATION_FAILED;
+
+    goto failed;
+  }
+
   const VkFenceCreateInfo fence_info =
   {
     .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO
@@ -283,6 +392,15 @@ VkResult vulkan_core10_transfer_session_open (
   );
 
   if (result != VK_SUCCESS) goto failed;
+
+  if (vulkan_core10_transfer_acquired (
+    session, fail_after, "fence"
+  ) == VK_TRUE)
+  {
+    result = VK_ERROR_INITIALIZATION_FAILED;
+
+    goto failed;
+  }
 
   for (uint32_t i = 0u; i < 2u; i++)
   {
@@ -303,6 +421,15 @@ VkResult vulkan_core10_transfer_session_open (
     );
 
     if (result != VK_SUCCESS) goto failed;
+
+    if (vulkan_core10_transfer_acquired (
+      session, fail_after, i == 0u ? "source_buffer" : "destination_buffer"
+    ) == VK_TRUE)
+    {
+      result = VK_ERROR_INITIALIZATION_FAILED;
+
+      goto failed;
+    }
 
     VkMemoryRequirements requirements = { 0 };
 
@@ -347,6 +474,15 @@ VkResult vulkan_core10_transfer_session_open (
 
     if (result != VK_SUCCESS) goto failed;
 
+    if (vulkan_core10_transfer_acquired (
+      session, fail_after, i == 0u ? "source_memory" : "destination_memory"
+    ) == VK_TRUE)
+    {
+      result = VK_ERROR_INITIALIZATION_FAILED;
+
+      goto failed;
+    }
+
     result = vkBindBufferMemory (
       session->device, buffer->buffer, buffer->memory, 0u
     );
@@ -359,6 +495,15 @@ VkResult vulkan_core10_transfer_session_open (
     );
 
     if (result != VK_SUCCESS) goto failed;
+
+    if (vulkan_core10_transfer_acquired (
+      session, fail_after, i == 0u ? "source_mapping" : "destination_mapping"
+    ) == VK_TRUE)
+    {
+      result = VK_ERROR_INITIALIZATION_FAILED;
+
+      goto failed;
+    }
 
     buffer->plan = (vulkan_auto_memory_plan_t)
     {

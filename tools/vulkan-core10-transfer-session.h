@@ -69,6 +69,8 @@ typedef struct vulkan_core10_transfer_session
   uint32_t device_index;
   uint32_t memory_mode;
   uint32_t completed_copies;
+  uint32_t acquisitions;
+  uint32_t injected_fault;
   uint64_t copied_bytes;
   uint32_t flushes;
   uint32_t invalidates;
@@ -90,12 +92,21 @@ typedef struct vulkan_core10_transfer_session
  * failure releases all partial resources and leaves the session empty.
  * Memory type indices come from actual VkMemoryRequirements bitmasks;
  * no vendor/device-name selection is performed.
+ *
+ * fail_after=0 acquires all objects normally. Values 1..10 inject
+ * VK_ERROR_INITIALIZATION_FAILED immediately after the respective
+ * successful VkDevice, command pool, command buffer, fence, first
+ * VkBuffer, first VkDeviceMemory, first mapping, second VkBuffer,
+ * second VkDeviceMemory or second mapping acquisition. Every fault
+ * releases the already acquired real Vulkan handles before returning.
+ * Values above 10 are invalid and allocate nothing.
  */
 VkResult vulkan_core10_transfer_session_open (
   vulkan_core10_transfer_session_t *session,
   const vulkan_auto_device_t *selected,
   VkDeviceSize buffer_bytes,
   vulkan_core10_transfer_memory_mode_t memory_mode,
+  uint32_t fail_after,
   FILE *diagnostics);
 
 /**
