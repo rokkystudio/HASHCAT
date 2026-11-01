@@ -1,0 +1,104 @@
+TEST=vulkan-core10-result-gate
+ABI=arm64-v8a
+API=1.1
+MEMORY_MODE=noncoherent
+TERMINAL=device-lost
+ADB_EXIT_CODE=0
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.1 loader_minor=4 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.1 instance_api=1.1 devices=1 extensions=0 layers=0
+SELECT_DEVICE_API=1.1 reported_minor=4 instance_minor=1 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.1 selections=1
+TRANSFER_OPEN index=0 queue_family=0 bytes=4096 mode=1 src_type=1 dst_type=1 coherent_src=0 coherent_dst=0 atom=64 shaders=0 features=0 extensions=0
+RESULT_GATE_OPEN state=active first_error=0 allowed=0 blocked=0
+RESULT_GATE_REAL_DRIVER trial=0 site=fence_status observed=1
+RESULT_GATE_OBSERVE site=fence_status observed=1 state=active nonfatal=1
+RESULT_GATE_REAL_DRIVER trial=0 site=fence_wait observed=2
+RESULT_GATE_OBSERVE site=fence_wait observed=2 state=active nonfatal=2
+RESULT_GATE_ALLOW count=1 state=active
+TRANSFER_COPY index=0 bytes=28 copies=1 flushes=1 invalidates=1 fence=signaled shaders=0
+RESULT_GATE_OBSERVE site=transfer observed=0 state=active successes=1
+RESULT_GATE_OBSERVE site=fence_status observed=0 state=active successes=2
+RESULT_GATE_GPU_VERIFIED trial=0 round=0 words=7 bytes=28 fence=0 match=1 shaders=0
+RESULT_GATE_ALLOW count=2 state=active
+TRANSFER_COPY index=0 bytes=4096 copies=2 flushes=2 invalidates=2 fence=signaled shaders=0
+RESULT_GATE_OBSERVE site=transfer observed=0 state=active successes=3
+RESULT_GATE_OBSERVE site=fence_status observed=0 state=active successes=4
+RESULT_GATE_GPU_VERIFIED trial=0 round=1 words=1024 bytes=4096 fence=0 match=1 shaders=0
+RESULT_GATE_TEST_INJECT trial=0 mode=device-lost origin=application_only observed=-4 driver_error=0
+RESULT_GATE_TERMINAL site=transfer observed=-4 first_error=-4 state=failed allowed=2 blocked=0
+RESULT_GATE_BLOCK count=1 error=-4 state=failed
+RESULT_GATE_REFUSED trial=0 attempt=1 error=-4 copies=2 bytes=4124 output_unchanged=1024
+RESULT_GATE_BLOCK count=2 error=-4 state=failed
+RESULT_GATE_REFUSED trial=0 attempt=2 error=-4 copies=2 bytes=4124 output_unchanged=1024
+RESULT_GATE_BLOCK count=3 error=-4 state=failed
+RESULT_GATE_REFUSED trial=0 attempt=3 error=-4 copies=2 bytes=4124 output_unchanged=1024
+RESULT_GATE_STICKY trial=0 first_error=-4 later_success_ignored=1 blocked=3
+TRANSFER_CLOSE index=0 bytes=4096 copies=2 copied_bytes=4124 flushes=2 invalidates=2 wait_result=0
+RESULT_GATE_CLOSE previous=failed first_error=-4 allowed=2 blocked=3 nonfatal=2 successes=4 state=closed
+DEVICE_CATALOG_CLOSE devices=1 selections=1
+RESULT_GATE_TRIAL_PASS trial=0 mode=device-lost injected=1 real_driver_loss=0 completed_copies=2 verified_words=1031 verified_bytes=4124 allowed=2 blocked=3 nonfatal=2 successes=4 shaders=0
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.1 loader_minor=4 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.1 instance_api=1.1 devices=1 extensions=0 layers=0
+SELECT_DEVICE_API=1.1 reported_minor=4 instance_minor=1 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.1 selections=1
+TRANSFER_OPEN index=0 queue_family=0 bytes=4096 mode=1 src_type=1 dst_type=1 coherent_src=0 coherent_dst=0 atom=64 shaders=0 features=0 extensions=0
+RESULT_GATE_OPEN state=active first_error=0 allowed=0 blocked=0
+RESULT_GATE_REAL_DRIVER trial=1 site=fence_status observed=1
+RESULT_GATE_OBSERVE site=fence_status observed=1 state=active nonfatal=1
+RESULT_GATE_REAL_DRIVER trial=1 site=fence_wait observed=2
+RESULT_GATE_OBSERVE site=fence_wait observed=2 state=active nonfatal=2
+RESULT_GATE_ALLOW count=1 state=active
+TRANSFER_COPY index=0 bytes=28 copies=1 flushes=1 invalidates=1 fence=signaled shaders=0
+RESULT_GATE_OBSERVE site=transfer observed=0 state=active successes=1
+RESULT_GATE_OBSERVE site=fence_status observed=0 state=active successes=2
+RESULT_GATE_GPU_VERIFIED trial=1 round=0 words=7 bytes=28 fence=0 match=1 shaders=0
+RESULT_GATE_ALLOW count=2 state=active
+TRANSFER_COPY index=0 bytes=4096 copies=2 flushes=2 invalidates=2 fence=signaled shaders=0
+RESULT_GATE_OBSERVE site=transfer observed=0 state=active successes=3
+RESULT_GATE_OBSERVE site=fence_status observed=0 state=active successes=4
+RESULT_GATE_GPU_VERIFIED trial=1 round=1 words=1024 bytes=4096 fence=0 match=1 shaders=0
+RESULT_GATE_TEST_INJECT trial=1 mode=device-lost origin=application_only observed=-4 driver_error=0
+RESULT_GATE_TERMINAL site=transfer observed=-4 first_error=-4 state=failed allowed=2 blocked=0
+RESULT_GATE_BLOCK count=1 error=-4 state=failed
+RESULT_GATE_REFUSED trial=1 attempt=1 error=-4 copies=2 bytes=4124 output_unchanged=1024
+RESULT_GATE_BLOCK count=2 error=-4 state=failed
+RESULT_GATE_REFUSED trial=1 attempt=2 error=-4 copies=2 bytes=4124 output_unchanged=1024
+RESULT_GATE_BLOCK count=3 error=-4 state=failed
+RESULT_GATE_REFUSED trial=1 attempt=3 error=-4 copies=2 bytes=4124 output_unchanged=1024
+RESULT_GATE_STICKY trial=1 first_error=-4 later_success_ignored=1 blocked=3
+TRANSFER_CLOSE index=0 bytes=4096 copies=2 copied_bytes=4124 flushes=2 invalidates=2 wait_result=0
+RESULT_GATE_CLOSE previous=failed first_error=-4 allowed=2 blocked=3 nonfatal=2 successes=4 state=closed
+DEVICE_CATALOG_CLOSE devices=1 selections=1
+RESULT_GATE_TRIAL_PASS trial=1 mode=device-lost injected=1 real_driver_loss=0 completed_copies=2 verified_words=1031 verified_bytes=4124 allowed=2 blocked=3 nonfatal=2 successes=4 shaders=0
+RESULT_GATE_OPEN state=active first_error=0 allowed=0 blocked=0
+RESULT_GATE_TERMINAL site=fence_status observed=2 first_error=-3 state=failed allowed=0 blocked=0
+RESULT_GATE_BLOCK count=1 error=-3 state=failed
+RESULT_GATE_CLOSE previous=failed first_error=-3 allowed=0 blocked=1 nonfatal=0 successes=0 state=closed
+RESULT_GATE_POLICY_ONLY_PASS case=timeout_from_status origin=synthetic observed=2 first_error=-3 blocked=1 closed=1
+RESULT_GATE_OPEN state=active first_error=0 allowed=0 blocked=0
+RESULT_GATE_TERMINAL site=fence_wait observed=1 first_error=-3 state=failed allowed=0 blocked=0
+RESULT_GATE_BLOCK count=1 error=-3 state=failed
+RESULT_GATE_CLOSE previous=failed first_error=-3 allowed=0 blocked=1 nonfatal=0 successes=0 state=closed
+RESULT_GATE_POLICY_ONLY_PASS case=not_ready_from_wait origin=synthetic observed=1 first_error=-3 blocked=1 closed=1
+RESULT_GATE_OPEN state=active first_error=0 allowed=0 blocked=0
+RESULT_GATE_TERMINAL site=transfer observed=5 first_error=-3 state=failed allowed=0 blocked=0
+RESULT_GATE_BLOCK count=1 error=-3 state=failed
+RESULT_GATE_CLOSE previous=failed first_error=-3 allowed=0 blocked=1 nonfatal=0 successes=0 state=closed
+RESULT_GATE_POLICY_ONLY_PASS case=incomplete_transfer origin=synthetic observed=5 first_error=-3 blocked=1 closed=1
+RESULT_GATE_OPEN state=active first_error=0 allowed=0 blocked=0
+RESULT_GATE_TERMINAL site=transfer observed=-1 first_error=-1 state=failed allowed=0 blocked=0
+RESULT_GATE_BLOCK count=1 error=-1 state=failed
+RESULT_GATE_CLOSE previous=failed first_error=-1 allowed=0 blocked=1 nonfatal=0 successes=0 state=closed
+RESULT_GATE_POLICY_ONLY_PASS case=host_memory_error origin=synthetic observed=-1 first_error=-1 blocked=1 closed=1
+RESULT_GATE_OPEN state=active first_error=0 allowed=0 blocked=0
+RESULT_GATE_TERMINAL site=invalid observed=0 first_error=-3 state=failed allowed=0 blocked=0
+RESULT_GATE_BLOCK count=1 error=-3 state=failed
+RESULT_GATE_CLOSE previous=failed first_error=-3 allowed=0 blocked=1 nonfatal=0 successes=0 state=closed
+RESULT_GATE_POLICY_ONLY_PASS case=invalid_site origin=synthetic observed=0 first_error=-3 blocked=1 closed=1
+RESULT_GATE_DIAGNOSTIC_PASS api=1.1 mode=1 terminal=device-lost trials=2 injected=2 actual_driver_loss=0 real_copies=4 verified_words=2062 verified_bytes=8248 nonfatal=4 blocked=6 host_controls=5 shaders=0

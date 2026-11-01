@@ -234,6 +234,12 @@ provenance, and rejects **32 intentionally corrupted records**
 that falsify fence states, GPU progress, cache synchronization,
 output values, ownership or the native process exit code.
 
+A separate host-only terminal-result classification policy and real
+GPU submission-gating diagnostic are documented in
+`docs/vulkan-core10-result-gate-android.md`. They confirm that a
+synthetic `VK_ERROR_DEVICE_LOST` makes a compliant caller reject
+subsequent submissions, without claiming an actual driver-side loss.
+
 ## Limitations and next verification boundary
 
 `VK_NOT_READY` and `VK_TIMEOUT` are **nonfatal statuses**, not

@@ -86,7 +86,12 @@ under the same VkInstance after each controlled acquisition failure.
 A [real Vulkan fence-status test](docs/vulkan-core10-transfer-fence-status-portability.md)
 verifies driver-returned `VK_NOT_READY` and `VK_TIMEOUT`, subsequent
 GPU copy completion, fence resets and noncoherent memory synchronization
-without causing or simulating GPU device loss.
+without causing or simulating GPU device loss. The independent
+[fail-closed Vulkan result policy](docs/vulkan-core10-result-gate-android.md)
+accepts real nonfatal fence statuses and verifies that an explicitly
+labeled, application-generated terminal result prevents further GPU
+submissions by callers consulting the policy. This is not an actual
+device-loss or HASHCAT production-backend recovery test.
 
 ## Working on hashcat source
 
