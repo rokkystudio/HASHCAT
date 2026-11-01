@@ -92,3 +92,7 @@ tests/fixtures/android-gpu/vulkan-backend-public-kernel-20261101/manifest.json t
 # Preserve two-stage public SPIR-V Vulkan GPU and full HASHCAT -I evidence.
 tests/fixtures/android-gpu/vulkan-backend-public-chain-20261101/*.log -text whitespace=-blank-at-eol
 tests/fixtures/android-gpu/vulkan-backend-public-chain-20261101/manifest.json text eol=lf
+
+# Preserve host-only Vulkan Compute program-graph contract evidence.
+tests/fixtures/android-gpu/vulkan-backend-program-20261101/*.log -text whitespace=-blank-at-eol
+tests/fixtures/android-gpu/vulkan-backend-program-20261101/manifest.json text eol=lf

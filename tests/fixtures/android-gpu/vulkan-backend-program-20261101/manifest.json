@@ -1,0 +1,48 @@
+{
+  "date": "2026-11-01",
+  "scope": "Host-only explicit Vulkan 1.0 Compute program declaration validation before production executor integration",
+  "minimum_android_api": 24,
+  "android_runtime_abi": "arm64-v8a",
+  "armv7_compile_only": true,
+  "accepted_cases": 2,
+  "rejected_cases": 14,
+  "vulkan_loader_linked": false,
+  "vulkan_driver_calls": 0,
+  "gpu_dispatches": 0,
+  "hashcat_hashing_scheduler_connected": false,
+  "password_or_hash_inputs_processed": false,
+  "source_hash_policy": "CRLF normalized to LF",
+  "source_sha256": {
+    "source/include/backend_vulkan_program.h": "a6005056fb7df7a9f7dea572e33e901dde3c7d419b0a9525a35ba5e9bc690693",
+    "source/src/backend_vulkan_program.c": "f500bb60f93b88ecf362c11874fd2d440fb0cd2a1b5c2ee891588ea0c70bd5e4",
+    "source/include/backend_vulkan_public_spirv.h": "77ceebcd882df888f7c324a0ebd5deb29c1e482fa2872bf5a6b1d0ebc34ea316",
+    "source/include/backend_vulkan_public_stage2_spirv.h": "76056c2a69c9219708a76d321ef26aeb2fe90ce67f44bd81b456d3dc08ce10e1",
+    "tools/vulkan-backend-program-diagnostic.c": "a7c92a18126d96de2009ed6c6ed6e731c0670447a2e014f07c6bcf1bf46139e5",
+    "tools/build-vulkan-backend-program.ps1": "b52f17fedd7687f1cb70b74b75d95f4c26e109b4396e3dacaea77986483a2f3e",
+    "tools/run-vulkan-backend-program.ps1": "794c6b163491bfa74d106cb5450d4b772ae16ec0a8610ad7e587d402a705bd38",
+    "tools/archive-vulkan-backend-program-evidence.py": "a84cd524c9111883793d32d274577e72d93aa9f570636285148feb32a1efdb07",
+    "tools/test-vulkan-backend-program-evidence.py": "40e84dcfdf49358b10b1408c1c7f52bde9bc4f80802e680048930e9ae1c118f9"
+  },
+  "native_elf_sha256": {
+    "arm64": "8352aea55ded404695d10fbcc802232c725da770fd0d5eb88818002fb6b02305",
+    "armv7": "ebbfa2c1a70d7144eaa144d84bd120042ed7c4e729b05522de0f0a7227cbb7cd"
+  },
+  "android_run": {
+    "device": "pixel-arm64",
+    "abi": "arm64-v8a",
+    "file": "pixel-arm64-program-graph.log",
+    "sha256": "ccdaebedd236e31bda1ca3137c75e627d9144b7dd6cf12a3688074854c3d7557",
+    "native_exit_code": 0,
+    "accepted_cases": 2,
+    "rejected_cases": 14,
+    "driver_calls": 0,
+    "gpu_dispatches": 0
+  },
+  "limitations": [
+    "This milestone validates only program declarations and does not record or submit Vulkan commands.",
+    "The new graph contract is not yet linked into source/src/Makefile or backend_vulkan_kernel.c.",
+    "ARMv7 is compiled and ELF-inspected but was not run on physical ARMv7 hardware because the RedMagic device was disconnected.",
+    "VkPhysicalDeviceLimits in the diagnostic are explicit test values, not queried from a Vulkan driver.",
+    "No cryptographic SPIR-V module, password candidate, target digest or HASHCAT scheduler work is present."
+  ]
+}

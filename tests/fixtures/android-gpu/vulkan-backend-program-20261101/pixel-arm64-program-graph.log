@@ -1,0 +1,36 @@
+TEST=vulkan-backend-program-graph
+ABI=arm64-v8a
+DRIVER_CALLS=0
+GPU_DISPATCHES=0
+ADB_EXIT_CODE=0
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=2 buffers=3 bytes=256 descriptors_per_stage=2
+BACKEND_VULKAN_PROGRAM_CASE_PASS case=two_stage_valid result=0
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=1 buffers=2 bytes=256 descriptors_per_stage=2
+BACKEND_VULKAN_PROGRAM_CASE_PASS case=one_stage_valid result=0
+BACKEND_VULKAN_PROGRAM_CASE_PASS case=null_program result=-3
+BACKEND_VULKAN_PROGRAM_CASE_PASS case=null_limits result=-3
+BACKEND_VULKAN_PROGRAM_REJECT_DEPENDENCY stage=1 source=0 expected=1
+BACKEND_VULKAN_PROGRAM_CASE_PASS case=broken_dependency result=-3
+BACKEND_VULKAN_PROGRAM_REJECT_STAGE stage=1
+BACKEND_VULKAN_PROGRAM_CASE_PASS case=source_destination_alias result=-3
+BACKEND_VULKAN_PROGRAM_REJECT_ALIAS stage=2 prior=0 destination=1
+BACKEND_VULKAN_PROGRAM_CASE_PASS case=reused_destination result=-3
+BACKEND_VULKAN_PROGRAM_REJECT_TOPOLOGY stage=1 axis=0 zero=1
+BACKEND_VULKAN_PROGRAM_CASE_PASS case=zero_group result=-3
+BACKEND_VULKAN_PROGRAM_REJECT_TOPOLOGY stage=0 axis=0 zero=1
+BACKEND_VULKAN_PROGRAM_CASE_PASS case=zero_local result=-3
+BACKEND_VULKAN_PROGRAM_REJECT_LIMIT stage=0 axis=0 local=32 local_limit=1024 groups=65536 group_limit=65535
+BACKEND_VULKAN_PROGRAM_CASE_PASS case=group_limit result=-8
+BACKEND_VULKAN_PROGRAM_REJECT_INVOCATIONS stage=0 requested=33 limit=32
+BACKEND_VULKAN_PROGRAM_CASE_PASS case=invocation_limit result=-8
+BACKEND_VULKAN_PROGRAM_REJECT_STORAGE bytes=65537 range_limit=65536 descriptors_required=2 descriptor_limit=8
+BACKEND_VULKAN_PROGRAM_CASE_PASS case=storage_range result=-8
+BACKEND_VULKAN_PROGRAM_REJECT_STORAGE bytes=256 range_limit=65536 descriptors_required=2 descriptor_limit=1
+BACKEND_VULKAN_PROGRAM_CASE_PASS case=descriptor_limit result=-8
+BACKEND_VULKAN_PROGRAM_REJECT_STAGE stage=0
+BACKEND_VULKAN_PROGRAM_CASE_PASS case=spirv_magic result=-3
+BACKEND_VULKAN_PROGRAM_REJECT_STAGE stage=1
+BACKEND_VULKAN_PROGRAM_CASE_PASS case=spirv_version result=-3
+BACKEND_VULKAN_PROGRAM_REJECT_STAGE stage=0
+BACKEND_VULKAN_PROGRAM_CASE_PASS case=empty_name result=-3
+BACKEND_VULKAN_PROGRAM_DIAGNOSTIC_PASS accepted=2 structural_rejects=10 limit_rejects=4 driver_calls=0 gpu_dispatches=0 password_inputs=0 scheduled=0

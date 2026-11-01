@@ -107,7 +107,11 @@ executes a second public kernel directly on the first kernel's GPU
 output after a shader-write-to-shader-read barrier, checks both
 intermediate and final buffers against CPU arithmetic, and verifies
 three complete Android `hashcat -I` processes on Adreno ARM64/ARMv7
-and Mali ARM64. Password-processing Vulkan kernels remain disabled.
+and Mali ARM64. Password-processing Vulkan kernels remain disabled. A
+[declarative Vulkan program graph contract](docs/vulkan-backend-program-graph.md)
+now validates ordered SPIR-V stages, storage-buffer dependencies and
+exact Compute limits before executor integration, without linking the
+Vulkan loader or issuing GPU work.
 
 ## Working on hashcat source
 
