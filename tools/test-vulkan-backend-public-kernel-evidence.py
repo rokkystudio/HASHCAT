@@ -21,6 +21,8 @@ import subprocess
 import sys
 import tempfile
 
+from vulkan_archive_provenance import source_sha256_at_archive_commit
+
 
 ROOT = Path(__file__).resolve().parents[1]
 ARCHIVE = ROOT / "tests/fixtures/android-gpu/vulkan-backend-public-kernel-20261101"
@@ -39,13 +41,6 @@ def sha256(path: Path) -> str:
     assert path.is_file(), path
 
     return hashlib.sha256(path.read_bytes()).hexdigest()
-
-
-def normalized_source_sha256(path: Path) -> str:
-    """Hash checked-out source after normalizing CRLF line endings."""
-    return hashlib.sha256(
-        path.read_bytes().replace(b"\r\n", b"\n")
-    ).hexdigest()
 
 
 def require_order(lines: list[str], patterns: list[str]) -> None:
@@ -556,7 +551,9 @@ def main() -> None:
     assert len(manifest["source_sha256"]) == 24
 
     for source, digest in manifest["source_sha256"].items():
-        assert normalized_source_sha256(ROOT / source) == digest, source
+        assert source_sha256_at_archive_commit(
+            ROOT, ARCHIVE / "manifest.json", ROOT / source
+        ) == digest, source
 
     assert len(manifest["native_runs"]) == 6
     assert len(manifest["full_hashcat_info_runs"]) == 3

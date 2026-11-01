@@ -1,0 +1,31 @@
+TEST=vulkan-backend-public-chain
+ABI=arm64-v8a
+API=1.1
+ADB_EXIT_CODE=0
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.1 loader_minor=4 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.1 instance_api=1.1 devices=1 extensions=0 layers=0
+BACKEND_VULKAN_CATALOG_READY devices=1 requested_api=1.1 scheduled=0
+SELECT_DEVICE_API=1.1 reported_minor=4 instance_minor=1 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.1 selections=1
+BACKEND_VULKAN_CHAIN_READY index=0 queue_family=0 api=1.1 shader_words_first=326 shader_words_second=363 descriptors=4 sets=2 buffers=3 local=32 groups=2 features=0 extensions=0 scheduled=0
+BACKEND_VULKAN_CHAIN_DISPATCH_PASS stage1=public_u32_transform stage2=public_u32_rotate words=64 local=32 groups=2 dispatches=2 verified_first=64 verified_second=64 coherent_input=1 coherent_intermediate=1 coherent_output=1 barrier=shader_write_to_shader_read shaders=2 password_inputs=0 scheduled=0
+BACKEND_VULKAN_CHAIN_CLOSE index=0 result=0 released=1 scheduled=0
+DEVICE_CATALOG_CLOSE devices=1 selections=1
+BACKEND_PUBLIC_CHAIN_TRIAL_PASS trial=0 descriptors=4 pipelines=2 dispatches=2 verified_words=128 scheduled=0
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.1 loader_minor=4 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.1 instance_api=1.1 devices=1 extensions=0 layers=0
+BACKEND_VULKAN_CATALOG_READY devices=1 requested_api=1.1 scheduled=0
+SELECT_DEVICE_API=1.1 reported_minor=4 instance_minor=1 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.1 selections=1
+BACKEND_VULKAN_CHAIN_READY index=0 queue_family=0 api=1.1 shader_words_first=326 shader_words_second=363 descriptors=4 sets=2 buffers=3 local=32 groups=2 features=0 extensions=0 scheduled=0
+BACKEND_VULKAN_CHAIN_DISPATCH_PASS stage1=public_u32_transform stage2=public_u32_rotate words=64 local=32 groups=2 dispatches=2 verified_first=64 verified_second=64 coherent_input=1 coherent_intermediate=1 coherent_output=1 barrier=shader_write_to_shader_read shaders=2 password_inputs=0 scheduled=0
+BACKEND_VULKAN_CHAIN_CLOSE index=0 result=0 released=1 scheduled=0
+DEVICE_CATALOG_CLOSE devices=1 selections=1
+BACKEND_PUBLIC_CHAIN_TRIAL_PASS trial=1 descriptors=4 pipelines=2 dispatches=2 verified_words=128 scheduled=0
+BACKEND_PUBLIC_CHAIN_DIAGNOSTIC_PASS api=1.1 trials=2 dispatches=4 descriptors=4 storage_buffers=3 verified_words=256 shaders=2 password_inputs=0 scheduled=0

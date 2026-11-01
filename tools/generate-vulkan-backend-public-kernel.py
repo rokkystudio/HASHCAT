@@ -1,27 +1,47 @@
 #!/usr/bin/env python3
-"""Generate an embedded Vulkan 1.0 public Compute shader from SPIR-V.
+"""Generate deterministic embedded Vulkan 1.0 SPIR-V public Compute modules.
 
-Reads a complete compiled SPIR-V 1.0 little-endian module and writes
-one deterministic C header for the Android HASHCAT information-mode
-GPU diagnostic. This generator preserves every 32-bit SPIR-V word and
-performs no shader transformation, cryptographic work or GPU access.
+Reads one complete compiled SPIR-V 1.0 little-endian module and writes
+a C array with an explicit symbol name, include guard and GLSL source
+path. The defaults produce the original public-integer shader header
+byte-for-byte. Named options also support the second independent
+public-data stage. No shader transformation, GPU operation, password
+processing or cryptographic implementation is performed.
 """
 
 from __future__ import annotations
 
 import argparse
 from pathlib import Path
+import re
 import struct
 
 
-def write_public_kernel_header(spirv_path: Path, header_path: Path) -> None:
-    """Write one exact SPIR-V 1.0 word array with a stable C declaration.
+def write_public_kernel_header(
+    spirv_path: Path,
+    header_path: Path,
+    symbol: str = "backend_vulkan_public_spirv",
+    guard: str = "HC_BACKEND_VULKAN_PUBLIC_SPIRV_H",
+    source: str = "tools/vulkan-backend-public-kernel.comp",
+) -> None:
+    """Write all original SPIR-V 1.0 words to a deterministic C header.
 
-    Rejects incomplete or non-1.0 modules, invalid magic, unsupported
-    byte alignment and zero-length instruction sections. Header bytes
-    are deterministic for a given compiled module. The shader is a
-    public unsigned-integer transform, not a password-processing kernel.
+    Rejects invalid magic, non-1.0 modules, incomplete 32-bit words,
+    invalid schema and non-C-identifier symbols or guards. The shader
+    bytes remain unchanged. The named GLSL source becomes provenance
+    documentation in the generated header and is never executed.
     """
+    if re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", symbol) is None:
+        raise ValueError("C array symbol must be an exact C identifier")
+
+    if re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", guard) is None:
+        raise ValueError("C header guard must be an exact C identifier")
+
+    if not source.startswith("tools/") or re.fullmatch(
+        r"tools/[a-zA-Z0-9_.-]+\.comp", source
+    ) is None:
+        raise ValueError("Shader source must identify one tools/*.comp file")
+
     data = spirv_path.read_bytes()
 
     if len(data) < 24 or len(data) % 4 != 0:
@@ -42,33 +62,35 @@ def write_public_kernel_header(spirv_path: Path, header_path: Path) -> None:
         "/**",
         " * Embed the exact public-integer Compute shader as Vulkan SPIR-V 1.0.",
         " *",
-        " * Generated from tools/vulkan-backend-public-kernel.comp via",
+        f" * Generated from {source} via",
         " * tools/generate-vulkan-backend-public-kernel.py after GLSL",
         " * compilation with --target-env vulkan1.0. This immutable shader",
         " * reads and writes only caller-owned unsigned 32-bit test values.",
         " * No cryptographic state or hashcat password input is present.",
         " */",
         "",
-        "#ifndef HC_BACKEND_VULKAN_PUBLIC_SPIRV_H",
-        "#define HC_BACKEND_VULKAN_PUBLIC_SPIRV_H",
+        f"#ifndef {guard}",
+        f"#define {guard}",
         "",
         "#include <stdint.h>",
         "",
-        "static const uint32_t backend_vulkan_public_spirv[] =",
+        f"static const uint32_t {symbol}[] =",
         "{",
     ]
 
     for offset in range(0, len(words), 8):
         group = words[offset:offset + 8]
         line = "  " + ", ".join(f"UINT32_C (0x{word:08x})" for word in group)
+
         if offset + len(group) < len(words):
             line += ","
+
         lines.append(line)
 
     lines += [
         "};",
         "",
-        "#endif // HC_BACKEND_VULKAN_PUBLIC_SPIRV_H",
+        f"#endif // {guard}",
         "",
     ]
 
@@ -81,13 +103,24 @@ def write_public_kernel_header(spirv_path: Path, header_path: Path) -> None:
 
 
 def main() -> None:
-    """Parse exact compiled SPIR-V and output-header paths from the CLI."""
+    """Parse one compiled SPIR-V module and its named C header target."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--spirv", type=Path, required=True)
     parser.add_argument("--header", type=Path, required=True)
+    parser.add_argument(
+        "--symbol", default="backend_vulkan_public_spirv"
+    )
+    parser.add_argument(
+        "--guard", default="HC_BACKEND_VULKAN_PUBLIC_SPIRV_H"
+    )
+    parser.add_argument(
+        "--source", default="tools/vulkan-backend-public-kernel.comp"
+    )
     args = parser.parse_args()
 
-    write_public_kernel_header(args.spirv, args.header)
+    write_public_kernel_header(
+        args.spirv, args.header, args.symbol, args.guard, args.source
+    )
 
 
 if __name__ == "__main__":

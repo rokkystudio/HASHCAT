@@ -9091,7 +9091,7 @@ int backend_ctx_devices_init (hashcat_ctx_t *hashcat_ctx, const int comptime)
   backend_ctx->comptime = comptime;
 
   #if defined (WITH_VULKAN_DISCOVERY)
-  // Information mode verifies a Compute session and a public SPIR-V kernel without hash scheduling.
+  // Information mode verifies one public SPIR-V Compute stage and a dependent two-stage chain.
 
   if (user_options->backend_info > 0 && backend_ctx->vulkan_catalog != NULL)
   {
@@ -9141,6 +9141,26 @@ int backend_ctx_devices_init (hashcat_ctx_t *hashcat_ctx, const int comptime)
           hashcat_ctx,
           "Vulkan 1.0 public SPIR-V Compute kernel dispatched and verified; hashing remains disabled."
         );
+
+        const VkResult chain_result = backend_vulkan_kernel_verify_chain (
+          backend_ctx, 0u, stderr
+        );
+
+        if (chain_result != VK_SUCCESS)
+        {
+          event_log_warning (
+            hashcat_ctx,
+            "Vulkan 1.0 public two-stage SPIR-V chain failed with VkResult %d; hashing remains disabled.",
+            chain_result
+          );
+        }
+        else
+        {
+          event_log_info (
+            hashcat_ctx,
+            "Vulkan 1.0 public two-stage SPIR-V Compute chain dispatched and verified; hashing remains disabled."
+          );
+        }
       }
     }
   }

@@ -336,7 +336,7 @@ python -B tools/test-vulkan-backend-public-kernel-evidence.py --artifacts build/
 ```
 
 The verifier checks exact SHA-256 identities of
-24 current source files, both standalone ELF files,
+24 source files from the committed archive revision, both standalone ELF files,
 both compiled production backend objects, both full
 HASHCAT executable files, original module_00000.so
 for each ABI, and the compiled SPIR-V. It independently
@@ -350,6 +350,13 @@ Earlier source-provenance fixtures identify the
 previously published source snapshot, and are not
 rewritten to pretend that this new shader executed
 during an earlier experiment.
+
+The next verified milestone is the
+[two-stage public SPIR-V Compute chain](vulkan-backend-public-chain-android.md).
+It preserves this original one-stage result and demonstrates two
+ordered GPU shaders with a real intermediate buffer dependency in
+full Android `hashcat -I`. This historical archive remains tied to
+the exact committed source revision that generated it.
 
 ## Remaining kernel port work
 

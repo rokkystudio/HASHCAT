@@ -1,0 +1,31 @@
+#version 450
+
+/*
+ * Execute the second noncryptographic Vulkan 1.0 public Compute stage.
+ *
+ * Binding zero reads the complete prior dispatch's 64 unsigned words
+ * after an explicit COMPUTE_SHADER write-to-read pipeline barrier.
+ * Binding one writes 64 independent final words. There is no password,
+ * digest, salt or hashcat attack-mode input.
+ */
+layout (local_size_x = 32, local_size_y = 1, local_size_z = 1) in;
+
+layout (set = 0, binding = 0, std430) readonly buffer IntermediateBuffer
+{
+  uint words[];
+} intermediate_buffer;
+
+layout (set = 0, binding = 1, std430) writeonly buffer OutputBuffer
+{
+  uint words[];
+} output_buffer;
+
+void main ()
+{
+  const uint index = gl_GlobalInvocationID.x;
+  const uint previous = intermediate_buffer.words[index];
+  const uint rotated = (previous << 9u) | (previous >> 23u);
+
+  output_buffer.words[index] =
+    (rotated + index * 2246822519u) ^ 0x6c8e9cf5u;
+}

@@ -102,6 +102,12 @@ now runs inside the real Android `hashcat -I` process: it loads one
 noncryptographic shader, binds two storage buffers, dispatches 64 GPU
 threads and checks every public integer result against a CPU reference.
 Hashcat's password-processing kernels and scheduler remain separate.
+The [two-stage production Vulkan SPIR-V Compute chain](docs/vulkan-backend-public-chain-android.md)
+executes a second public kernel directly on the first kernel's GPU
+output after a shader-write-to-shader-read barrier, checks both
+intermediate and final buffers against CPU arithmetic, and verifies
+three complete Android `hashcat -I` processes on Adreno ARM64/ARMv7
+and Mali ARM64. Password-processing Vulkan kernels remain disabled.
 
 ## Working on hashcat source
 

@@ -7,20 +7,19 @@
 #define HC_BACKEND_VULKAN_KERNEL_H
 
 /**
- * Execute an opt-in public-data SPIR-V 1.0 kernel in the HASHCAT backend.
+ * Execute one or two opt-in public-data Vulkan SPIR-V 1.0 Compute stages.
  *
- * The production-owned backend_ctx supplies an already enumerated Vulkan
- * physical device and VkInstance. The kernel test opens an independent
- * logical Compute device, allocates two host-visible storage buffers,
- * builds one descriptor set and Compute pipeline from embedded SPIR-V,
- * dispatches two 32-lane workgroups, waits for a real fence, and verifies
- * 64 unsigned integer outputs against exact CPU reference values.
+ * A real backend_ctx catalogue supplies the selected Vulkan GPU and
+ * VkInstance. Temporary VkDevices own host-visible storage buffers,
+ * descriptor sets, distinct Compute pipelines and ordered GPU work.
+ * The first method verifies 64 unsigned integers; the two-stage method
+ * verifies both 64-word intermediate and 64-word final outputs after
+ * an explicit shader-write-to-shader-read barrier. Both methods release
+ * all temporary Vulkan resources before returning.
  *
- * The temporary logical device and all pipeline/memory objects are
- * destroyed before returning; the backend_ctx catalogue remains live.
- * This method is intended only for hashcat -I information mode. No
- * hashcat password candidate, cryptographic kernel or hashing scheduler
- * is read, dispatched or modified.
+ * These methods run only in hashcat -I information mode. No HASHCAT
+ * candidates, salts, digests, cryptographic kernels or hashing scheduler
+ * are read or modified.
  */
 
 #include "types.h"
@@ -46,6 +45,26 @@
  * OpenCL/CUDA/HIP/Metal device list and scheduling remain untouched.
  */
 VkResult backend_vulkan_kernel_verify (
+  backend_ctx_t *backend_ctx,
+  uint32_t device_index,
+  FILE *diagnostics);
+
+/**
+ * Verify one ordered pair of public SPIR-V 1.0 Compute shader stages.
+ *
+ * Requires a live backend Vulkan catalogue, valid physical-device
+ * index and diagnostic stream. Creates three 256-byte host-visible
+ * storage buffers, two descriptor sets, and two VkComputePipelines.
+ * Stage one writes 64 public integers; stage two reads those values
+ * after an explicit COMPUTE_SHADER write-to-read buffer barrier and
+ * writes 64 final integers. A real fence and HOST_READ barriers precede
+ * independent CPU comparison of all 128 stage values.
+ *
+ * VK_SUCCESS requires complete GPU/CPU equality and successful cleanup.
+ * Any Vulkan error or mismatch propagates without scheduling HASHCAT
+ * hashing work or adding Vulkan to the ordinary backend device list.
+ */
+VkResult backend_vulkan_kernel_verify_chain (
   backend_ctx_t *backend_ctx,
   uint32_t device_index,
   FILE *diagnostics);

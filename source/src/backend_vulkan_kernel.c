@@ -4,23 +4,25 @@
  */
 
 /**
- * Verify one production-owned Vulkan 1.0 public Compute kernel in hashcat.
+ * Verify one or two ordered public Vulkan 1.0 Compute stages in HASHCAT.
  *
- * The hashcat backend catalogue supplies a real physical device and
- * VkInstance. This information-mode diagnostic creates a short-lived
- * VkDevice, two host-visible storage buffers, descriptors, one Compute
- * pipeline using an embedded SPIR-V 1.0 module, and a command buffer.
- * A real GPU dispatch transforms 64 unsigned 32-bit public integers.
- * All GPU values are compared against an independent CPU expression.
+ * The backend catalogue supplies a real physical device and VkInstance.
+ * Information mode opens a temporary VkDevice and executes one public
+ * SPIR-V 1.0 module or a dependent pair of modules in one command buffer.
+ * A shader-write-to-shader-read barrier transfers 64 intermediate GPU
+ * integers to the second Compute pipeline. Both stages' 64-word outputs
+ * are compared to independent unsigned CPU arithmetic. All temporary
+ * Vulkan resources are destroyed before returning.
  *
- * This source never reads or modifies hashcat password candidates, hash
- * values, salt buffers, kernel modes or the normal hashing scheduler.
+ * This source never reads or modifies HASHCAT password candidates,
+ * digests, salts, attack modes or the normal hashing scheduler.
  */
 
 #include "backend_vulkan_kernel.h"
 
 #include "backend_vulkan.h"
 #include "backend_vulkan_public_spirv.h"
+#include "backend_vulkan_public_stage2_spirv.h"
 
 #include <inttypes.h>
 #include <stdint.h>
@@ -47,11 +49,11 @@ typedef struct backend_vulkan_public_buffer
 } backend_vulkan_public_buffer_t;
 
 /**
- * Own all Vulkan objects of one short-lived public Compute dispatch.
+ * Own one or two consecutive public Compute stages and their resources.
  *
- * VkInstance and VkPhysicalDevice remain owned by the backend_ctx
- * catalogue; the two buffers and all logical-device child resources
- * belong to this object until backend_vulkan_public_release.
+ * VkInstance and VkPhysicalDevice remain backend_ctx catalogue-owned.
+ * This job owns two or three storage buffers, a descriptor set and
+ * pipeline per stage, a single command buffer, fence and VkDevice.
  */
 typedef struct backend_vulkan_public_job
 {
@@ -60,13 +62,14 @@ typedef struct backend_vulkan_public_job
   VkCommandPool command_pool;
   VkCommandBuffer command;
   VkFence fence;
-  backend_vulkan_public_buffer_t buffers[2];
+  backend_vulkan_public_buffer_t buffers[3];
   VkDescriptorSetLayout descriptor_layout;
   VkPipelineLayout pipeline_layout;
   VkDescriptorPool descriptor_pool;
-  VkDescriptorSet descriptor_set;
-  VkShaderModule shader;
-  VkPipeline pipeline;
+  VkDescriptorSet descriptor_set[2];
+  VkShaderModule shader[2];
+  VkPipeline pipeline[2];
+  uint32_t stages;
 } backend_vulkan_public_job_t;
 
 /**
@@ -87,14 +90,17 @@ static VkResult backend_vulkan_public_release (
 
   const VkResult result = vkDeviceWaitIdle (job->device);
 
-  if (job->pipeline != VK_NULL_HANDLE)
+  for (uint32_t stage = 0u; stage < 2u; stage++)
   {
-    vkDestroyPipeline (job->device, job->pipeline, NULL);
-  }
+    if (job->pipeline[stage] != VK_NULL_HANDLE)
+    {
+      vkDestroyPipeline (job->device, job->pipeline[stage], NULL);
+    }
 
-  if (job->shader != VK_NULL_HANDLE)
-  {
-    vkDestroyShaderModule (job->device, job->shader, NULL);
+    if (job->shader[stage] != VK_NULL_HANDLE)
+    {
+      vkDestroyShaderModule (job->device, job->shader[stage], NULL);
+    }
   }
 
   if (job->descriptor_pool != VK_NULL_HANDLE)
@@ -137,7 +143,7 @@ static VkResult backend_vulkan_public_release (
     );
   }
 
-  for (uint32_t i = 0u; i < 2u; i++)
+  for (uint32_t i = 0u; i < 3u; i++)
   {
     backend_vulkan_public_buffer_t *buffer = &job->buffers[i];
 
@@ -246,17 +252,22 @@ static VkResult backend_vulkan_public_buffer_open (
 }
 
 /**
- * Create a Vulkan 1.0 Compute pipeline from the embedded public shader.
+ * Create one Vulkan 1.0 Compute pipeline and descriptor set per stage.
  *
- * Installs exactly two STORAGE_BUFFER descriptor bindings at set zero,
- * bindings zero and one; creates a descriptor pool and one set, writes
- * both fixed-range buffer descriptors, and creates a one-stage Compute
- * pipeline with entry point "main". No optional device feature,
- * extension, push constants or specialization parameters are needed.
+ * Both stages use one two-binding STORAGE_BUFFER descriptor layout.
+ * Descriptor set zero binds buffers 0/1 and descriptor set one binds
+ * buffers 1/2. Loads distinct immutable SPIR-V 1.0 modules and creates
+ * one pipeline per stage, without enabling optional features or
+ * extensions. Any partial resources belong to the outer job cleanup.
  */
 static VkResult backend_vulkan_public_pipeline_open (
   backend_vulkan_public_job_t *job)
 {
+  if (job->stages != 1u && job->stages != 2u)
+  {
+    return VK_ERROR_INITIALIZATION_FAILED;
+  }
+
   const VkDescriptorSetLayoutBinding bindings[2] =
   {
     {
@@ -294,8 +305,7 @@ static VkResult backend_vulkan_public_pipeline_open (
   };
 
   result = vkCreatePipelineLayout (
-    job->device, &pipeline_layout_info, NULL,
-    &job->pipeline_layout
+    job->device, &pipeline_layout_info, NULL, &job->pipeline_layout
   );
 
   if (result != VK_SUCCESS) return result;
@@ -303,13 +313,13 @@ static VkResult backend_vulkan_public_pipeline_open (
   const VkDescriptorPoolSize pool_size =
   {
     .type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
-    .descriptorCount = 2u
+    .descriptorCount = job->stages * 2u
   };
 
   const VkDescriptorPoolCreateInfo pool_info =
   {
     .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
-    .maxSets = 1u,
+    .maxSets = job->stages,
     .poolSizeCount = 1u,
     .pPoolSizes = &pool_size
   };
@@ -320,100 +330,118 @@ static VkResult backend_vulkan_public_pipeline_open (
 
   if (result != VK_SUCCESS) return result;
 
+  const VkDescriptorSetLayout layouts[2] =
+  {
+    job->descriptor_layout,
+    job->descriptor_layout
+  };
+
   const VkDescriptorSetAllocateInfo set_info =
   {
     .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
     .descriptorPool = job->descriptor_pool,
-    .descriptorSetCount = 1u,
-    .pSetLayouts = &job->descriptor_layout
+    .descriptorSetCount = job->stages,
+    .pSetLayouts = layouts
   };
 
   result = vkAllocateDescriptorSets (
-    job->device, &set_info, &job->descriptor_set
+    job->device, &set_info, job->descriptor_set
   );
 
   if (result != VK_SUCCESS) return result;
 
-  const VkDescriptorBufferInfo buffer_info[2] =
+  for (uint32_t stage = 0u; stage < job->stages; stage++)
   {
+    const VkDescriptorBufferInfo buffer_info[2] =
     {
-      .buffer = job->buffers[0].buffer,
-      .offset = 0u,
-      .range = BACKEND_VULKAN_PUBLIC_BYTES
-    },
+      {
+        .buffer = job->buffers[stage].buffer,
+        .offset = 0u,
+        .range = BACKEND_VULKAN_PUBLIC_BYTES
+      },
+      {
+        .buffer = job->buffers[stage + 1u].buffer,
+        .offset = 0u,
+        .range = BACKEND_VULKAN_PUBLIC_BYTES
+      }
+    };
+
+    const VkWriteDescriptorSet writes[2] =
     {
-      .buffer = job->buffers[1].buffer,
-      .offset = 0u,
-      .range = BACKEND_VULKAN_PUBLIC_BYTES
-    }
-  };
+      {
+        .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+        .dstSet = job->descriptor_set[stage],
+        .dstBinding = 0u,
+        .descriptorCount = 1u,
+        .descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+        .pBufferInfo = &buffer_info[0]
+      },
+      {
+        .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+        .dstSet = job->descriptor_set[stage],
+        .dstBinding = 1u,
+        .descriptorCount = 1u,
+        .descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+        .pBufferInfo = &buffer_info[1]
+      }
+    };
 
-  const VkWriteDescriptorSet writes[2] =
-  {
+    vkUpdateDescriptorSets (
+      job->device, 2u, writes, 0u, NULL
+    );
+
+    const VkShaderModuleCreateInfo shader_info =
     {
-      .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-      .dstSet = job->descriptor_set,
-      .dstBinding = 0u,
-      .descriptorCount = 1u,
-      .descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
-      .pBufferInfo = &buffer_info[0]
-    },
+      .sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
+      .codeSize = stage == 0u
+        ? sizeof (backend_vulkan_public_spirv)
+        : sizeof (backend_vulkan_public_stage2_spirv),
+      .pCode = stage == 0u
+        ? backend_vulkan_public_spirv
+        : backend_vulkan_public_stage2_spirv
+    };
+
+    result = vkCreateShaderModule (
+      job->device, &shader_info, NULL, &job->shader[stage]
+    );
+
+    if (result != VK_SUCCESS) return result;
+
+    const VkComputePipelineCreateInfo compute_info =
     {
-      .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-      .dstSet = job->descriptor_set,
-      .dstBinding = 1u,
-      .descriptorCount = 1u,
-      .descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
-      .pBufferInfo = &buffer_info[1]
-    }
-  };
+      .sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO,
+      .stage =
+      {
+        .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+        .stage = VK_SHADER_STAGE_COMPUTE_BIT,
+        .module = job->shader[stage],
+        .pName = "main"
+      },
+      .layout = job->pipeline_layout
+    };
 
-  vkUpdateDescriptorSets (
-    job->device, 2u, writes, 0u, NULL
-  );
+    result = vkCreateComputePipelines (
+      job->device, VK_NULL_HANDLE, 1u, &compute_info,
+      NULL, &job->pipeline[stage]
+    );
 
-  const VkShaderModuleCreateInfo shader_info =
-  {
-    .sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
-    .codeSize = sizeof (backend_vulkan_public_spirv),
-    .pCode = backend_vulkan_public_spirv
-  };
+    if (result != VK_SUCCESS) return result;
+  }
 
-  result = vkCreateShaderModule (
-    job->device, &shader_info, NULL, &job->shader
-  );
-
-  if (result != VK_SUCCESS) return result;
-
-  const VkComputePipelineCreateInfo compute_info =
-  {
-    .sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO,
-    .stage =
-    {
-      .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
-      .stage = VK_SHADER_STAGE_COMPUTE_BIT,
-      .module = job->shader,
-      .pName = "main"
-    },
-    .layout = job->pipeline_layout
-  };
-
-  return vkCreateComputePipelines (
-    job->device, VK_NULL_HANDLE, 1u, &compute_info,
-    NULL, &job->pipeline
-  );
+  return VK_SUCCESS;
 }
 
 /**
- * Record and execute two workgroups of the public unsigned-integer shader.
+ * Dispatch one or two public kernels with explicit GPU buffer barriers.
  *
- * Flushes the mapped input allocation if noncoherent, records a single
- * vkCmdDispatch and a SHADER_WRITE-to-HOST_READ buffer barrier, submits
- * the command on a genuine Compute queue, waits for the Vulkan fence,
- * invalidates the output allocation if noncoherent and compares all
- * 64 results against independent scalar CPU arithmetic.
+ * Flushes mapped CPU input, dispatches stage one, and when requested
+ * inserts a COMPUTE_SHADER write-to-read barrier on its intermediate
+ * buffer before dispatching stage two. Final COMPUTE-to-HOST barriers
+ * cover both outputs. Waits for a real Vulkan fence, invalidates
+ * noncoherent memory and compares every intermediate/final result
+ * against independently computed public 32-bit CPU arithmetic.
  *
- * This method never receives a hashcat candidate, salt or hash value.
+ * No passwords, salts, target digests or HASHCAT scheduler are touched.
  */
 static VkResult backend_vulkan_public_dispatch (
   backend_vulkan_public_job_t *job,
@@ -448,32 +476,65 @@ static VkResult backend_vulkan_public_dispatch (
 
   if (result != VK_SUCCESS) return result;
 
-  vkCmdBindPipeline (
-    job->command, VK_PIPELINE_BIND_POINT_COMPUTE,
-    job->pipeline
-  );
-
-  vkCmdBindDescriptorSets (
-    job->command, VK_PIPELINE_BIND_POINT_COMPUTE,
-    job->pipeline_layout, 0u, 1u,
-    &job->descriptor_set, 0u, NULL
-  );
-
-  vkCmdDispatch (
-    job->command, BACKEND_VULKAN_PUBLIC_GROUPS, 1u, 1u
-  );
-
-  const VkBufferMemoryBarrier barrier =
+  for (uint32_t stage = 0u; stage < job->stages; stage++)
   {
-    .sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER,
-    .srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT,
-    .dstAccessMask = VK_ACCESS_HOST_READ_BIT,
-    .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-    .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-    .buffer = job->buffers[1].buffer,
-    .offset = 0u,
-    .size = BACKEND_VULKAN_PUBLIC_BYTES
-  };
+    if (stage != 0u)
+    {
+      const VkBufferMemoryBarrier intermediate =
+      {
+        .sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER,
+        .srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT,
+        .dstAccessMask = VK_ACCESS_SHADER_READ_BIT,
+        .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+        .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+        .buffer = job->buffers[stage].buffer,
+        .offset = 0u,
+        .size = BACKEND_VULKAN_PUBLIC_BYTES
+      };
+
+      vkCmdPipelineBarrier (
+        job->command,
+        VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+        VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+        0u,
+        0u, NULL,
+        1u, &intermediate,
+        0u, NULL
+      );
+    }
+
+    vkCmdBindPipeline (
+      job->command, VK_PIPELINE_BIND_POINT_COMPUTE,
+      job->pipeline[stage]
+    );
+
+    vkCmdBindDescriptorSets (
+      job->command, VK_PIPELINE_BIND_POINT_COMPUTE,
+      job->pipeline_layout, 0u, 1u,
+      &job->descriptor_set[stage], 0u, NULL
+    );
+
+    vkCmdDispatch (
+      job->command, BACKEND_VULKAN_PUBLIC_GROUPS, 1u, 1u
+    );
+  }
+
+  VkBufferMemoryBarrier host_barriers[2] = { 0 };
+
+  for (uint32_t stage = 0u; stage < job->stages; stage++)
+  {
+    host_barriers[stage] = (VkBufferMemoryBarrier)
+    {
+      .sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER,
+      .srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT,
+      .dstAccessMask = VK_ACCESS_HOST_READ_BIT,
+      .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+      .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+      .buffer = job->buffers[stage + 1u].buffer,
+      .offset = 0u,
+      .size = BACKEND_VULKAN_PUBLIC_BYTES
+    };
+  }
 
   vkCmdPipelineBarrier (
     job->command,
@@ -481,7 +542,7 @@ static VkResult backend_vulkan_public_dispatch (
     VK_PIPELINE_STAGE_HOST_BIT,
     0u,
     0u, NULL,
-    1u, &barrier,
+    job->stages, host_barriers,
     0u, NULL
   );
 
@@ -508,14 +569,17 @@ static VkResult backend_vulkan_public_dispatch (
 
   if (result != VK_SUCCESS) return result;
 
-  result = vulkan_auto_sync_mapped_memory (
-    job->device, job->buffers[1].memory,
-    &job->buffers[1].plan, VK_TRUE
-  );
+  for (uint32_t stage = 0u; stage < job->stages; stage++)
+  {
+    result = vulkan_auto_sync_mapped_memory (
+      job->device, job->buffers[stage + 1u].memory,
+      &job->buffers[stage + 1u].plan, VK_TRUE
+    );
 
-  if (result != VK_SUCCESS) return result;
+    if (result != VK_SUCCESS) return result;
+  }
 
-  const uint32_t *output =
+  const uint32_t *first =
     (const uint32_t *) job->buffers[1].mapped;
 
   for (uint32_t i = 0u; i < BACKEND_VULKAN_PUBLIC_WORDS; i++)
@@ -524,55 +588,102 @@ static VkResult backend_vulkan_public_dispatch (
       (input[i] * UINT32_C (1664525) + UINT32_C (1013904223))
       ^ (i * UINT32_C (2654435769));
 
-    if (output[i] != expected)
+    if (first[i] != expected)
     {
       fprintf (
         diagnostics,
         "BACKEND_VULKAN_KERNEL_MISMATCH index=%" PRIu32
         " actual=0x%08" PRIx32
         " expected=0x%08" PRIx32 "\n",
-        i, output[i], expected
+        i, first[i], expected
       );
 
       return VK_ERROR_INITIALIZATION_FAILED;
     }
+
+    if (job->stages == 2u)
+    {
+      const uint32_t *second =
+        (const uint32_t *) job->buffers[2].mapped;
+
+      const uint32_t rotated =
+        (expected << 9u) | (expected >> 23u);
+
+      const uint32_t expected_second =
+        (rotated + i * UINT32_C (2246822519))
+        ^ UINT32_C (0x6c8e9cf5);
+
+      if (second[i] != expected_second)
+      {
+        fprintf (
+          diagnostics,
+          "BACKEND_VULKAN_CHAIN_MISMATCH stage=2"
+          " index=%" PRIu32
+          " actual=0x%08" PRIx32
+          " expected=0x%08" PRIx32 "\n",
+          i, second[i], expected_second
+        );
+
+        return VK_ERROR_INITIALIZATION_FAILED;
+      }
+    }
   }
 
-  fprintf (
-    diagnostics,
-    "BACKEND_VULKAN_KERNEL_DISPATCH_PASS"
-    " kernel=public_u32_transform"
-    " words=64 local=32 groups=2"
-    " verified=64"
-    " coherent_input=%u coherent_output=%u"
-    " shaders=1 password_inputs=0 scheduled=0\n",
-    job->buffers[0].plan.coherent,
-    job->buffers[1].plan.coherent
-  );
+  if (job->stages == 1u)
+  {
+    fprintf (
+      diagnostics,
+      "BACKEND_VULKAN_KERNEL_DISPATCH_PASS"
+      " kernel=public_u32_transform"
+      " words=64 local=32 groups=2"
+      " verified=64"
+      " coherent_input=%u coherent_output=%u"
+      " shaders=1 password_inputs=0 scheduled=0\n",
+      job->buffers[0].plan.coherent,
+      job->buffers[1].plan.coherent
+    );
+  }
+  else
+  {
+    fprintf (
+      diagnostics,
+      "BACKEND_VULKAN_CHAIN_DISPATCH_PASS"
+      " stage1=public_u32_transform"
+      " stage2=public_u32_rotate"
+      " words=64 local=32 groups=2"
+      " dispatches=2 verified_first=64 verified_second=64"
+      " coherent_input=%u coherent_intermediate=%u coherent_output=%u"
+      " barrier=shader_write_to_shader_read"
+      " shaders=2 password_inputs=0 scheduled=0\n",
+      job->buffers[0].plan.coherent,
+      job->buffers[1].plan.coherent,
+      job->buffers[2].plan.coherent
+    );
+  }
 
   return VK_SUCCESS;
 }
 
 /**
- * Execute the embedded Vulkan SPIR-V 1.0 kernel using backend discovery.
+ * Run one or two public Vulkan 1.0 stages using backend device discovery.
  *
- * Resolves an exact physical device using the live backend catalogue
- * and the declared shader topology. Owns a temporary VkDevice and all
- * descriptor, shader, pipeline, command, fence and storage resources.
- * Runs one real Compute dispatch, checks 64 public CPU reference
- * values and releases every resource before returning.
- *
- * No hashcat hashing device is registered and no scheduled work
- * is permitted through this diagnostic entry point.
+ * Validates the exact Compute limits and required storage descriptors,
+ * opens a temporary VkDevice, allocates the stage buffers and pipelines,
+ * performs one ordered Compute command-buffer submission and verifies
+ * each GPU output against the independent public-integer CPU reference.
+ * The temporary device is closed before returning and the backend's
+ * ordinary HASHCAT hashing device list is not touched.
  */
-VkResult backend_vulkan_kernel_verify (
+static VkResult backend_vulkan_kernel_verify_stages (
   backend_ctx_t *backend_ctx,
   uint32_t device_index,
-  FILE *diagnostics)
+  FILE *diagnostics,
+  uint32_t stages)
 {
   if (backend_ctx == NULL || diagnostics == NULL
    || backend_ctx->vulkan_catalog == NULL
-   || device_index >= backend_ctx->vulkan_devices_cnt)
+   || device_index >= backend_ctx->vulkan_devices_cnt
+   || (stages != 1u && stages != 2u))
   {
     return VK_ERROR_INITIALIZATION_FAILED;
   }
@@ -581,7 +692,7 @@ VkResult backend_vulkan_kernel_verify (
   {
     .local_size = { BACKEND_VULKAN_PUBLIC_LOCAL_SIZE, 1u, 1u },
     .group_count = { BACKEND_VULKAN_PUBLIC_GROUPS, 1u, 1u },
-    .storage_buffer_count = 2u,
+    .storage_buffer_count = stages * 2u,
     .largest_storage_buffer_bytes = BACKEND_VULKAN_PUBLIC_BYTES,
     .shared_memory_bytes = 0u
   };
@@ -597,6 +708,8 @@ VkResult backend_vulkan_kernel_verify (
   if (result != VK_SUCCESS) return result;
 
   backend_vulkan_public_job_t job = { 0 };
+
+  job.stages = stages;
 
   const float priority = 1.0f;
 
@@ -635,7 +748,7 @@ VkResult backend_vulkan_kernel_verify (
     goto cleanup;
   }
 
-  for (uint32_t i = 0u; i < 2u; i++)
+  for (uint32_t i = 0u; i < stages + 1u; i++)
   {
     result = backend_vulkan_public_buffer_open (
       &job, &selected, &job.buffers[i]
@@ -686,21 +799,44 @@ VkResult backend_vulkan_kernel_verify (
 
   if (result != VK_SUCCESS) goto cleanup;
 
-  fprintf (
-    diagnostics,
-    "BACKEND_VULKAN_KERNEL_READY"
-    " index=%" PRIu32
-    " queue_family=%" PRIu32
-    " api=%" PRIu32 ".%" PRIu32
-    " shader_words=%" PRIu64
-    " descriptors=2"
-    " local=32 groups=2"
-    " features=0 extensions=0 scheduled=0\n",
-    device_index, selected.compute_queue_family,
-    VK_API_VERSION_MAJOR (effective_api),
-    VK_API_VERSION_MINOR (effective_api),
-    (uint64_t) (sizeof (backend_vulkan_public_spirv) / sizeof (uint32_t))
-  );
+  if (stages == 1u)
+  {
+    fprintf (
+      diagnostics,
+      "BACKEND_VULKAN_KERNEL_READY"
+      " index=%" PRIu32
+      " queue_family=%" PRIu32
+      " api=%" PRIu32 ".%" PRIu32
+      " shader_words=%" PRIu64
+      " descriptors=2"
+      " local=32 groups=2"
+      " features=0 extensions=0 scheduled=0\n",
+      device_index, selected.compute_queue_family,
+      VK_API_VERSION_MAJOR (effective_api),
+      VK_API_VERSION_MINOR (effective_api),
+      (uint64_t) (sizeof (backend_vulkan_public_spirv) / sizeof (uint32_t))
+    );
+  }
+  else
+  {
+    fprintf (
+      diagnostics,
+      "BACKEND_VULKAN_CHAIN_READY"
+      " index=%" PRIu32
+      " queue_family=%" PRIu32
+      " api=%" PRIu32 ".%" PRIu32
+      " shader_words_first=%" PRIu64
+      " shader_words_second=%" PRIu64
+      " descriptors=4 sets=2 buffers=3"
+      " local=32 groups=2"
+      " features=0 extensions=0 scheduled=0\n",
+      device_index, selected.compute_queue_family,
+      VK_API_VERSION_MAJOR (effective_api),
+      VK_API_VERSION_MINOR (effective_api),
+      (uint64_t) (sizeof (backend_vulkan_public_spirv) / sizeof (uint32_t)),
+      (uint64_t) (sizeof (backend_vulkan_public_stage2_spirv) / sizeof (uint32_t))
+    );
+  }
 
   result = backend_vulkan_public_dispatch (
     &job, diagnostics
@@ -712,15 +848,65 @@ cleanup:
 
     if (result == VK_SUCCESS) result = released;
 
-    fprintf (
-      diagnostics,
-      "BACKEND_VULKAN_KERNEL_CLOSE"
-      " index=%" PRIu32
-      " result=%d"
-      " released=1 scheduled=0\n",
-      device_index, result
-    );
+    if (stages == 1u)
+    {
+      fprintf (
+        diagnostics,
+        "BACKEND_VULKAN_KERNEL_CLOSE"
+        " index=%" PRIu32
+        " result=%d"
+        " released=1 scheduled=0\n",
+        device_index, result
+      );
+    }
+    else
+    {
+      fprintf (
+        diagnostics,
+        "BACKEND_VULKAN_CHAIN_CLOSE"
+        " index=%" PRIu32
+        " result=%d"
+        " released=1 scheduled=0\n",
+        device_index, result
+      );
+    }
 
     return result;
   }
+}
+
+/**
+ * Verify one embedded public SPIR-V 1.0 Compute module on a Vulkan GPU.
+ *
+ * Uses a temporary VkDevice with two storage buffers, one descriptor
+ * set and one Compute pipeline. Verifies 64 output words against CPU
+ * arithmetic, cleans up resources and leaves HASHCAT hashing disabled.
+ */
+VkResult backend_vulkan_kernel_verify (
+  backend_ctx_t *backend_ctx,
+  uint32_t device_index,
+  FILE *diagnostics)
+{
+  return backend_vulkan_kernel_verify_stages (
+    backend_ctx, device_index, diagnostics, 1u
+  );
+}
+
+/**
+ * Verify two ordered public SPIR-V 1.0 Compute modules on a Vulkan GPU.
+ *
+ * Uses one temporary VkDevice with three storage buffers, two descriptor
+ * sets and two Compute pipelines. A shader-write-to-shader-read buffer
+ * barrier makes the first stage's output available to the second.
+ * A completed Vulkan fence precedes CPU checks of all 128 stage words.
+ * No HASHCAT candidate, digest or hashing-scheduler work is accepted.
+ */
+VkResult backend_vulkan_kernel_verify_chain (
+  backend_ctx_t *backend_ctx,
+  uint32_t device_index,
+  FILE *diagnostics)
+{
+  return backend_vulkan_kernel_verify_stages (
+    backend_ctx, device_index, diagnostics, 2u
+  );
 }
