@@ -180,6 +180,12 @@ release event in all 120 sessions, process return codes, the complete
 source/ELF identities, absence of submitted GPU copies, and **25
 deliberately corrupted fault-evidence records**.
 
+An independent follow-on test demonstrates actual new Vulkan buffer
+sessions and GPU copies **under the same retained VkInstance** after
+each controlled failure. Its real Android evidence, separate native
+binaries and complete ownership contracts are documented in
+`docs/vulkan-core10-transfer-recovery-portability.md`.
+
 ## Coverage boundaries
 
 The evidence demonstrates that the Vulkan driver can create each

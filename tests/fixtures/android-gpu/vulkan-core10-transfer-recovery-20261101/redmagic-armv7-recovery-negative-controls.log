@@ -1,0 +1,9 @@
+TEST=vulkan-core10-transfer-recovery-invalid-inputs
+ABI=armeabi-v7a
+INVALID_CASES=6
+INVALID_CASE=missing-arguments exit=2
+INVALID_CASE=unsupported-api exit=2
+INVALID_CASE=zero-fault exit=2
+INVALID_CASE=fault-out-of-range exit=2
+INVALID_CASE=fault-nonnumeric exit=2
+INVALID_CASE=unsupported-memory-name exit=2

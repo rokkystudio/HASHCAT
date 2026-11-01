@@ -1,0 +1,79 @@
+TEST=vulkan-core10-transfer-recovery
+ABI=arm64-v8a
+API=1.0
+MEMORY_MODE=prefer
+FAULT_POINT=7
+ADB_EXIT_CODE=0
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=1
+TRANSFER_INJECT_FAULT point=7 acquisition=7 resource=source_mapping result=-3
+TRANSFER_OPEN_FAILED index=0 mode=0 result=-3
+TRANSFER_CLOSE index=0 bytes=0 copies=0 copied_bytes=0 flushes=0 invalidates=0 wait_result=0
+TRANSFER_RELEASE point=7 acquired=7 mapped=1 buffers=1 memory=1 fence=1 command=1 pool=1 device=1
+RECOVERY_FAULT_CONFIRMED trial=0 point=7 result=-3 owner=0 instance=1 copies=0
+TRANSFER_OPEN index=0 queue_family=0 bytes=4096 mode=0 src_type=0 dst_type=0 coherent_src=1 coherent_dst=1 atom=64 shaders=0 features=0 extensions=0
+RECOVERY_REOPEN trial=0 phase=0 point=7 owner=1 acquisitions=10 copied=0
+TRANSFER_COPY index=0 bytes=4 copies=1 flushes=0 invalidates=0 fence=signaled shaders=0
+RECOVERY_VERIFIED trial=0 phase=0 round=0 words=1 bytes=4 valid=1 shaders=0
+TRANSFER_COPY index=0 bytes=28 copies=2 flushes=0 invalidates=0 fence=signaled shaders=0
+RECOVERY_VERIFIED trial=0 phase=0 round=1 words=7 bytes=28 valid=1 shaders=0
+TRANSFER_COPY index=0 bytes=256 copies=3 flushes=0 invalidates=0 fence=signaled shaders=0
+RECOVERY_VERIFIED trial=0 phase=0 round=2 words=64 bytes=256 valid=1 shaders=0
+TRANSFER_COPY index=0 bytes=1028 copies=4 flushes=0 invalidates=0 fence=signaled shaders=0
+RECOVERY_VERIFIED trial=0 phase=0 round=3 words=257 bytes=1028 valid=1 shaders=0
+TRANSFER_COPY index=0 bytes=4096 copies=5 flushes=0 invalidates=0 fence=signaled shaders=0
+RECOVERY_VERIFIED trial=0 phase=0 round=4 words=1024 bytes=4096 valid=1 shaders=0
+RECOVERY_PHASE_PASS trial=0 phase=0 copies=5 verified_words=1353 copied_bytes=5412 flushes=0 invalidates=0 shaders=0
+TRANSFER_CLOSE index=0 bytes=4096 copies=5 copied_bytes=5412 flushes=0 invalidates=0 wait_result=0
+RECOVERY_PHASE_CLOSED trial=0 phase=0 owner=0 instance=1
+TRANSFER_OPEN index=0 queue_family=0 bytes=4096 mode=0 src_type=0 dst_type=0 coherent_src=1 coherent_dst=1 atom=64 shaders=0 features=0 extensions=0
+RECOVERY_REOPEN trial=0 phase=1 point=7 owner=1 acquisitions=10 copied=0
+TRANSFER_COPY index=0 bytes=4096 copies=1 flushes=0 invalidates=0 fence=signaled shaders=0
+RECOVERY_VERIFIED trial=0 phase=1 round=0 words=1024 bytes=4096 valid=1 shaders=0
+RECOVERY_PHASE_PASS trial=0 phase=1 copies=1 verified_words=1024 copied_bytes=4096 flushes=0 invalidates=0 shaders=0
+TRANSFER_CLOSE index=0 bytes=4096 copies=1 copied_bytes=4096 flushes=0 invalidates=0 wait_result=0
+RECOVERY_PHASE_CLOSED trial=0 phase=1 owner=0 instance=1
+DEVICE_CATALOG_CLOSE devices=1 selections=1
+RECOVERY_TRIAL_PASS trial=0 fault=7 failed=1 reopened=2 copies=6 verified_words=2377 copied_bytes=9508 shaders=0
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=1
+TRANSFER_INJECT_FAULT point=7 acquisition=7 resource=source_mapping result=-3
+TRANSFER_OPEN_FAILED index=0 mode=0 result=-3
+TRANSFER_CLOSE index=0 bytes=0 copies=0 copied_bytes=0 flushes=0 invalidates=0 wait_result=0
+TRANSFER_RELEASE point=7 acquired=7 mapped=1 buffers=1 memory=1 fence=1 command=1 pool=1 device=1
+RECOVERY_FAULT_CONFIRMED trial=1 point=7 result=-3 owner=0 instance=1 copies=0
+TRANSFER_OPEN index=0 queue_family=0 bytes=4096 mode=0 src_type=0 dst_type=0 coherent_src=1 coherent_dst=1 atom=64 shaders=0 features=0 extensions=0
+RECOVERY_REOPEN trial=1 phase=0 point=7 owner=1 acquisitions=10 copied=0
+TRANSFER_COPY index=0 bytes=4 copies=1 flushes=0 invalidates=0 fence=signaled shaders=0
+RECOVERY_VERIFIED trial=1 phase=0 round=0 words=1 bytes=4 valid=1 shaders=0
+TRANSFER_COPY index=0 bytes=28 copies=2 flushes=0 invalidates=0 fence=signaled shaders=0
+RECOVERY_VERIFIED trial=1 phase=0 round=1 words=7 bytes=28 valid=1 shaders=0
+TRANSFER_COPY index=0 bytes=256 copies=3 flushes=0 invalidates=0 fence=signaled shaders=0
+RECOVERY_VERIFIED trial=1 phase=0 round=2 words=64 bytes=256 valid=1 shaders=0
+TRANSFER_COPY index=0 bytes=1028 copies=4 flushes=0 invalidates=0 fence=signaled shaders=0
+RECOVERY_VERIFIED trial=1 phase=0 round=3 words=257 bytes=1028 valid=1 shaders=0
+TRANSFER_COPY index=0 bytes=4096 copies=5 flushes=0 invalidates=0 fence=signaled shaders=0
+RECOVERY_VERIFIED trial=1 phase=0 round=4 words=1024 bytes=4096 valid=1 shaders=0
+RECOVERY_PHASE_PASS trial=1 phase=0 copies=5 verified_words=1353 copied_bytes=5412 flushes=0 invalidates=0 shaders=0
+TRANSFER_CLOSE index=0 bytes=4096 copies=5 copied_bytes=5412 flushes=0 invalidates=0 wait_result=0
+RECOVERY_PHASE_CLOSED trial=1 phase=0 owner=0 instance=1
+TRANSFER_OPEN index=0 queue_family=0 bytes=4096 mode=0 src_type=0 dst_type=0 coherent_src=1 coherent_dst=1 atom=64 shaders=0 features=0 extensions=0
+RECOVERY_REOPEN trial=1 phase=1 point=7 owner=1 acquisitions=10 copied=0
+TRANSFER_COPY index=0 bytes=4096 copies=1 flushes=0 invalidates=0 fence=signaled shaders=0
+RECOVERY_VERIFIED trial=1 phase=1 round=0 words=1024 bytes=4096 valid=1 shaders=0
+RECOVERY_PHASE_PASS trial=1 phase=1 copies=1 verified_words=1024 copied_bytes=4096 flushes=0 invalidates=0 shaders=0
+TRANSFER_CLOSE index=0 bytes=4096 copies=1 copied_bytes=4096 flushes=0 invalidates=0 wait_result=0
+RECOVERY_PHASE_CLOSED trial=1 phase=1 owner=0 instance=1
+DEVICE_CATALOG_CLOSE devices=1 selections=1
+RECOVERY_TRIAL_PASS trial=1 fault=7 failed=1 reopened=2 copies=6 verified_words=2377 copied_bytes=9508 shaders=0
+RECOVERY_DIAGNOSTIC_PASS api=1.0 mode=0 point=7 trials=2 faults=2 reopened=4 copies=12 verified_words=4754 copied_bytes=19016 shaders=0

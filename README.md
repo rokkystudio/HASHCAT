@@ -79,7 +79,10 @@ flush/invalidate on Adreno and Mali. This diagnostic is deliberately
 independent of the HASHCAT hashing backend. The
 [resource-acquisition fault verification](docs/vulkan-core10-transfer-fault-portability.md)
 also tests ten real Vulkan creation/cleanup interruption points on
-Android GPU hardware.
+Android GPU hardware. The independent
+[fault-to-live-session recovery matrix](docs/vulkan-core10-transfer-recovery-portability.md)
+verifies two working VkDevices and fence-completed public data copies
+under the same VkInstance after each controlled acquisition failure.
 
 ## Working on hashcat source
 

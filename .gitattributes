@@ -68,3 +68,7 @@ tests/fixtures/android-gpu/vulkan-core10-transfer-20261101/manifest.json text eo
 # Preserve per-acquisition Vulkan resource-teardown evidence exactly as LF logs.
 tests/fixtures/android-gpu/vulkan-core10-transfer-faults-20261101/*.log -text whitespace=-blank-at-eol
 tests/fixtures/android-gpu/vulkan-core10-transfer-faults-20261101/manifest.json text eol=lf
+
+# Keep real Android Vulkan fault-to-live-device recovery transcripts byte-identical.
+tests/fixtures/android-gpu/vulkan-core10-transfer-recovery-20261101/*.log -text whitespace=-blank-at-eol
+tests/fixtures/android-gpu/vulkan-core10-transfer-recovery-20261101/manifest.json text eol=lf
