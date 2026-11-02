@@ -4,18 +4,19 @@
  */
 
 /**
- * Execute validated public Vulkan 1.0 Compute programs in HASHCAT -I.
+ * Execute validated Vulkan 1.0 Compute programs in HASHCAT -I.
  *
  * The backend catalogue supplies a real physical device and VkInstance.
- * Information mode validates explicit one-, two- or four-stage SPIR-V 1.0
- * programs against the physical GPU limits before opening a temporary
- * VkDevice. Storage-buffer, descriptor-set, shader-module and pipeline
- * ownership arrays are dynamically allocated from declared counts.
- * Every stage reads its predecessor after an explicit Compute barrier;
- * every output is compared to independent unsigned 32-bit CPU arithmetic.
- * All temporary Vulkan and host resources are released before returning.
+ * Information mode validates explicit SPIR-V 1.0 programs against physical
+ * GPU limits before opening a temporary VkDevice. Storage-buffer,
+ * descriptor-set, shader-module and pipeline ownership arrays are allocated
+ * from declared counts. The public arithmetic programs verify one, two or
+ * four ordered stages; the MD5 diagnostic executes the real 64-round MD5
+ * compression primitive over four fixed public one-block messages.
+ * All outputs are checked against host references before temporary Vulkan
+ * and host resources are released.
  *
- * This source never reads or modifies HASHCAT password candidates,
+ * This source never reads or modifies HASHCAT password candidates, target
  * digests, salts, attack modes or the normal hashing scheduler.
  */
 
@@ -23,6 +24,7 @@
 
 #include "backend_vulkan.h"
 #include "backend_vulkan_program.h"
+#include "backend_vulkan_md5_spirv.h"
 #include "backend_vulkan_public_spirv.h"
 #include "backend_vulkan_public_stage2_spirv.h"
 
@@ -35,6 +37,12 @@
 #define BACKEND_VULKAN_PUBLIC_LOCAL_SIZE 32u
 #define BACKEND_VULKAN_PUBLIC_GROUPS 2u
 #define BACKEND_VULKAN_PUBLIC_BYTES (BACKEND_VULKAN_PUBLIC_WORDS * sizeof (uint32_t))
+
+#define BACKEND_VULKAN_MD5_VECTORS 4u
+#define BACKEND_VULKAN_MD5_BLOCK_WORDS 16u
+#define BACKEND_VULKAN_MD5_DIGEST_WORDS 4u
+#define BACKEND_VULKAN_MD5_BUFFER_WORDS (BACKEND_VULKAN_MD5_VECTORS * BACKEND_VULKAN_MD5_BLOCK_WORDS)
+#define BACKEND_VULKAN_MD5_BYTES (BACKEND_VULKAN_MD5_BUFFER_WORDS * sizeof (uint32_t))
 
 /**
  * Declare the exact embedded public shader stages consumed by the executor.
@@ -125,6 +133,56 @@ static const backend_vulkan_program_t backend_vulkan_public_chain4 =
   .buffer_count = 5u,
   .buffer_bytes = BACKEND_VULKAN_PUBLIC_BYTES
 };
+
+/**
+ * Declare the first cryptographic SPIR-V stage owned by the Vulkan backend.
+ *
+ * One invocation consumes one complete pre-padded 512-bit MD5 block and writes
+ * four 32-bit digest state words. Four invocations process four independent
+ * public known-answer vectors. The shader uses the MD5 initial state and round
+ * constants corresponding to source/OpenCL/inc_hash_md5.cl, but no HASHCAT
+ * password or target buffer is exposed to this program.
+ */
+static const backend_vulkan_program_stage_t backend_vulkan_md5_stages[1] =
+{
+  {
+    .name = "md5_one_block",
+    .spirv = backend_vulkan_md5_spirv,
+    .spirv_words = sizeof (backend_vulkan_md5_spirv) / sizeof (uint32_t),
+    .source_buffer_index = 0u,
+    .destination_buffer_index = 1u,
+    .local_size = { BACKEND_VULKAN_MD5_VECTORS, 1u, 1u },
+    .group_count = { 1u, 1u, 1u }
+  }
+};
+
+/**
+ * Describe four independent one-block MD5 known-answer vectors.
+ *
+ * Both storage buffers expose 256 bytes so the input holds four complete
+ * 64-byte padded blocks. The output shader writes the first sixteen words,
+ * one four-word digest per vector; the remaining words remain host sentinels.
+ */
+static const backend_vulkan_program_t backend_vulkan_md5_program =
+{
+  .stages = backend_vulkan_md5_stages,
+  .stage_count = 1u,
+  .buffer_count = 2u,
+  .buffer_bytes = BACKEND_VULKAN_MD5_BYTES
+};
+
+/**
+ * Select the explicit host-side verification contract for a validated program.
+ *
+ * PUBLIC_U32 uses the existing synthetic arithmetic reference and optional
+ * controlled fault/timeout probes. MD5 uses fixed public known-answer vectors
+ * and never enables those arithmetic-only diagnostic modes.
+ */
+typedef enum backend_vulkan_execution_kind
+{
+  BACKEND_VULKAN_EXECUTION_PUBLIC_U32 = 0,
+  BACKEND_VULKAN_EXECUTION_MD5 = 1
+} backend_vulkan_execution_kind_t;
 
 /**
  * Own one host-visible storage buffer and the exact Vulkan memory plan.
@@ -811,6 +869,280 @@ static VkResult backend_vulkan_public_pipeline_open (
 }
 
 /**
+ * Build four canonical one-block MD5 messages in native little-endian words.
+ *
+ * The public vectors are "", "a", "abc" and "message digest". Every message
+ * fits one MD5 block. Padding is encoded explicitly into uint32 words so the
+ * host representation does not depend on pointer casts or host byte order.
+ * Word 14 receives the original bit length and word 15 remains zero.
+ */
+static void backend_vulkan_md5_prepare_blocks (
+  uint32_t blocks[BACKEND_VULKAN_MD5_BUFFER_WORDS])
+{
+  static const char *messages[BACKEND_VULKAN_MD5_VECTORS] =
+  {
+    "",
+    "a",
+    "abc",
+    "message digest"
+  };
+
+  memset (
+    blocks, 0,
+    BACKEND_VULKAN_MD5_BUFFER_WORDS * sizeof (uint32_t)
+  );
+
+  for (uint32_t vector_index = 0u;
+       vector_index < BACKEND_VULKAN_MD5_VECTORS;
+       vector_index++)
+  {
+    const uint8_t *message =
+      (const uint8_t *) messages[vector_index];
+
+    const size_t length = strlen (messages[vector_index]);
+    const uint32_t base =
+      vector_index * BACKEND_VULKAN_MD5_BLOCK_WORDS;
+
+    for (size_t i = 0u; i < length; i++)
+    {
+      blocks[base + (uint32_t) (i >> 2)]
+        |= (uint32_t) message[i] << ((uint32_t) (i & 3u) * 8u);
+    }
+
+    blocks[base + (uint32_t) (length >> 2)]
+      |= UINT32_C (0x80) << ((uint32_t) (length & 3u) * 8u);
+
+    blocks[base + 14u] = (uint32_t) length * 8u;
+  }
+}
+
+/**
+ * Dispatch the fixed-vector MD5 program through the common dynamic resources.
+ *
+ * The source buffer receives four complete padded MD5 blocks. The destination
+ * buffer is initialized to a sentinel before submission so writes outside the
+ * sixteen declared digest words are detectable. One real Compute dispatch
+ * executes four invocations, followed by a shader-write-to-host-read barrier,
+ * real queue submission and fence wait. The first sixteen output words are
+ * compared with standard MD5 known-answer digests and every remaining word
+ * must preserve the sentinel.
+ *
+ * Returns VK_SUCCESS only for all four exact 128-bit digests, unchanged
+ * out-of-range words and successful Vulkan synchronization. No HASHCAT
+ * candidate, target digest, salt or scheduler state is read or modified.
+ */
+static VkResult backend_vulkan_md5_dispatch (
+  backend_vulkan_public_job_t *job,
+  FILE *diagnostics)
+{
+  if (job == NULL || diagnostics == NULL || job->program == NULL
+   || job->program->stage_count != 1u
+   || job->program->buffer_count != 2u
+   || job->program->buffer_bytes != BACKEND_VULKAN_MD5_BYTES
+   || job->buffers == NULL
+   || job->descriptor_set == NULL
+   || job->pipeline == NULL)
+  {
+    return VK_ERROR_INITIALIZATION_FAILED;
+  }
+
+  static const uint32_t expected[
+    BACKEND_VULKAN_MD5_VECTORS * BACKEND_VULKAN_MD5_DIGEST_WORDS] =
+  {
+    UINT32_C (0xd98c1dd4), UINT32_C (0x04b2008f),
+    UINT32_C (0x980980e9), UINT32_C (0x7e42f8ec),
+    UINT32_C (0xb975c10c), UINT32_C (0xa8b6f1c0),
+    UINT32_C (0xe299c331), UINT32_C (0x61267769),
+    UINT32_C (0x98500190), UINT32_C (0xb04fd23c),
+    UINT32_C (0x7d3f96d6), UINT32_C (0x727fe128),
+    UINT32_C (0x7d696bf9), UINT32_C (0x8d93b77c),
+    UINT32_C (0x312f5a52), UINT32_C (0xd061f1aa)
+  };
+
+  const backend_vulkan_program_stage_t *stage =
+    &job->program->stages[0];
+
+  backend_vulkan_public_buffer_t *input_buffer =
+    &job->buffers[stage->source_buffer_index];
+
+  backend_vulkan_public_buffer_t *output_buffer =
+    &job->buffers[stage->destination_buffer_index];
+
+  uint32_t blocks[BACKEND_VULKAN_MD5_BUFFER_WORDS];
+
+  backend_vulkan_md5_prepare_blocks (blocks);
+
+  memcpy (
+    input_buffer->mapped, blocks, sizeof (blocks)
+  );
+
+  uint32_t *output_words = (uint32_t *) output_buffer->mapped;
+
+  for (uint32_t i = 0u; i < BACKEND_VULKAN_MD5_BUFFER_WORDS; i++)
+  {
+    output_words[i] = UINT32_C (0xa5a5a5a5);
+  }
+
+  VkResult result = vulkan_auto_sync_mapped_memory (
+    job->device, input_buffer->memory,
+    &input_buffer->plan, VK_FALSE
+  );
+
+  if (result != VK_SUCCESS) return result;
+
+  result = vulkan_auto_sync_mapped_memory (
+    job->device, output_buffer->memory,
+    &output_buffer->plan, VK_FALSE
+  );
+
+  if (result != VK_SUCCESS) return result;
+
+  const VkCommandBufferBeginInfo begin =
+  {
+    .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+    .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT
+  };
+
+  result = vkBeginCommandBuffer (job->command, &begin);
+
+  if (result != VK_SUCCESS) return result;
+
+  vkCmdBindPipeline (
+    job->command, VK_PIPELINE_BIND_POINT_COMPUTE,
+    job->pipeline[0]
+  );
+
+  vkCmdBindDescriptorSets (
+    job->command, VK_PIPELINE_BIND_POINT_COMPUTE,
+    job->pipeline_layout, 0u, 1u,
+    &job->descriptor_set[0], 0u, NULL
+  );
+
+  vkCmdDispatch (
+    job->command,
+    stage->group_count[0],
+    stage->group_count[1],
+    stage->group_count[2]
+  );
+
+  const VkBufferMemoryBarrier host_barrier =
+  {
+    .sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER,
+    .srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT,
+    .dstAccessMask = VK_ACCESS_HOST_READ_BIT,
+    .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+    .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+    .buffer = output_buffer->buffer,
+    .offset = 0u,
+    .size = job->program->buffer_bytes
+  };
+
+  vkCmdPipelineBarrier (
+    job->command,
+    VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+    VK_PIPELINE_STAGE_HOST_BIT,
+    0u,
+    0u, NULL,
+    1u, &host_barrier,
+    0u, NULL
+  );
+
+  result = vkEndCommandBuffer (job->command);
+
+  if (result != VK_SUCCESS) return result;
+
+  const VkSubmitInfo submit =
+  {
+    .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+    .commandBufferCount = 1u,
+    .pCommandBuffers = &job->command
+  };
+
+  result = vkQueueSubmit (
+    job->queue, 1u, &submit, job->fence
+  );
+
+  if (result != VK_SUCCESS) return result;
+
+  job->submitted = 1u;
+
+  result = vkWaitForFences (
+    job->device, 1u, &job->fence, VK_TRUE, UINT64_MAX
+  );
+
+  if (result != VK_SUCCESS) return result;
+
+  result = vulkan_auto_sync_mapped_memory (
+    job->device, output_buffer->memory,
+    &output_buffer->plan, VK_TRUE
+  );
+
+  if (result != VK_SUCCESS) return result;
+
+  const uint32_t digest_words =
+    BACKEND_VULKAN_MD5_VECTORS * BACKEND_VULKAN_MD5_DIGEST_WORDS;
+
+  for (uint32_t i = 0u; i < digest_words; i++)
+  {
+    if (output_words[i] != expected[i])
+    {
+      fprintf (
+        diagnostics,
+        "BACKEND_VULKAN_MD5_MISMATCH"
+        " vector=%" PRIu32
+        " word=%" PRIu32
+        " actual=0x%08" PRIx32
+        " expected=0x%08" PRIx32 "\n",
+        i / BACKEND_VULKAN_MD5_DIGEST_WORDS,
+        i % BACKEND_VULKAN_MD5_DIGEST_WORDS,
+        output_words[i], expected[i]
+      );
+
+      return VK_ERROR_INITIALIZATION_FAILED;
+    }
+  }
+
+  for (uint32_t i = digest_words;
+       i < BACKEND_VULKAN_MD5_BUFFER_WORDS;
+       i++)
+  {
+    if (output_words[i] != UINT32_C (0xa5a5a5a5))
+    {
+      fprintf (
+        diagnostics,
+        "BACKEND_VULKAN_MD5_RANGE_MISMATCH"
+        " word=%" PRIu32
+        " actual=0x%08" PRIx32
+        " expected=0xa5a5a5a5\n",
+        i, output_words[i]
+      );
+
+      return VK_ERROR_INITIALIZATION_FAILED;
+    }
+  }
+
+  fprintf (
+    diagnostics,
+    "BACKEND_VULKAN_MD5_DISPATCH_PASS"
+    " vectors=4"
+    " blocks=4"
+    " rounds=64"
+    " dispatches=1"
+    " verified_digest_words=16"
+    " sentinel_words=48"
+    " coherent_input=%u"
+    " coherent_output=%u"
+    " password_inputs=0"
+    " target_digests=0"
+    " scheduled=0\n",
+    input_buffer->plan.coherent,
+    output_buffer->plan.coherent
+  );
+
+  return VK_SUCCESS;
+}
+
+/**
  * Dispatch any validated public program with explicit declared dependencies.
  *
  * Writes the public CPU input to the first stage's declared source buffer.
@@ -1173,24 +1505,26 @@ static VkResult backend_vulkan_public_dispatch (
 }
 
 /**
- * Run one declared public Vulkan 1.0 program using backend device discovery.
+ * Run one declared Vulkan 1.0 program using backend device discovery.
  *
- * Obtains the real physical-device properties from the backend catalogue,
- * validates the complete graph against those limits, allocates host ownership
- * arrays from program counts, then creates exactly one temporary VkDevice.
- * Buffers, descriptor sets, shaders, pipelines and command recording all
- * consume the same declaration. The explicit controlled_fault_point is
- * zero in normal information mode; positive values 1..37 enable host-only
- * diagnostic checkpoints and release-inventory reporting. An optional
- * unsignaled-fence probe uses the same four-stage execution with a real
- * zero-timeout fence wait and reports the cleanup status. No Vulkan HASHCAT
- * hashing device is created or driver VkResult fabricated.
+ * Obtains real physical-device properties from the backend catalogue,
+ * validates the complete graph, allocates ownership arrays from program
+ * counts and creates one temporary VkDevice. execution_kind selects either
+ * the public arithmetic verifier or the fixed-vector MD5 known-answer
+ * verifier explicitly; no shader identity or device-name inference is used.
+ *
+ * controlled_fault_point and probe_unsignaled_fence are valid only for the
+ * public arithmetic execution kind. The MD5 execution uses the same dynamic
+ * allocation, pipeline and cleanup path without enabling those diagnostics.
+ * No Vulkan HASHCAT hashing device is registered and scheduler state is not
+ * modified.
  */
 static VkResult backend_vulkan_kernel_verify_program (
   backend_ctx_t *backend_ctx,
   uint32_t device_index,
   FILE *diagnostics,
   const backend_vulkan_program_t *program,
+  backend_vulkan_execution_kind_t execution_kind,
   uint32_t controlled_fault_point,
   VkBool32 probe_unsignaled_fence)
 {
@@ -1198,9 +1532,13 @@ static VkResult backend_vulkan_kernel_verify_program (
    || backend_ctx->vulkan_catalog == NULL
    || device_index >= backend_ctx->vulkan_devices_cnt
    || program == NULL || program->stage_count == 0u
+   || execution_kind > BACKEND_VULKAN_EXECUTION_MD5
    || controlled_fault_point > 37u
+   || (execution_kind == BACKEND_VULKAN_EXECUTION_MD5
+    && (controlled_fault_point != 0u || probe_unsignaled_fence == VK_TRUE))
    || (probe_unsignaled_fence == VK_TRUE
-    && (controlled_fault_point != 0u || program->stage_count != 4u)))
+    && (execution_kind != BACKEND_VULKAN_EXECUTION_PUBLIC_U32
+     || controlled_fault_point != 0u || program->stage_count != 4u)))
   {
     return VK_ERROR_INITIALIZATION_FAILED;
   }
@@ -1365,7 +1703,32 @@ static VkResult backend_vulkan_kernel_verify_program (
 
   if (result != VK_SUCCESS) goto cleanup;
 
-  if (program->stage_count == 1u)
+  if (execution_kind == BACKEND_VULKAN_EXECUTION_MD5)
+  {
+    fprintf (
+      diagnostics,
+      "BACKEND_VULKAN_MD5_READY"
+      " index=%" PRIu32
+      " queue_family=%" PRIu32
+      " api=%" PRIu32 ".%" PRIu32
+      " shader_words=%" PRIu32
+      " descriptors=2"
+      " buffers=2"
+      " vectors=4"
+      " block_bytes=64"
+      " local=%" PRIu32 " groups=%" PRIu32
+      " program_validated=1 dynamic_resources=1"
+      " features=0 extensions=0"
+      " password_inputs=0 target_digests=0 scheduled=0\n",
+      device_index, selected.compute_queue_family,
+      VK_API_VERSION_MAJOR (effective_api),
+      VK_API_VERSION_MINOR (effective_api),
+      program->stages[0].spirv_words,
+      program->stages[0].local_size[0],
+      program->stages[0].group_count[0]
+    );
+  }
+  else if (program->stage_count == 1u)
   {
     fprintf (
       diagnostics,
@@ -1440,9 +1803,18 @@ static VkResult backend_vulkan_kernel_verify_program (
     );
   }
 
-  result = backend_vulkan_public_dispatch (
-    &job, diagnostics, probe_unsignaled_fence
-  );
+  if (execution_kind == BACKEND_VULKAN_EXECUTION_MD5)
+  {
+    result = backend_vulkan_md5_dispatch (
+      &job, diagnostics
+    );
+  }
+  else
+  {
+    result = backend_vulkan_public_dispatch (
+      &job, diagnostics, probe_unsignaled_fence
+    );
+  }
 
 cleanup:
   {
@@ -1556,7 +1928,19 @@ cleanup:
       }
     }
 
-    if (program->stage_count == 1u)
+    if (execution_kind == BACKEND_VULKAN_EXECUTION_MD5)
+    {
+      fprintf (
+        diagnostics,
+        "BACKEND_VULKAN_MD5_CLOSE"
+        " index=%" PRIu32
+        " result=%d"
+        " released=1"
+        " password_inputs=0 target_digests=0 scheduled=0\n",
+        device_index, result
+      );
+    }
+    else if (program->stage_count == 1u)
     {
       fprintf (
         diagnostics,
@@ -1610,7 +1994,9 @@ VkResult backend_vulkan_kernel_verify (
 {
   return backend_vulkan_kernel_verify_program (
     backend_ctx, device_index, diagnostics,
-    &backend_vulkan_public_single, 0u, VK_FALSE
+    &backend_vulkan_public_single,
+    BACKEND_VULKAN_EXECUTION_PUBLIC_U32,
+    0u, VK_FALSE
   );
 }
 
@@ -1630,7 +2016,9 @@ VkResult backend_vulkan_kernel_verify_chain (
 {
   return backend_vulkan_kernel_verify_program (
     backend_ctx, device_index, diagnostics,
-    &backend_vulkan_public_chain, 0u, VK_FALSE
+    &backend_vulkan_public_chain,
+    BACKEND_VULKAN_EXECUTION_PUBLIC_U32,
+    0u, VK_FALSE
   );
 }
 
@@ -1653,10 +2041,38 @@ VkResult backend_vulkan_kernel_verify_chain4 (
 {
   return backend_vulkan_kernel_verify_program (
     backend_ctx, device_index, diagnostics,
-    &backend_vulkan_public_chain4, 0u, VK_FALSE
+    &backend_vulkan_public_chain4,
+    BACKEND_VULKAN_EXECUTION_PUBLIC_U32,
+    0u, VK_FALSE
   );
 }
 
+/**
+ * Verify the first cryptographic Vulkan stage with public MD5 vectors.
+ *
+ * Executes four independent one-block MD5 messages through one declared
+ * SPIR-V Compute stage using the same dynamic storage-buffer, descriptor,
+ * pipeline, command and cleanup ownership path as the public programs.
+ * The GPU digest words must match the standard known answers for "", "a",
+ * "abc" and "message digest"; unwritten destination words must preserve
+ * their host sentinel.
+ *
+ * This method is information-mode validation only. Its inputs are immutable
+ * public test messages and it does not read HASHCAT candidates, target
+ * digests, salts, attack modes or scheduler state.
+ */
+VkResult backend_vulkan_kernel_verify_md5 (
+  backend_ctx_t *backend_ctx,
+  uint32_t device_index,
+  FILE *diagnostics)
+{
+  return backend_vulkan_kernel_verify_program (
+    backend_ctx, device_index, diagnostics,
+    &backend_vulkan_md5_program,
+    BACKEND_VULKAN_EXECUTION_MD5,
+    0u, VK_FALSE
+  );
+}
 
 /**
  * Exercise one controlled ownership checkpoint of a four-stage public program.
@@ -1691,7 +2107,9 @@ VkResult backend_vulkan_kernel_verify_chain4_fault (
 
   return backend_vulkan_kernel_verify_program (
     backend_ctx, device_index, diagnostics,
-    &backend_vulkan_public_chain4, controlled_fault_point, VK_FALSE
+    &backend_vulkan_public_chain4,
+    BACKEND_VULKAN_EXECUTION_PUBLIC_U32,
+    controlled_fault_point, VK_FALSE
   );
 }
 
@@ -1717,6 +2135,8 @@ VkResult backend_vulkan_kernel_verify_chain4_fence_timeout (
 {
   return backend_vulkan_kernel_verify_program (
     backend_ctx, device_index, diagnostics,
-    &backend_vulkan_public_chain4, 0u, VK_TRUE
+    &backend_vulkan_public_chain4,
+    BACKEND_VULKAN_EXECUTION_PUBLIC_U32,
+    0u, VK_TRUE
   );
 }

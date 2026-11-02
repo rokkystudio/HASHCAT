@@ -9179,6 +9179,26 @@ int backend_ctx_devices_init (hashcat_ctx_t *hashcat_ctx, const int comptime)
               hashcat_ctx,
               "Vulkan 1.0 public four-stage SPIR-V Compute chain dispatched and verified; hashing remains disabled."
             );
+
+            const VkResult md5_result = backend_vulkan_kernel_verify_md5 (
+              backend_ctx, 0u, stderr
+            );
+
+            if (md5_result != VK_SUCCESS)
+            {
+              event_log_warning (
+                hashcat_ctx,
+                "Vulkan 1.0 MD5 SPIR-V known-answer verification failed with VkResult %d; hashing remains disabled.",
+                md5_result
+              );
+            }
+            else
+            {
+              event_log_info (
+                hashcat_ctx,
+                "Vulkan 1.0 MD5 SPIR-V known-answer vectors dispatched and verified; hashing remains disabled."
+              );
+            }
           }
         }
       }

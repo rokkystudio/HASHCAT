@@ -7,21 +7,22 @@
 #define HC_BACKEND_VULKAN_KERNEL_H
 
 /**
- * Execute dynamically owned public-data Vulkan SPIR-V 1.0 Compute programs.
+ * Execute dynamically owned Vulkan SPIR-V 1.0 Compute programs.
  *
  * A real backend_ctx catalogue supplies the selected Vulkan GPU and
  * VkInstance. Each method selects an explicit backend_vulkan_program_t,
  * validates its SPIR-V headers, buffer graph and dispatch topology against
  * real VkPhysicalDeviceLimits, then creates temporary VkDevice resources.
- * The exported diagnostics verify one, two, or four ordered public stages.
+ * The exported diagnostics verify one, two or four public arithmetic stages
+ * and one cryptographic MD5 stage over fixed public known-answer vectors.
  * Host ownership arrays are sized from program stage/buffer counts, while
- * each stage declares its exact SPIR-V module, storage dependency and
+ * every stage declares its exact SPIR-V module, storage dependency and
  * dispatch topology. All temporary Vulkan resources are released before
  * returning.
  *
- * These methods run only in hashcat -I information mode. No HASHCAT
- * candidates, salts, digests, cryptographic kernels or hashing scheduler
- * are read or modified.
+ * These methods run only in hashcat -I information mode. The MD5 diagnostic
+ * uses immutable public messages; no HASHCAT candidates, target digests,
+ * salts, attack modes or hashing scheduler state are read or modified.
  */
 
 #include "types.h"
@@ -87,6 +88,25 @@ VkResult backend_vulkan_kernel_verify_chain (
  * never read or modified.
  */
 VkResult backend_vulkan_kernel_verify_chain4 (
+  backend_ctx_t *backend_ctx,
+  uint32_t device_index,
+  FILE *diagnostics);
+
+/**
+ * Verify one real MD5 SPIR-V Compute stage on four public known-answer vectors.
+ *
+ * Requires an active backend Vulkan catalogue, valid physical-device index
+ * and non-NULL diagnostics. The declared program allocates two 256-byte
+ * storage buffers and one descriptor/shader/pipeline set. Four Compute
+ * invocations consume canonical padded blocks for "", "a", "abc" and
+ * "message digest" and write four 128-bit MD5 states.
+ *
+ * VK_SUCCESS requires every digest word to match its standard known answer,
+ * all unwritten destination words to retain their sentinel and all temporary
+ * Vulkan resources to be released. The method does not read HASHCAT password
+ * candidates, target digests, salts, attack modes or scheduler state.
+ */
+VkResult backend_vulkan_kernel_verify_md5 (
   backend_ctx_t *backend_ctx,
   uint32_t device_index,
   FILE *diagnostics);

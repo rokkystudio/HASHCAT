@@ -32,9 +32,11 @@ Compute-to-host barriers, real `vkQueueSubmit`, `vkWaitForFences` and
 host-cache synchronization precede CPU comparison of every stage output.
 
 This is real Vulkan Compute execution **inside the complete Android HASHCAT
-binary**, not a replacement for HASHCAT's cryptographic OpenCL modules.
-The Vulkan path executes only in opt-in backend information mode, does not
-register a hashing device and never processes password candidates, target
+binary**. The same dynamic executor now also owns the follow-on
+[one-block MD5 cryptographic stage](vulkan-backend-md5-android.md), while
+the public graph documented here remains synthetic arithmetic. The Vulkan
+path executes only in opt-in backend information mode, does not register a
+hashing device and never processes HASHCAT password candidates, target
 digests, salts or attack scheduling work.
 
 ## Source architecture
@@ -269,13 +271,17 @@ Dynamic resource ownership and CPU-checked public Compute execution are
 verified inside the full Android HASHCAT frontend. This is not
 production password-hashing GPU execution.
 
-No cryptographic OpenCL HASHCAT kernel has been ported to Vulkan,
-the Vulkan device is not inserted into the hashing scheduler, and
-there is no public API for loading arbitrary SPIR-V programs from
-users. The [public resource-cleanup diagnostic](vulkan-backend-public-fault-android.md)
+The production Vulkan path now includes one cryptographic primitive:
+the [fixed-vector one-block MD5 stage](vulkan-backend-md5-android.md).
+It executes the complete MD5 compression function through the same dynamic
+resource owner and passes real Adreno/Mali known-answer checks. It does not
+yet accept HASHCAT candidate records or target digests, and the Vulkan device
+is not inserted into the hashing scheduler. There is no public API for loading
+arbitrary SPIR-V programs from users. The
+[public resource-cleanup diagnostic](vulkan-backend-public-fault-android.md)
 exercises 37 controlled post-acquisition or submission-boundary faults
-against the same four-stage production executor, followed by new
-CPU-verified Compute sessions on the same live Vulkan instance.
+against the four-stage arithmetic program, followed by new CPU-verified
+Compute sessions on the same live Vulkan instance.
 
 The [API-boundary fault diagnostic](vulkan-backend-public-api-fault-android.md)
 also links the unchanged executor through dedicated test-only wrappers

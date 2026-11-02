@@ -132,8 +132,16 @@ GPU/process configurations. A separate
 [real fence-timeout diagnostic](docs/vulkan-backend-public-fence-timeout-android.md)
 observes an actual driver VK_TIMEOUT after real four-stage submission,
 waits for device idle during production cleanup and then recreates a
-working device on Mali ARM64 and Adreno ARM64/ARMv7. Ordinary HASHCAT
-information-mode execution and OpenCL discovery remain available.
+working device on Mali ARM64 and Adreno ARM64/ARMv7.
+
+The [first cryptographic Vulkan stage](docs/vulkan-backend-md5-android.md)
+executes the complete 64-round MD5 compression primitive through the
+same production dynamic executor. Four fixed public one-block messages
+match their standard 128-bit digests on Mali ARM64 and Adreno
+ARM64/ARMv7 for Vulkan 1.0 and 1.1. Full Pixel ARM64 and RedMagic ARMv7
+`hashcat -I` processes also execute the MD5 stage and preserve ordinary
+OpenCL discovery. Vulkan still does not consume HASHCAT password
+candidates or register with the normal hashing scheduler.
 
 ## Working on hashcat source
 
