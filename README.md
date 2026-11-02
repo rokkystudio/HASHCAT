@@ -150,6 +150,13 @@ SHA-256 and ordinary OpenCL discovery in sequence. Vulkan still does
 not consume HASHCAT scheduler candidates or register as a hashing
 device.
 
+The [common Vulkan hash batch API](docs/vulkan-backend-hash-primitives-android.md)
+also includes separate SHA-1, SHA-224 and unkeyed BLAKE2s-256 SPIR-V
+Compute modules. All four byte-message algorithms share dynamic Vulkan
+resource ownership, explicit message lengths and canonical digest output.
+ARM64 and ARMv7 native compilation succeeds; execution of these three
+additional algorithms on physical GPU hardware has not yet been verified.
+
 ## Working on hashcat source
 
 Edit files directly under `source/`, then commit them in this repository:

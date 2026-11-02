@@ -1,0 +1,182 @@
+#version 450
+
+/*
+ * Compute unkeyed BLAKE2s-256 digests of independent byte messages.
+ *
+ * Binding zero holds two uint32 metadata words (byte offset, length) per
+ * message followed by packed payload bytes. Binding one receives eight
+ * little-endian BLAKE2s-256 state words per message. Every invocation uses
+ * the standard RFC 7693 sequential, unkeyed 32-byte parameter block.
+ */
+layout (local_size_x = 32, local_size_y = 1, local_size_z = 1) in;
+
+layout (set = 0, binding = 0, std430) readonly buffer InputBuffer
+{
+  uint words[];
+} input_data;
+
+layout (set = 0, binding = 1, std430) writeonly buffer OutputBuffer
+{
+  uint words[];
+} output_data;
+
+/* Read one packed little-endian input byte after the metadata table. */
+uint read_payload_byte (uint message_count, uint byte_offset)
+{
+  const uint word_index = message_count * 2u + (byte_offset >> 2u);
+  const uint word_shift = (byte_offset & 3u) * 8u;
+
+  return (input_data.words[word_index] >> word_shift) & 0xffu;
+}
+
+/* Rotate a BLAKE2s 32-bit word to the right by a nonzero amount. */
+uint rotate_right (uint value, uint amount)
+{
+  return (value >> amount) | (value << (32u - amount));
+}
+
+/*
+ * Apply one BLAKE2s G mixing operation to four state lanes.
+ *
+ * a, b, c and d identify the four working lanes. x and y are message
+ * words selected by the current standard BLAKE2s sigma permutation.
+ */
+void mix (
+  inout uint v[16],
+  uint a, uint b, uint c, uint d,
+  uint x, uint y)
+{
+  v[a] = v[a] + v[b] + x;
+  v[d] = rotate_right (v[d] ^ v[a], 16u);
+  v[c] = v[c] + v[d];
+  v[b] = rotate_right (v[b] ^ v[c], 12u);
+  v[a] = v[a] + v[b] + y;
+  v[d] = rotate_right (v[d] ^ v[a], 8u);
+  v[c] = v[c] + v[d];
+  v[b] = rotate_right (v[b] ^ v[c], 7u);
+}
+
+/*
+ * Hash one byte string using BLAKE2s-256 block compression.
+ *
+ * Processes every complete 64-byte block, zero-pads the final partial
+ * block, applies the actual processed byte counter and marks only the
+ * final block with the finalization flag. Empty strings hash one final
+ * zero-filled block with counter zero. No password workload is generated.
+ */
+void main ()
+{
+  const uint message_index = gl_GlobalInvocationID.x;
+  const uint message_count = uint (output_data.words.length ()) / 8u;
+
+  if (message_index >= message_count) return;
+
+  const uint message_offset = input_data.words[message_index * 2u];
+  const uint message_length = input_data.words[message_index * 2u + 1u];
+
+  const uint iv[8] = uint[8](
+    0x6a09e667u, 0xbb67ae85u, 0x3c6ef372u, 0xa54ff53au,
+    0x510e527fu, 0x9b05688cu, 0x1f83d9abu, 0x5be0cd19u
+  );
+
+  const uint sigma[160] = uint[160](
+     0u,  1u,  2u,  3u,  4u,  5u,  6u,  7u,  8u,  9u, 10u, 11u, 12u, 13u, 14u, 15u,
+    14u, 10u,  4u,  8u,  9u, 15u, 13u,  6u,  1u, 12u,  0u,  2u, 11u,  7u,  5u,  3u,
+    11u,  8u, 12u,  0u,  5u,  2u, 15u, 13u, 10u, 14u,  3u,  6u,  7u,  1u,  9u,  4u,
+     7u,  9u,  3u,  1u, 13u, 12u, 11u, 14u,  2u,  6u,  5u, 10u,  4u,  0u, 15u,  8u,
+     9u,  0u,  5u,  7u,  2u,  4u, 10u, 15u, 14u,  1u, 11u, 12u,  6u,  8u,  3u, 13u,
+     2u, 12u,  6u, 10u,  0u, 11u,  8u,  3u,  4u, 13u,  7u,  5u, 15u, 14u,  1u,  9u,
+    12u,  5u,  1u, 15u, 14u, 13u,  4u, 10u,  0u,  7u,  6u,  3u,  9u,  2u,  8u, 11u,
+    13u, 11u,  7u, 14u, 12u,  1u,  3u,  9u,  5u,  0u, 15u,  4u,  8u,  6u,  2u, 10u,
+     6u, 15u, 14u,  9u, 11u,  3u,  0u,  8u, 12u,  2u, 13u,  7u,  1u,  4u, 10u,  5u,
+    10u,  2u,  8u,  4u,  7u,  6u,  1u,  5u, 15u, 11u,  9u, 14u,  3u, 12u, 13u,  0u
+  );
+
+  uint h[8] = uint[8](
+    0x6a09e667u, 0xbb67ae85u, 0x3c6ef372u, 0xa54ff53au,
+    0x510e527fu, 0x9b05688cu, 0x1f83d9abu, 0x5be0cd19u
+  );
+
+  h[0] ^= 0x01010020u;
+
+  uint block_count =
+    message_length / 64u + (message_length % 64u != 0u ? 1u : 0u);
+
+  if (block_count == 0u) block_count = 1u;
+
+  for (uint block_index = 0u; block_index < block_count; block_index++)
+  {
+    const uint block_offset = block_index * 64u;
+    const uint valid_bytes = min (64u, message_length - block_offset);
+    const uint total_bytes = block_offset + valid_bytes;
+    uint message[16];
+
+    for (uint i = 0u; i < 16u; i++)
+    {
+      uint word = 0u;
+
+      for (uint j = 0u; j < 4u; j++)
+      {
+        const uint position = block_offset + i * 4u + j;
+
+        if (position < message_length)
+        {
+          word |= read_payload_byte (
+            message_count, message_offset + position
+          ) << (8u * j);
+        }
+      }
+
+      message[i] = word;
+    }
+
+    uint v[16];
+
+    for (uint i = 0u; i < 8u; i++)
+    {
+      v[i] = h[i];
+      v[i + 8u] = iv[i];
+    }
+
+    v[12] ^= total_bytes;
+
+    if (block_index + 1u == block_count)
+    {
+      v[14] = ~v[14];
+    }
+
+    for (uint round = 0u; round < 10u; round++)
+    {
+      const uint offset = round * 16u;
+
+      mix (v, 0u, 4u, 8u, 12u,
+        message[sigma[offset + 0u]], message[sigma[offset + 1u]]);
+      mix (v, 1u, 5u, 9u, 13u,
+        message[sigma[offset + 2u]], message[sigma[offset + 3u]]);
+      mix (v, 2u, 6u, 10u, 14u,
+        message[sigma[offset + 4u]], message[sigma[offset + 5u]]);
+      mix (v, 3u, 7u, 11u, 15u,
+        message[sigma[offset + 6u]], message[sigma[offset + 7u]]);
+      mix (v, 0u, 5u, 10u, 15u,
+        message[sigma[offset + 8u]], message[sigma[offset + 9u]]);
+      mix (v, 1u, 6u, 11u, 12u,
+        message[sigma[offset + 10u]], message[sigma[offset + 11u]]);
+      mix (v, 2u, 7u, 8u, 13u,
+        message[sigma[offset + 12u]], message[sigma[offset + 13u]]);
+      mix (v, 3u, 4u, 9u, 14u,
+        message[sigma[offset + 14u]], message[sigma[offset + 15u]]);
+    }
+
+    for (uint i = 0u; i < 8u; i++)
+    {
+      h[i] ^= v[i] ^ v[i + 8u];
+    }
+  }
+
+  const uint output_index = message_index * 8u;
+
+  for (uint i = 0u; i < 8u; i++)
+  {
+    output_data.words[output_index + i] = h[i];
+  }
+}

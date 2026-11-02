@@ -21,23 +21,16 @@
  * messages, compare digests with targets or use HASHCAT attack scheduling.
  */
 
-#include "types.h"
-
-#include <vulkan/vulkan.h>
-#include <stdint.h>
-#include <stdio.h>
+#include "backend_vulkan_hash.h"
 
 /**
- * Describe one immutable byte string passed to the SHA-256 GPU batch.
+ * Describe one immutable SHA-256 batch input using the common hash layout.
  *
- * data points to exactly size available bytes. A zero-sized message may
- * use a NULL data pointer. No NUL termination is required.
+ * The byte span is identical to backend_vulkan_hash_message_t and is
+ * borrowed during GPU execution. Zero-length messages accept NULL data.
+ * The alias preserves the existing SHA-256 API's input type.
  */
-typedef struct backend_vulkan_sha256_message
-{
-  const uint8_t *data;
-  uint32_t size;
-} backend_vulkan_sha256_message_t;
+typedef backend_vulkan_hash_message_t backend_vulkan_sha256_message_t;
 
 /**
  * Hash arbitrary byte messages in one Vulkan Compute dispatch.
