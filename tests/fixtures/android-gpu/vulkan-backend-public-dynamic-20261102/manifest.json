@@ -1,0 +1,261 @@
+{
+  "date": "2026-11-02",
+  "scope": "Dynamically allocated Vulkan 1.0 public Compute resources for one/two/four-stage information-mode programs",
+  "minimum_android_api": 24,
+  "native_requested_apis": [
+    "1.0",
+    "1.1"
+  ],
+  "full_hashcat_requested_api": "1.0",
+  "physical_device_process_profiles": [
+    "redmagic-arm64",
+    "redmagic-armv7",
+    "pixel-arm64"
+  ],
+  "gpu_devices": [
+    "Adreno 730",
+    "Mali-G715"
+  ],
+  "program_stage_counts": [
+    1,
+    2,
+    4
+  ],
+  "four_stage_shader_modules": 4,
+  "four_stage_descriptor_sets": 4,
+  "four_stage_descriptor_count": 8,
+  "four_stage_storage_buffers": 5,
+  "four_stage_dependency_barriers": 3,
+  "host_resource_arrays_dynamically_allocated": true,
+  "shader_compiler_target": "vulkan1.0",
+  "spirv_modules": {
+    "public_u32_transform": {
+      "bytes": 1304,
+      "words": 326,
+      "sha256": "bd1f85baee40cb3c4db70ddd4a1e86af8428521951a8363445ef95d1b92f77a9"
+    },
+    "public_u32_rotate": {
+      "bytes": 1452,
+      "words": 363,
+      "sha256": "bb1ce39b44be765920bbf52fd7db66229e7b83a49b1487bdc64e1e190614e0a5"
+    }
+  },
+  "source_hash_policy": "CRLF normalized to LF",
+  "source_sha256": {
+    "source/src/backend.c": "92d2202900abf410e485728e4da5384266220bddd25640276d474766a7ab782b",
+    "source/src/backend_vulkan.c": "799a73573ea33016a5238a1a64e00a18dddefe4d714716de6bf89626f4206354",
+    "source/src/backend_vulkan_session.c": "9b73ddac998abee95bb5509a5956668a592fd5b62079e95d3480358f2b143747",
+    "source/src/backend_vulkan_kernel.c": "5a36a815e3c8a23c60b1d930f48d2ec976359d67fbaaa3aec5b1e51adfedac8b",
+    "source/src/backend_vulkan_program.c": "f500bb60f93b88ecf362c11874fd2d440fb0cd2a1b5c2ee891588ea0c70bd5e4",
+    "source/src/Makefile": "8e84be3bc01e967462d6a1817264ecc5d99f1a4434bfa6bc6cb637f85ef47af9",
+    "source/include/backend_vulkan_kernel.h": "4b1c0f6d242fda2dc0cb1b58d24dcfd7d9f9e578f213c77230577a8fff327c45",
+    "source/include/backend_vulkan_program.h": "a6005056fb7df7a9f7dea572e33e901dde3c7d419b0a9525a35ba5e9bc690693",
+    "source/include/backend_vulkan_public_spirv.h": "77ceebcd882df888f7c324a0ebd5deb29c1e482fa2872bf5a6b1d0ebc34ea316",
+    "source/include/backend_vulkan_public_stage2_spirv.h": "76056c2a69c9219708a76d321ef26aeb2fe90ce67f44bd81b456d3dc08ce10e1",
+    "tools/vulkan-backend-public-kernel.comp": "8a495c0e6c87441350bf40e9383aa82e07a8ae1cac227daadab3e5186b9b0791",
+    "tools/vulkan-backend-public-stage2.comp": "afb4a7d9d31d8aec9500e03e096b0d658e74077fcef6db88073d899af469f05b",
+    "tools/generate-vulkan-backend-public-kernel.py": "e6421c53644d5f7bcd8d3aded27c5186f422e902fbe567966db26a9cad5b0351",
+    "tools/vulkan-backend-public-dynamic-diagnostic.c": "b4b2f532d22d655ee6545bc1c3e0b9927a578d47eca844c255a61fffa185307c",
+    "tools/build-vulkan-backend-public-dynamic.ps1": "da8153e2db43ce7dbb44b06096def2110a53ae94d9529e973cffa8ab2feee8ac",
+    "tools/run-vulkan-backend-public-dynamic.ps1": "58e9d6ac4d7073be842c04dd0259347080fde2e8f548093d500cabc020a5f29e",
+    "tools/run-vulkan-hashcat-dynamic-executor.ps1": "1a444b7e731aa84c1900dbe71321ff026f89a8b0ef5657bbf0dbed1815d38436",
+    "tools/archive-vulkan-backend-dynamic-evidence.py": "6259d464188980d0c4f380f2f292271010320e955cdf2cfa626e8287e4a83fa8",
+    "tools/test-vulkan-backend-dynamic-evidence.py": "643a0cacbfcd973ad520fcfb3dc3dd8950f77b7fc9766286fb474e41b566a276",
+    "scripts/BUILD.ps1": "40ef1f91ee731cd660da43427885c93b1e61312c5fd655cc9b7b711db542925f"
+  },
+  "native_artifact_sha256": {
+    "arm64": {
+      "diagnostic": "8fc407274ff67cc119f497415e3ed20be0fa5476bd1793fd5ba1ec2f1b006193",
+      "production_backend_object": "d604bd84c029fc422bf36da04edabaa718ec623747a040991240d9bca7e6f506"
+    },
+    "armv7": {
+      "diagnostic": "233ae0a3e133b405f9c388472ce1bbf4c7b6c2c86acb8064ceecab4d7134c963",
+      "production_backend_object": "05433113be1514566d8cca463a3e50a633c4cfe7bbc9fa61585e388bfdb11b1a"
+    }
+  },
+  "full_hashcat_artifact_sha256": {
+    "arm64-v8a": {
+      "frontend": "05ad8204a08a7bf8736a33912bc5e83068f33348c60c5e1d413b44f17bbeb7a8",
+      "module_00000": "373b743ea4078f920077ccecdc203313739e948e40bfa648ae5cffc1068d98ea"
+    },
+    "armeabi-v7a": {
+      "frontend": "d2c5c866f386ba60a9331c169e10550ae122b6ad3f62697b452affd9d2c5df51",
+      "module_00000": "7bd6c03e72d4a52a5c8124f7cc1ec7100541c4af4944b4ccbf0459e3f3ceb1e8"
+    }
+  },
+  "native_runs": [
+    {
+      "device": "redmagic-arm64",
+      "abi": "arm64-v8a",
+      "requested_api": "1.0",
+      "file": "redmagic-arm64-1.0.log",
+      "sha256": "d9d3cdbd5cba694df69b72ea4292f2efd9204d63e43b659ec1eafddc35da2633",
+      "native_exit_code": 0,
+      "real_instance_lifetimes": 2,
+      "four_stage_program_verifications": 2,
+      "four_stage_dispatches": 8,
+      "verified_public_words": 512,
+      "shader_dependency_barriers": 6
+    },
+    {
+      "device": "redmagic-arm64",
+      "abi": "arm64-v8a",
+      "requested_api": "1.1",
+      "file": "redmagic-arm64-1.1.log",
+      "sha256": "17cff1d2442a25fea8b4654fb9decfe0ccc31db2442e47c515efa5efddb0661b",
+      "native_exit_code": 0,
+      "real_instance_lifetimes": 2,
+      "four_stage_program_verifications": 2,
+      "four_stage_dispatches": 8,
+      "verified_public_words": 512,
+      "shader_dependency_barriers": 6
+    },
+    {
+      "device": "redmagic-armv7",
+      "abi": "armeabi-v7a",
+      "requested_api": "1.0",
+      "file": "redmagic-armv7-1.0.log",
+      "sha256": "1faf183fb759d8ffb54c918c5f0393137b2f8d55a0f8bc7aaea894917d4ed411",
+      "native_exit_code": 0,
+      "real_instance_lifetimes": 2,
+      "four_stage_program_verifications": 2,
+      "four_stage_dispatches": 8,
+      "verified_public_words": 512,
+      "shader_dependency_barriers": 6
+    },
+    {
+      "device": "redmagic-armv7",
+      "abi": "armeabi-v7a",
+      "requested_api": "1.1",
+      "file": "redmagic-armv7-1.1.log",
+      "sha256": "855cb6909cd051f9f60a1743691c8665897b138f837c6796067676b9fd200ad4",
+      "native_exit_code": 0,
+      "real_instance_lifetimes": 2,
+      "four_stage_program_verifications": 2,
+      "four_stage_dispatches": 8,
+      "verified_public_words": 512,
+      "shader_dependency_barriers": 6
+    },
+    {
+      "device": "pixel-arm64",
+      "abi": "arm64-v8a",
+      "requested_api": "1.0",
+      "file": "pixel-arm64-1.0.log",
+      "sha256": "f54c69a86f227717dc79d18ae380dc46533a4033428d199ae968fdfe765370b1",
+      "native_exit_code": 0,
+      "real_instance_lifetimes": 2,
+      "four_stage_program_verifications": 2,
+      "four_stage_dispatches": 8,
+      "verified_public_words": 512,
+      "shader_dependency_barriers": 6
+    },
+    {
+      "device": "pixel-arm64",
+      "abi": "arm64-v8a",
+      "requested_api": "1.1",
+      "file": "pixel-arm64-1.1.log",
+      "sha256": "6016a23633759fa7cae3fee3a1d18843c363916f3dc2659d4643185bf789a81f",
+      "native_exit_code": 0,
+      "real_instance_lifetimes": 2,
+      "four_stage_program_verifications": 2,
+      "four_stage_dispatches": 8,
+      "verified_public_words": 512,
+      "shader_dependency_barriers": 6
+    }
+  ],
+  "full_hashcat_info_runs": [
+    {
+      "device": "redmagic-arm64",
+      "abi": "arm64-v8a",
+      "file": "redmagic-arm64-hashcat-dynamic-info.log",
+      "sha256": "f0a24f8c118fc4ad3e1713b6381b64a566260976d36cba410023cbf8d2bcb1d6",
+      "native_exit_code": 0,
+      "real_instance_lifetimes": 1,
+      "empty_queue_submissions": 1,
+      "one_stage_dispatches": 1,
+      "two_stage_dispatches": 2,
+      "four_stage_dispatches": 4,
+      "verified_public_words": 448,
+      "shader_dependency_barriers": 4,
+      "normal_opencl_device_discovery": true
+    },
+    {
+      "device": "redmagic-armv7",
+      "abi": "armeabi-v7a",
+      "file": "redmagic-armv7-hashcat-dynamic-info.log",
+      "sha256": "e36edb4c2d5803cd8991b1a380426d85e5f8878f2a47a5fb50bb6637c340f33f",
+      "native_exit_code": 0,
+      "real_instance_lifetimes": 1,
+      "empty_queue_submissions": 1,
+      "one_stage_dispatches": 1,
+      "two_stage_dispatches": 2,
+      "four_stage_dispatches": 4,
+      "verified_public_words": 448,
+      "shader_dependency_barriers": 4,
+      "normal_opencl_device_discovery": true
+    },
+    {
+      "device": "pixel-arm64",
+      "abi": "arm64-v8a",
+      "file": "pixel-arm64-hashcat-dynamic-info.log",
+      "sha256": "ac289cc3009d0d0bdf3e6b3741946d4be6eca9d160561ee218e355c3d86f1df8",
+      "native_exit_code": 0,
+      "real_instance_lifetimes": 1,
+      "empty_queue_submissions": 1,
+      "one_stage_dispatches": 1,
+      "two_stage_dispatches": 2,
+      "four_stage_dispatches": 4,
+      "verified_public_words": 448,
+      "shader_dependency_barriers": 4,
+      "normal_opencl_device_discovery": true
+    }
+  ],
+  "invalid_cli": [
+    {
+      "device": "redmagic-arm64",
+      "abi": "arm64-v8a",
+      "file": "redmagic-arm64-negative-controls.log",
+      "sha256": "f9d6633bd3c8c177877acc426e2c698f5187d76ad4f241537195706045481b4c",
+      "rejected_native_options": 3
+    },
+    {
+      "device": "redmagic-armv7",
+      "abi": "armeabi-v7a",
+      "file": "redmagic-armv7-negative-controls.log",
+      "sha256": "ab5a80e594c448358bfc6bb0c95dd1117703c6c3e06062a3753f8060d06fe13a",
+      "rejected_native_options": 3
+    },
+    {
+      "device": "pixel-arm64",
+      "abi": "arm64-v8a",
+      "file": "pixel-arm64-negative-controls.log",
+      "sha256": "f9d6633bd3c8c177877acc426e2c698f5187d76ad4f241537195706045481b4c",
+      "rejected_native_options": 3
+    }
+  ],
+  "totals": {
+    "native_android_processes": 6,
+    "full_hashcat_info_processes": 3,
+    "four_stage_program_lifetimes": 15,
+    "physical_instance_lifetimes": 15,
+    "full_hashcat_empty_submissions": 3,
+    "real_public_vkcmd_dispatches": 69,
+    "verified_public_u32_words": 4416,
+    "four_stage_dependency_barriers": 45,
+    "all_program_dependency_barriers": 48,
+    "invalid_native_commands_rejected": 9
+  },
+  "cryptographic_spirv_kernels": 0,
+  "password_or_hash_inputs_processed": false,
+  "hashcat_hashing_scheduler_connected": false,
+  "hashcat_info_mode_only": true,
+  "normal_opencl_discovery_preserved": true,
+  "capture_policy": "Android native stdout/stderr captured through ADB by PowerShell, with line endings normalized to UTF-8 LF. Archived files are byte-identical to saved runner output, not raw ADB streams.",
+  "limitations": [
+    "The four-stage program reuses the public rotate shader for its final three stages; it is not a cryptographic HASHCAT kernel port.",
+    "The information-mode executor processes only fixed 64-word public test values. It does not accept password candidates, digests, salts, or production hashing work.",
+    "The program graph validates exact declared buffer dependencies, but this milestone does not benchmark throughput or concurrency.",
+    "Android API24-compiled ELFs were tested on newer Android systems and newer Vulkan drivers, not an Android 7.0 or physically Vulkan-1.0-only device.",
+    "The host arrays are allocated from program counts, but the current production diagnostic uses the explicit one/two/four-stage declarations."
+  ]
+}

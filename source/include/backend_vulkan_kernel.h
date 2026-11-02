@@ -7,16 +7,17 @@
 #define HC_BACKEND_VULKAN_KERNEL_H
 
 /**
- * Execute one or two opt-in public-data Vulkan SPIR-V 1.0 Compute stages.
+ * Execute dynamically owned public-data Vulkan SPIR-V 1.0 Compute programs.
  *
  * A real backend_ctx catalogue supplies the selected Vulkan GPU and
  * VkInstance. Each method selects an explicit backend_vulkan_program_t,
  * validates its SPIR-V headers, buffer graph and dispatch topology against
  * real VkPhysicalDeviceLimits, then creates temporary VkDevice resources.
- * The first method verifies 64 unsigned integers; the two-stage method
- * verifies both 64-word intermediate and 64-word final outputs after
- * an explicit shader-write-to-shader-read barrier. Both methods release
- * all temporary Vulkan resources before returning.
+ * The exported diagnostics verify one, two, or four ordered public stages.
+ * Host ownership arrays are sized from program stage/buffer counts, while
+ * each stage declares its exact SPIR-V module, storage dependency and
+ * dispatch topology. All temporary Vulkan resources are released before
+ * returning.
  *
  * These methods run only in hashcat -I information mode. No HASHCAT
  * candidates, salts, digests, cryptographic kernels or hashing scheduler
@@ -66,6 +67,26 @@ VkResult backend_vulkan_kernel_verify (
  * hashing work or adding Vulkan to the ordinary backend device list.
  */
 VkResult backend_vulkan_kernel_verify_chain (
+  backend_ctx_t *backend_ctx,
+  uint32_t device_index,
+  FILE *diagnostics);
+
+/**
+ * Verify four ordered public Compute stages with dynamically sized ownership.
+ *
+ * Requires the same live backend Vulkan catalogue and diagnostic stream.
+ * Allocates five storage-buffer records plus four descriptor sets, shader
+ * modules and pipelines from the declared program counts. Stage zero runs
+ * public_u32_transform; stages one through three reuse public_u32_rotate
+ * through explicit 0->1->2->3->4 storage dependencies. Three Compute
+ * write-to-read barriers order the stages, and a real fence precedes CPU
+ * verification of all 256 stage-output words.
+ *
+ * VK_SUCCESS requires exact GPU/CPU equality and complete dynamic cleanup.
+ * HASHCAT candidates, target hashes and the ordinary hashing scheduler are
+ * never read or modified.
+ */
+VkResult backend_vulkan_kernel_verify_chain4 (
   backend_ctx_t *backend_ctx,
   uint32_t device_index,
   FILE *diagnostics);

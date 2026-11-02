@@ -1,0 +1,72 @@
+TEST=vulkan-hashcat-dynamic-executor
+DEVICE=redmagic-armv7
+ABI=armeabi-v7a
+COMMAND=-I
+ADB_EXIT_CODE=0
+hashcat (v7.1.2) starting in backend information mode
+
+VULKAN_LOADER_VERSION=1.3.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=3 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0
+BACKEND_VULKAN_CATALOG_READY devices=1 requested_api=1.0 scheduled=0
+Vulkan 1.0 discovery found 1 physical device(s); Vulkan Compute scheduling is not enabled.
+SELECT_DEVICE_API=1.0 reported_minor=1 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Adreno (TM) 730 vendor=0x5143 device=0x7030002 api=1.1.128 driver=0x80267000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=65535 shared_max=32768 storage_range_max=134217728 descriptor_max=524288 non_coherent_atom=1
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=1
+BACKEND_VULKAN_SESSION_READY index=0 queue_family=0 effective_api=1.0 command_buffers=1 empty_submissions=1 features=0 extensions=0 scheduled=0
+Vulkan 1.0 Compute device session verified with an empty queue submission; Vulkan hashing remains disabled.
+SELECT_DEVICE_API=1.0 reported_minor=1 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Adreno (TM) 730 vendor=0x5143 device=0x7030002 api=1.1.128 driver=0x80267000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=65535 shared_max=32768 storage_range_max=134217728 descriptor_max=524288 non_coherent_atom=1
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=2
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=1 buffers=2 bytes=256 descriptors_per_stage=2
+BACKEND_VULKAN_KERNEL_READY index=0 queue_family=0 api=1.0 shader_words=326 descriptors=2 local=32 groups=2 program_validated=1 dynamic_resources=1 features=0 extensions=0 scheduled=0
+BACKEND_VULKAN_KERNEL_DISPATCH_PASS kernel=public_u32_transform words=64 local=32 groups=2 verified=64 coherent_input=1 coherent_output=1 shaders=1 password_inputs=0 scheduled=0
+BACKEND_VULKAN_KERNEL_CLOSE index=0 result=0 released=1 scheduled=0
+Vulkan 1.0 public SPIR-V Compute kernel dispatched and verified; hashing remains disabled.
+SELECT_DEVICE_API=1.0 reported_minor=1 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Adreno (TM) 730 vendor=0x5143 device=0x7030002 api=1.1.128 driver=0x80267000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=65535 shared_max=32768 storage_range_max=134217728 descriptor_max=524288 non_coherent_atom=1
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=3
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=2 buffers=3 bytes=256 descriptors_per_stage=2
+BACKEND_VULKAN_CHAIN_READY index=0 queue_family=0 api=1.0 shader_words_first=326 shader_words_second=363 descriptors=4 sets=2 buffers=3 local=32 groups=2 program_validated=1 dynamic_resources=1 features=0 extensions=0 scheduled=0
+BACKEND_VULKAN_CHAIN_DISPATCH_PASS stage1=public_u32_transform stage2=public_u32_rotate words=64 local=32 groups=2 dispatches=2 verified_first=64 verified_second=64 coherent_input=1 coherent_intermediate=1 coherent_output=1 barrier=shader_write_to_shader_read shaders=2 password_inputs=0 scheduled=0
+BACKEND_VULKAN_CHAIN_CLOSE index=0 result=0 released=1 scheduled=0
+Vulkan 1.0 public two-stage SPIR-V Compute chain dispatched and verified; hashing remains disabled.
+SELECT_DEVICE_API=1.0 reported_minor=1 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Adreno (TM) 730 vendor=0x5143 device=0x7030002 api=1.1.128 driver=0x80267000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=65535 shared_max=32768 storage_range_max=134217728 descriptor_max=524288 non_coherent_atom=1
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=4
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_VULKAN_PROGRAM_READY index=0 queue_family=0 api=1.0 stages=4 buffers=5 descriptor_sets=4 descriptors=8 shader_modules=4 pipelines=4 local=32 groups=2 program_validated=1 dynamic_resources=1 features=0 extensions=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_DISPATCH_PASS stages=4 buffers=5 words=64 dispatches=4 verified_words=256 dependency_barriers=3 descriptors=8 coherent_input=1 noncoherent_outputs=0 password_inputs=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=0 released=1 scheduled=0
+Vulkan 1.0 public four-stage SPIR-V Compute chain dispatched and verified; hashing remains disabled.
+OpenCL Info:
+============
+
+OpenCL Platform ID #1
+  Vendor..: QUALCOMM
+  Name....: QUALCOMM Snapdragon(TM)
+  Version.: OpenCL 3.0 QUALCOMM build: commit #21eaafda81 changeid #I578ccc16f0 Date: 07/19/22 Tue Local Branch:  Remote Branch: 
+
+  Backend Device ID #01
+    Type...........: GPU
+    Vendor.ID......: 2147483648
+    Vendor.........: QUALCOMM
+    Name...........: QUALCOMM Adreno(TM)
+    Version........: OpenCL 3.0 Adreno(TM) 730
+    Processor(s)...: 4
+    Preferred.Thrd.: 32
+    Clock..........: 1
+    Memory.Total...: 5523 MB (limited to 512 MB allocatable in one block)
+    Memory.Free....: 2761 MB
+    Memory.Unified.: 1
+    Local.Memory...: 32 KB
+    OpenCL.Version.: OpenCL C 3.0 Adreno(TM) 730
+    Driver.Version.: OpenCL 3.0 QUALCOMM build: commit #21eaafda81 changeid #I578ccc16f0 Date: 07/19/22 Tue Local Branch:  Remote Branch:  Compiler E031.38.11.04
+
+BACKEND_VULKAN_SESSION_CLOSE index=0 queue_family=0 empty_submissions=1 wait_result=0
+DEVICE_CATALOG_CLOSE devices=1 selections=4
+HASHCAT_KERNEL_EXIT=0

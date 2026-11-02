@@ -305,7 +305,9 @@ This milestone does not port a password-processing OpenCL kernel to
 SPIR-V, load arbitrary external shaders, accept attack-mode buffers,
 or register Vulkan as a hashing backend.
 
-A later safe executor step can remove the fixed two-stage resource
-capacity and allocate descriptor/pipeline/buffer arrays from a validated
-program's declared counts. That can be tested again using the public
-integer shaders before any cryptographic scheduling work is considered.
+The follow-on
+[dynamic four-stage Vulkan executor](vulkan-backend-dynamic-executor-android.md)
+allocates descriptor/pipeline/buffer ownership arrays directly from
+validated program counts and verifies a four-stage synthetic uint32
+chain on Adreno ARM64/ARMv7 and Mali ARM64. The evidence in this
+document remains tied to its original Pixel-only source revision.

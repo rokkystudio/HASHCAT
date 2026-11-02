@@ -114,7 +114,12 @@ Compute limits without a Vulkan driver call. The follow-on
 [program-declared executor](docs/vulkan-backend-program-executor-android.md)
 uses the same declarations for descriptor bindings, SPIR-V modules,
 dispatch counts and GPU barriers in a real Pixel Android `hashcat -I`
-process while HASHCAT hashing remains disconnected.
+process while HASHCAT hashing remains disconnected. The current
+[dynamic four-stage Vulkan Compute executor](docs/vulkan-backend-dynamic-executor-android.md)
+allocates buffers, descriptors, shader modules and pipelines from
+validated program counts, executes four ordered public SPIR-V stages
+on Adreno ARM64/ARMv7 and Mali ARM64, and verifies both standalone and
+full Android `hashcat -I` results without enabling Vulkan hashing.
 
 ## Working on hashcat source
 
