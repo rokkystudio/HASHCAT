@@ -15,9 +15,10 @@
  * has its own byte length and may require multiple 512-bit blocks.
  *
  * The caller owns the parent Vulkan catalogue, input spans and output array.
- * This module owns its temporary VkDevice, memory, descriptors, pipeline,
- * queue commands and fence. It does not generate messages, compare digests
- * with targets or use HASHCAT attack scheduling.
+ * Temporary VkDevice, storage, descriptor, pipeline, command and fence
+ * ownership is provided by the common backend_vulkan_kernel dynamic executor
+ * used by the public arithmetic and MD5 programs. This API does not generate
+ * messages, compare digests with targets or use HASHCAT attack scheduling.
  */
 
 #include "types.h"
@@ -49,8 +50,9 @@ typedef struct backend_vulkan_sha256_message
  * Each shader invocation reads one packed byte message and executes
  * standard SHA-256 with 64 rounds per 512-bit block, including padding
  * and the 64-bit bit-length trailer. The output consists of canonical
- * 32-byte SHA-256 digests in the input order. Device resource limits
- * and 32-bit storage offsets are validated before memory allocation.
+ * 32-byte SHA-256 digests in the input order. Individual message lengths,
+ * packed 32-bit offsets, host allocation bounds, exact heterogeneous storage
+ * ranges and physical device limits are validated before memory allocation.
  *
  * VK_SUCCESS requires completed GPU execution and successful resource
  * cleanup. Invalid arguments return VK_ERROR_INITIALIZATION_FAILED,
@@ -66,6 +68,24 @@ VkResult backend_vulkan_sha256_hash_batch (
   const backend_vulkan_sha256_message_t *messages,
   uint32_t message_count,
   uint8_t *digests,
+  FILE *diagnostics);
+
+/**
+ * Verify the SHA-256 batch API with four public known-answer messages.
+ *
+ * Requires an open backend Vulkan catalogue, valid physical-device index and
+ * non-NULL diagnostics. The batch contains an empty message, "abc", 56 bytes
+ * of 'a' and 100 bytes of 'a'. The first two require one padded block; the
+ * latter two require two blocks and exercise the 56-byte padding boundary.
+ *
+ * VK_SUCCESS requires all four canonical 32-byte GPU digests to match their
+ * independent known answers. The method uses backend_vulkan_sha256_hash_batch()
+ * and therefore the common dynamic Vulkan resource owner. It does not consume
+ * HASHCAT candidates, target digests, salts or scheduler state.
+ */
+VkResult backend_vulkan_sha256_verify_known_answers (
+  backend_ctx_t *backend_ctx,
+  uint32_t device_index,
   FILE *diagnostics);
 
 #endif // HC_BACKEND_VULKAN_SHA256_H

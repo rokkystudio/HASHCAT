@@ -43,8 +43,10 @@ typedef struct backend_vulkan_program_stage
  * Declare a complete sequential storage-buffer Compute graph.
  *
  * stages contains stage_count explicit stage declarations. buffer_count
- * is the number of distinct caller-owned storage buffers. buffer_bytes
- * is the logical byte range exposed to every stage descriptor.
+ * is the number of distinct caller-owned storage buffers. Uniform programs
+ * set buffer_bytes to one nonzero logical descriptor range and leave
+ * buffer_sizes NULL. Heterogeneous programs set buffer_bytes to zero and
+ * provide buffer_count nonzero logical ranges through buffer_sizes.
  *
  * The first stage may read any declared buffer. Every later stage must
  * read exactly the preceding destination. Every stage destination must
@@ -56,15 +58,38 @@ typedef struct backend_vulkan_program
   uint32_t stage_count;
   uint32_t buffer_count;
   VkDeviceSize buffer_bytes;
+  const VkDeviceSize *buffer_sizes;
 } backend_vulkan_program_t;
+
+/**
+ * Return the exact logical descriptor range for one declared storage buffer.
+ *
+ * Returns zero for NULL programs, out-of-range indices or malformed size
+ * declarations. Uniform programs return buffer_bytes. Heterogeneous programs
+ * return buffer_sizes[buffer_index]. No Vulkan function is called.
+ */
+VkDeviceSize backend_vulkan_program_buffer_bytes (
+  const backend_vulkan_program_t *program,
+  uint32_t buffer_index);
+
+/**
+ * Return the largest logical storage-buffer range declared by a program.
+ *
+ * Iterates all explicit ranges through backend_vulkan_program_buffer_bytes().
+ * Returns zero for malformed input or when any declared buffer has size zero.
+ * The value is suitable for physical-device requirement selection.
+ */
+VkDeviceSize backend_vulkan_program_largest_buffer_bytes (
+  const backend_vulkan_program_t *program);
 
 /**
  * Validate one Vulkan 1.0 Compute graph against exact physical limits.
  *
  * Checks null inputs, stage and buffer counts, canonical SPIR-V 1.0
- * headers, storage dependencies, destination uniqueness, descriptor
- * range, local dimensions, total local invocations and dispatch group
- * counts. Requires each stage to use exactly two storage descriptors.
+ * headers, uniform or explicit per-buffer descriptor ranges, storage
+ * dependencies, destination uniqueness, local dimensions, total local
+ * invocations and dispatch group counts. Requires each stage to use exactly
+ * two storage descriptors.
  *
  * Returns VK_SUCCESS only when every declaration is internally valid
  * and within the supplied VkPhysicalDeviceLimits. Structural errors

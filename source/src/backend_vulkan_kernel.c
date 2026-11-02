@@ -10,14 +10,16 @@
  * Information mode validates explicit SPIR-V 1.0 programs against physical
  * GPU limits before opening a temporary VkDevice. Storage-buffer,
  * descriptor-set, shader-module and pipeline ownership arrays are allocated
- * from declared counts. The public arithmetic programs verify one, two or
- * four ordered stages; the MD5 diagnostic executes the real 64-round MD5
- * compression primitive over four fixed public one-block messages.
- * All outputs are checked against host references before temporary Vulkan
- * and host resources are released.
+ * from declared counts and exact uniform or per-buffer ranges. The public
+ * arithmetic programs verify one, two or four ordered stages; MD5 executes a
+ * real 64-round compression stage over fixed public one-block messages; and
+ * SHA-256 accepts caller-owned variable-length byte batches with multi-block
+ * padding through the same resource owner.
  *
- * This source never reads or modifies HASHCAT password candidates, target
- * digests, salts, attack modes or the normal hashing scheduler.
+ * Information-mode outputs are checked against host references before
+ * temporary Vulkan and host resources are released. The cryptographic paths
+ * do not consume HASHCAT password candidates, target digests, salts, attack
+ * modes or normal hashing scheduler state.
  */
 
 #include "backend_vulkan_kernel.h"
@@ -25,6 +27,8 @@
 #include "backend_vulkan.h"
 #include "backend_vulkan_program.h"
 #include "backend_vulkan_md5_spirv.h"
+#include "backend_vulkan_sha256.h"
+#include "backend_vulkan_sha256_spirv.h"
 #include "backend_vulkan_public_spirv.h"
 #include "backend_vulkan_public_stage2_spirv.h"
 
@@ -43,6 +47,10 @@
 #define BACKEND_VULKAN_MD5_DIGEST_WORDS 4u
 #define BACKEND_VULKAN_MD5_BUFFER_WORDS (BACKEND_VULKAN_MD5_VECTORS * BACKEND_VULKAN_MD5_BLOCK_WORDS)
 #define BACKEND_VULKAN_MD5_BYTES (BACKEND_VULKAN_MD5_BUFFER_WORDS * sizeof (uint32_t))
+
+#define BACKEND_VULKAN_SHA256_LOCAL_SIZE 32u
+#define BACKEND_VULKAN_SHA256_DIGEST_BYTES 32u
+#define BACKEND_VULKAN_SHA256_METADATA_BYTES 8u
 
 /**
  * Declare the exact embedded public shader stages consumed by the executor.
@@ -172,17 +180,36 @@ static const backend_vulkan_program_t backend_vulkan_md5_program =
 };
 
 /**
- * Select the explicit host-side verification contract for a validated program.
+ * Select the explicit host-side execution contract for a validated program.
  *
- * PUBLIC_U32 uses the existing synthetic arithmetic reference and optional
- * controlled fault/timeout probes. MD5 uses fixed public known-answer vectors
- * and never enables those arithmetic-only diagnostic modes.
+ * PUBLIC_U32 uses the synthetic arithmetic reference and optional controlled
+ * fault/timeout probes. MD5 uses fixed public known-answer vectors. SHA256
+ * consumes an explicit caller-owned byte-message batch context and returns
+ * canonical digest bytes. No shader identity or GPU-name inference selects
+ * an execution contract.
  */
 typedef enum backend_vulkan_execution_kind
 {
   BACKEND_VULKAN_EXECUTION_PUBLIC_U32 = 0,
-  BACKEND_VULKAN_EXECUTION_MD5 = 1
+  BACKEND_VULKAN_EXECUTION_MD5 = 1,
+  BACKEND_VULKAN_EXECUTION_SHA256 = 2
 } backend_vulkan_execution_kind_t;
+
+/**
+ * Borrow caller-owned SHA-256 batch inputs and output storage during dispatch.
+ *
+ * input_bytes and output_bytes are the exact per-buffer logical ranges already
+ * validated by backend_vulkan_sha256_hash_batch(). The executor never takes
+ * ownership of message spans or digest memory.
+ */
+typedef struct backend_vulkan_sha256_context
+{
+  const backend_vulkan_sha256_message_t *messages;
+  uint32_t message_count;
+  uint8_t *digests;
+  VkDeviceSize input_bytes;
+  VkDeviceSize output_bytes;
+} backend_vulkan_sha256_context_t;
 
 /**
  * Own one host-visible storage buffer and the exact Vulkan memory plan.
@@ -196,6 +223,7 @@ typedef struct backend_vulkan_public_buffer
   VkBuffer buffer;
   VkDeviceMemory memory;
   void *mapped;
+  VkDeviceSize bytes;
   vulkan_auto_memory_plan_t plan;
 } backend_vulkan_public_buffer_t;
 
@@ -569,24 +597,45 @@ static VkResult backend_vulkan_public_release (
 /**
  * Allocate one host-visible Vulkan storage buffer for the active program.
  *
- * Uses program->buffer_bytes as the logical size and the real
- * vkGetBufferMemoryRequirements bitmask to select an
- * explicitly compatible memory type. Prefers HOST_COHERENT and accepts
- * HOST_VISIBLE noncoherent memory only with explicit cache sync.
- * After each successful buffer, memory and mapping acquisition, an
- * optional numbered diagnostic checkpoint can return a simulated
- * VK_ERROR_INITIALIZATION_FAILED. Otherwise real driver VkResults
- * propagate unchanged. The parent job releases every partial resource.
+ * Resolves the exact logical size declared for buffer_index and uses the real
+ * vkGetBufferMemoryRequirements bitmask to select an explicitly compatible
+ * memory type. Uniform programs therefore retain their shared range, while
+ * heterogeneous batch programs allocate only their declared input/output
+ * ranges. HOST_COHERENT is preferred; HOST_VISIBLE noncoherent memory uses
+ * explicit cache synchronization.
+ *
+ * After each successful buffer, memory and mapping acquisition, an optional
+ * numbered diagnostic checkpoint can return a simulated initialization error.
+ * Otherwise real driver VkResults propagate unchanged and the parent job owns
+ * every partial resource.
  */
 static VkResult backend_vulkan_public_buffer_open (
   backend_vulkan_public_job_t *job,
   const vulkan_auto_device_t *selected,
-  backend_vulkan_public_buffer_t *buffer)
+  uint32_t buffer_index)
 {
+  if (job == NULL || job->program == NULL || job->buffers == NULL
+   || buffer_index >= job->program->buffer_count)
+  {
+    return VK_ERROR_INITIALIZATION_FAILED;
+  }
+
+  backend_vulkan_public_buffer_t *buffer =
+    &job->buffers[buffer_index];
+
+  buffer->bytes = backend_vulkan_program_buffer_bytes (
+    job->program, buffer_index
+  );
+
+  if (buffer->bytes == 0u)
+  {
+    return VK_ERROR_INITIALIZATION_FAILED;
+  }
+
   const VkBufferCreateInfo info =
   {
     .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
-    .size = job->program->buffer_bytes,
+    .size = buffer->bytes,
     .usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
     .sharingMode = VK_SHARING_MODE_EXCLUSIVE
   };
@@ -790,12 +839,12 @@ static VkResult backend_vulkan_public_pipeline_open (
       {
         .buffer = job->buffers[stage->source_buffer_index].buffer,
         .offset = 0u,
-        .range = job->program->buffer_bytes
+        .range = job->buffers[stage->source_buffer_index].bytes
       },
       {
         .buffer = job->buffers[stage->destination_buffer_index].buffer,
         .offset = 0u,
-        .range = job->program->buffer_bytes
+        .range = job->buffers[stage->destination_buffer_index].bytes
       }
     };
 
@@ -1034,7 +1083,7 @@ static VkResult backend_vulkan_md5_dispatch (
     .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
     .buffer = output_buffer->buffer,
     .offset = 0u,
-    .size = job->program->buffer_bytes
+    .size = output_buffer->bytes
   };
 
   vkCmdPipelineBarrier (
@@ -1137,6 +1186,265 @@ static VkResult backend_vulkan_md5_dispatch (
     " scheduled=0\n",
     input_buffer->plan.coherent,
     output_buffer->plan.coherent
+  );
+
+  return VK_SUCCESS;
+}
+
+/**
+ * Pack caller-owned SHA-256 messages into the declared input storage buffer.
+ *
+ * The buffer begins with two uint32 words per message: byte offset relative to
+ * the payload start and byte length. Payload bytes follow the complete metadata
+ * table without gaps; the final allocation padding is zeroed. The caller's
+ * message spans are borrowed only for the duration of this copy.
+ */
+static VkResult backend_vulkan_sha256_pack_input (
+  backend_vulkan_public_job_t *job,
+  const backend_vulkan_sha256_context_t *context)
+{
+  if (job == NULL || context == NULL || job->buffers == NULL
+   || context->messages == NULL || context->message_count == 0u
+   || job->buffers[0].mapped == NULL
+   || job->buffers[0].bytes != context->input_bytes)
+  {
+    return VK_ERROR_INITIALIZATION_FAILED;
+  }
+
+  if (context->input_bytes > SIZE_MAX)
+  {
+    return VK_ERROR_INITIALIZATION_FAILED;
+  }
+
+  uint8_t *mapped = (uint8_t *) job->buffers[0].mapped;
+
+  memset (mapped, 0, (size_t) context->input_bytes);
+
+  uint32_t *metadata = (uint32_t *) mapped;
+  uint8_t *payload =
+    mapped
+    + (size_t) context->message_count
+      * BACKEND_VULKAN_SHA256_METADATA_BYTES;
+
+  uint32_t offset = 0u;
+
+  for (uint32_t i = 0u; i < context->message_count; i++)
+  {
+    metadata[2u * i] = offset;
+    metadata[2u * i + 1u] = context->messages[i].size;
+
+    if (context->messages[i].size != 0u)
+    {
+      memcpy (
+        payload + offset,
+        context->messages[i].data,
+        context->messages[i].size
+      );
+    }
+
+    offset += context->messages[i].size;
+  }
+
+  return VK_SUCCESS;
+}
+
+/**
+ * Dispatch one caller-owned SHA-256 byte-message batch on the common executor.
+ *
+ * The exact heterogeneous input/output ranges come from the validated program.
+ * Input metadata and bytes are flushed before a host-write-to-shader-read
+ * barrier. One real Compute dispatch hashes all messages, followed by a
+ * shader-write-to-host-read barrier, queue submission, fence completion and
+ * output invalidation. Eight GPU words per message are serialized to canonical
+ * big-endian SHA-256 bytes in caller-owned digest storage.
+ *
+ * Returns VK_SUCCESS only after every requested message has a complete digest.
+ * No target comparison, password generation or HASHCAT scheduler state is
+ * accessed.
+ */
+static VkResult backend_vulkan_sha256_dispatch (
+  backend_vulkan_public_job_t *job,
+  const backend_vulkan_sha256_context_t *context,
+  FILE *diagnostics)
+{
+  if (job == NULL || context == NULL || diagnostics == NULL
+   || job->program == NULL
+   || job->program->stage_count != 1u
+   || job->program->buffer_count != 2u
+   || job->buffers == NULL
+   || job->descriptor_set == NULL
+   || job->pipeline == NULL
+   || context->messages == NULL
+   || context->message_count == 0u
+   || context->digests == NULL
+   || job->buffers[0].bytes != context->input_bytes
+   || job->buffers[1].bytes != context->output_bytes)
+  {
+    return VK_ERROR_INITIALIZATION_FAILED;
+  }
+
+  VkResult result = backend_vulkan_sha256_pack_input (
+    job, context
+  );
+
+  if (result != VK_SUCCESS) return result;
+
+  result = vulkan_auto_sync_mapped_memory (
+    job->device, job->buffers[0].memory,
+    &job->buffers[0].plan, VK_FALSE
+  );
+
+  if (result != VK_SUCCESS) return result;
+
+  const VkCommandBufferBeginInfo begin =
+  {
+    .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+    .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT
+  };
+
+  result = vkBeginCommandBuffer (job->command, &begin);
+
+  if (result != VK_SUCCESS) return result;
+
+  const VkBufferMemoryBarrier input_barrier =
+  {
+    .sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER,
+    .srcAccessMask = VK_ACCESS_HOST_WRITE_BIT,
+    .dstAccessMask = VK_ACCESS_SHADER_READ_BIT,
+    .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+    .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+    .buffer = job->buffers[0].buffer,
+    .offset = 0u,
+    .size = job->buffers[0].bytes
+  };
+
+  vkCmdPipelineBarrier (
+    job->command,
+    VK_PIPELINE_STAGE_HOST_BIT,
+    VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+    0u,
+    0u, NULL,
+    1u, &input_barrier,
+    0u, NULL
+  );
+
+  const backend_vulkan_program_stage_t *stage =
+    &job->program->stages[0];
+
+  vkCmdBindPipeline (
+    job->command, VK_PIPELINE_BIND_POINT_COMPUTE,
+    job->pipeline[0]
+  );
+
+  vkCmdBindDescriptorSets (
+    job->command, VK_PIPELINE_BIND_POINT_COMPUTE,
+    job->pipeline_layout, 0u, 1u,
+    &job->descriptor_set[0], 0u, NULL
+  );
+
+  vkCmdDispatch (
+    job->command,
+    stage->group_count[0],
+    stage->group_count[1],
+    stage->group_count[2]
+  );
+
+  const VkBufferMemoryBarrier output_barrier =
+  {
+    .sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER,
+    .srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT,
+    .dstAccessMask = VK_ACCESS_HOST_READ_BIT,
+    .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+    .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+    .buffer = job->buffers[1].buffer,
+    .offset = 0u,
+    .size = job->buffers[1].bytes
+  };
+
+  vkCmdPipelineBarrier (
+    job->command,
+    VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+    VK_PIPELINE_STAGE_HOST_BIT,
+    0u,
+    0u, NULL,
+    1u, &output_barrier,
+    0u, NULL
+  );
+
+  result = vkEndCommandBuffer (job->command);
+
+  if (result != VK_SUCCESS) return result;
+
+  const VkSubmitInfo submit =
+  {
+    .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+    .commandBufferCount = 1u,
+    .pCommandBuffers = &job->command
+  };
+
+  result = vkQueueSubmit (
+    job->queue, 1u, &submit, job->fence
+  );
+
+  if (result != VK_SUCCESS) return result;
+
+  job->submitted = 1u;
+
+  result = vkWaitForFences (
+    job->device, 1u, &job->fence, VK_TRUE, UINT64_MAX
+  );
+
+  if (result != VK_SUCCESS) return result;
+
+  result = vulkan_auto_sync_mapped_memory (
+    job->device, job->buffers[1].memory,
+    &job->buffers[1].plan, VK_TRUE
+  );
+
+  if (result != VK_SUCCESS) return result;
+
+  const uint32_t *output =
+    (const uint32_t *) job->buffers[1].mapped;
+
+  for (uint32_t i = 0u; i < context->message_count; i++)
+  {
+    for (uint32_t word_index = 0u; word_index < 8u; word_index++)
+    {
+      const uint32_t word =
+        output[(size_t) i * 8u + word_index];
+
+      const size_t byte_index =
+        (size_t) i * BACKEND_VULKAN_SHA256_DIGEST_BYTES
+        + (size_t) word_index * 4u;
+
+      context->digests[byte_index + 0u] =
+        (uint8_t) (word >> 24u);
+      context->digests[byte_index + 1u] =
+        (uint8_t) (word >> 16u);
+      context->digests[byte_index + 2u] =
+        (uint8_t) (word >> 8u);
+      context->digests[byte_index + 3u] =
+        (uint8_t) word;
+    }
+  }
+
+  fprintf (
+    diagnostics,
+    "BACKEND_VULKAN_SHA256_DISPATCH_PASS"
+    " messages=%" PRIu32
+    " input_bytes=%" PRIu64
+    " output_bytes=%" PRIu64
+    " groups=%" PRIu32
+    " dispatches=1"
+    " digests=%" PRIu32
+    " password_generation=0"
+    " target_digests=0"
+    " scheduled=0\n",
+    context->message_count,
+    (uint64_t) context->input_bytes,
+    (uint64_t) context->output_bytes,
+    stage->group_count[0],
+    context->message_count
   );
 
   return VK_SUCCESS;
@@ -1509,15 +1817,16 @@ static VkResult backend_vulkan_public_dispatch (
  *
  * Obtains real physical-device properties from the backend catalogue,
  * validates the complete graph, allocates ownership arrays from program
- * counts and creates one temporary VkDevice. execution_kind selects either
- * the public arithmetic verifier or the fixed-vector MD5 known-answer
- * verifier explicitly; no shader identity or device-name inference is used.
+ * counts and creates one temporary VkDevice. execution_kind explicitly
+ * selects public arithmetic, fixed-vector MD5 or caller-owned SHA-256 batch
+ * host behavior; execution_context is required only by SHA-256. No shader
+ * identity or device-name inference is used.
  *
  * controlled_fault_point and probe_unsignaled_fence are valid only for the
- * public arithmetic execution kind. The MD5 execution uses the same dynamic
- * allocation, pipeline and cleanup path without enabling those diagnostics.
- * No Vulkan HASHCAT hashing device is registered and scheduler state is not
- * modified.
+ * public arithmetic execution kind. Cryptographic executions use the same
+ * dynamic allocation, descriptor, pipeline, command and cleanup path without
+ * enabling those arithmetic diagnostics. No Vulkan HASHCAT hashing device is
+ * registered and scheduler state is not modified.
  */
 static VkResult backend_vulkan_kernel_verify_program (
   backend_ctx_t *backend_ctx,
@@ -1525,6 +1834,7 @@ static VkResult backend_vulkan_kernel_verify_program (
   FILE *diagnostics,
   const backend_vulkan_program_t *program,
   backend_vulkan_execution_kind_t execution_kind,
+  void *execution_context,
   uint32_t controlled_fault_point,
   VkBool32 probe_unsignaled_fence)
 {
@@ -1532,8 +1842,13 @@ static VkResult backend_vulkan_kernel_verify_program (
    || backend_ctx->vulkan_catalog == NULL
    || device_index >= backend_ctx->vulkan_devices_cnt
    || program == NULL || program->stage_count == 0u
-   || execution_kind > BACKEND_VULKAN_EXECUTION_MD5
+   || execution_kind > BACKEND_VULKAN_EXECUTION_SHA256
    || controlled_fault_point > 37u
+   || (execution_kind != BACKEND_VULKAN_EXECUTION_SHA256
+    && execution_context != NULL)
+   || (execution_kind == BACKEND_VULKAN_EXECUTION_SHA256
+    && (execution_context == NULL
+     || controlled_fault_point != 0u || probe_unsignaled_fence == VK_TRUE))
    || (execution_kind == BACKEND_VULKAN_EXECUTION_MD5
     && (controlled_fault_point != 0u || probe_unsignaled_fence == VK_TRUE))
    || (probe_unsignaled_fence == VK_TRUE
@@ -1561,7 +1876,8 @@ static VkResult backend_vulkan_kernel_verify_program (
       first_stage->group_count[2]
     },
     .storage_buffer_count = 2u,
-    .largest_storage_buffer_bytes = program->buffer_bytes,
+    .largest_storage_buffer_bytes =
+      backend_vulkan_program_largest_buffer_bytes (program),
     .shared_memory_bytes = 0u
   };
 
@@ -1643,7 +1959,7 @@ static VkResult backend_vulkan_kernel_verify_program (
   for (uint32_t i = 0u; i < program->buffer_count; i++)
   {
     result = backend_vulkan_public_buffer_open (
-      &job, &selected, &job.buffers[i]
+      &job, &selected, i
     );
 
     if (result != VK_SUCCESS) goto cleanup;
@@ -1703,7 +2019,39 @@ static VkResult backend_vulkan_kernel_verify_program (
 
   if (result != VK_SUCCESS) goto cleanup;
 
-  if (execution_kind == BACKEND_VULKAN_EXECUTION_MD5)
+  if (execution_kind == BACKEND_VULKAN_EXECUTION_SHA256)
+  {
+    const backend_vulkan_sha256_context_t *context =
+      (const backend_vulkan_sha256_context_t *) execution_context;
+
+    fprintf (
+      diagnostics,
+      "BACKEND_VULKAN_SHA256_READY"
+      " index=%" PRIu32
+      " queue_family=%" PRIu32
+      " api=%" PRIu32 ".%" PRIu32
+      " shader_words=%" PRIu32
+      " descriptors=2"
+      " buffers=2"
+      " input_bytes=%" PRIu64
+      " output_bytes=%" PRIu64
+      " messages=%" PRIu32
+      " local=%" PRIu32 " groups=%" PRIu32
+      " program_validated=1 dynamic_resources=1"
+      " features=0 extensions=0"
+      " password_generation=0 target_digests=0 scheduled=0\n",
+      device_index, selected.compute_queue_family,
+      VK_API_VERSION_MAJOR (effective_api),
+      VK_API_VERSION_MINOR (effective_api),
+      program->stages[0].spirv_words,
+      (uint64_t) context->input_bytes,
+      (uint64_t) context->output_bytes,
+      context->message_count,
+      program->stages[0].local_size[0],
+      program->stages[0].group_count[0]
+    );
+  }
+  else if (execution_kind == BACKEND_VULKAN_EXECUTION_MD5)
   {
     fprintf (
       diagnostics,
@@ -1803,7 +2151,15 @@ static VkResult backend_vulkan_kernel_verify_program (
     );
   }
 
-  if (execution_kind == BACKEND_VULKAN_EXECUTION_MD5)
+  if (execution_kind == BACKEND_VULKAN_EXECUTION_SHA256)
+  {
+    result = backend_vulkan_sha256_dispatch (
+      &job,
+      (const backend_vulkan_sha256_context_t *) execution_context,
+      diagnostics
+    );
+  }
+  else if (execution_kind == BACKEND_VULKAN_EXECUTION_MD5)
   {
     result = backend_vulkan_md5_dispatch (
       &job, diagnostics
@@ -1928,7 +2284,19 @@ cleanup:
       }
     }
 
-    if (execution_kind == BACKEND_VULKAN_EXECUTION_MD5)
+    if (execution_kind == BACKEND_VULKAN_EXECUTION_SHA256)
+    {
+      fprintf (
+        diagnostics,
+        "BACKEND_VULKAN_SHA256_CLOSE"
+        " index=%" PRIu32
+        " result=%d"
+        " released=1"
+        " password_generation=0 target_digests=0 scheduled=0\n",
+        device_index, result
+      );
+    }
+    else if (execution_kind == BACKEND_VULKAN_EXECUTION_MD5)
     {
       fprintf (
         diagnostics,
@@ -1995,7 +2363,7 @@ VkResult backend_vulkan_kernel_verify (
   return backend_vulkan_kernel_verify_program (
     backend_ctx, device_index, diagnostics,
     &backend_vulkan_public_single,
-    BACKEND_VULKAN_EXECUTION_PUBLIC_U32,
+    BACKEND_VULKAN_EXECUTION_PUBLIC_U32, NULL,
     0u, VK_FALSE
   );
 }
@@ -2017,7 +2385,7 @@ VkResult backend_vulkan_kernel_verify_chain (
   return backend_vulkan_kernel_verify_program (
     backend_ctx, device_index, diagnostics,
     &backend_vulkan_public_chain,
-    BACKEND_VULKAN_EXECUTION_PUBLIC_U32,
+    BACKEND_VULKAN_EXECUTION_PUBLIC_U32, NULL,
     0u, VK_FALSE
   );
 }
@@ -2042,7 +2410,7 @@ VkResult backend_vulkan_kernel_verify_chain4 (
   return backend_vulkan_kernel_verify_program (
     backend_ctx, device_index, diagnostics,
     &backend_vulkan_public_chain4,
-    BACKEND_VULKAN_EXECUTION_PUBLIC_U32,
+    BACKEND_VULKAN_EXECUTION_PUBLIC_U32, NULL,
     0u, VK_FALSE
   );
 }
@@ -2069,9 +2437,255 @@ VkResult backend_vulkan_kernel_verify_md5 (
   return backend_vulkan_kernel_verify_program (
     backend_ctx, device_index, diagnostics,
     &backend_vulkan_md5_program,
-    BACKEND_VULKAN_EXECUTION_MD5,
+    BACKEND_VULKAN_EXECUTION_MD5, NULL,
     0u, VK_FALSE
   );
+}
+
+/**
+ * Hash caller-owned byte messages with the production Vulkan SHA-256 stage.
+ *
+ * Validates exact byte spans, 32-bit payload offsets, per-message padding
+ * arithmetic and host allocation bounds before constructing a one-stage
+ * heterogeneous-buffer program. The input buffer contains two uint32 metadata
+ * words per message followed by packed payload bytes; the output buffer
+ * contains exactly eight uint32 digest words per message. One invocation hashes
+ * one message and may process multiple 512-bit blocks.
+ *
+ * The complete batch runs through backend_vulkan_kernel_verify_program(), so
+ * device selection, storage allocation, descriptors, shader/pipeline objects,
+ * command submission, fence ownership and cleanup are shared with MD5 and the
+ * public arithmetic programs. The caller owns message spans and exactly
+ * 32 * message_count writable digest bytes.
+ *
+ * No candidate generation, target digest comparison, salt processing or
+ * HASHCAT scheduler registration occurs.
+ */
+VkResult backend_vulkan_sha256_hash_batch (
+  backend_ctx_t *backend_ctx,
+  uint32_t device_index,
+  const backend_vulkan_sha256_message_t *messages,
+  uint32_t message_count,
+  uint8_t *digests,
+  FILE *diagnostics)
+{
+  if (backend_ctx == NULL
+   || backend_ctx->vulkan_catalog == NULL
+   || device_index >= backend_ctx->vulkan_devices_cnt
+   || messages == NULL
+   || message_count == 0u
+   || message_count > INT32_MAX / 8u
+   || digests == NULL
+   || diagnostics == NULL)
+  {
+    return VK_ERROR_INITIALIZATION_FAILED;
+  }
+
+  uint64_t payload_bytes = 0u;
+
+  for (uint32_t i = 0u; i < message_count; i++)
+  {
+    if ((messages[i].size != 0u && messages[i].data == NULL)
+     || messages[i].size > UINT32_MAX - 72u)
+    {
+      return VK_ERROR_INITIALIZATION_FAILED;
+    }
+
+    payload_bytes += messages[i].size;
+  }
+
+  const uint64_t metadata_bytes =
+    (uint64_t) message_count * BACKEND_VULKAN_SHA256_METADATA_BYTES;
+
+  if (metadata_bytes > UINT32_MAX
+   || payload_bytes > UINT32_MAX
+   || metadata_bytes + payload_bytes > UINT32_MAX - 3u)
+  {
+    return VK_ERROR_INITIALIZATION_FAILED;
+  }
+
+  const uint64_t input_bytes =
+    (metadata_bytes + payload_bytes + 3u) & ~UINT64_C (3);
+
+  const uint64_t output_bytes =
+    (uint64_t) message_count * BACKEND_VULKAN_SHA256_DIGEST_BYTES;
+
+  if (input_bytes > SIZE_MAX || output_bytes > SIZE_MAX)
+  {
+    return VK_ERROR_INITIALIZATION_FAILED;
+  }
+
+  const uint32_t group_count =
+    (message_count / BACKEND_VULKAN_SHA256_LOCAL_SIZE)
+    + ((message_count % BACKEND_VULKAN_SHA256_LOCAL_SIZE) != 0u);
+
+  backend_vulkan_program_stage_t stage =
+  {
+    .name = "sha256_byte_batch",
+    .spirv = backend_vulkan_sha256_spirv,
+    .spirv_words =
+      sizeof (backend_vulkan_sha256_spirv) / sizeof (uint32_t),
+    .source_buffer_index = 0u,
+    .destination_buffer_index = 1u,
+    .local_size =
+    {
+      BACKEND_VULKAN_SHA256_LOCAL_SIZE, 1u, 1u
+    },
+    .group_count = { group_count, 1u, 1u }
+  };
+
+  const VkDeviceSize buffer_sizes[2] =
+  {
+    (VkDeviceSize) input_bytes,
+    (VkDeviceSize) output_bytes
+  };
+
+  const backend_vulkan_program_t program =
+  {
+    .stages = &stage,
+    .stage_count = 1u,
+    .buffer_count = 2u,
+    .buffer_bytes = 0u,
+    .buffer_sizes = buffer_sizes
+  };
+
+  backend_vulkan_sha256_context_t context =
+  {
+    .messages = messages,
+    .message_count = message_count,
+    .digests = digests,
+    .input_bytes = (VkDeviceSize) input_bytes,
+    .output_bytes = (VkDeviceSize) output_bytes
+  };
+
+  return backend_vulkan_kernel_verify_program (
+    backend_ctx, device_index, diagnostics,
+    &program,
+    BACKEND_VULKAN_EXECUTION_SHA256, &context,
+    0u, VK_FALSE
+  );
+}
+
+/**
+ * Verify variable-length SHA-256 execution with four public known answers.
+ *
+ * Builds two short one-block messages and two messages that require two padded
+ * blocks, calls the arbitrary byte-message batch API once and compares all
+ * 128 returned digest bytes with independent canonical SHA-256 values.
+ * The 56-byte vector exercises the padding boundary where a second block is
+ * mandatory; the 100-byte vector exercises ordinary multi-block compression.
+ *
+ * No HASHCAT candidate source or target digest buffer participates.
+ */
+VkResult backend_vulkan_sha256_verify_known_answers (
+  backend_ctx_t *backend_ctx,
+  uint32_t device_index,
+  FILE *diagnostics)
+{
+  if (backend_ctx == NULL || diagnostics == NULL
+   || backend_ctx->vulkan_catalog == NULL
+   || device_index >= backend_ctx->vulkan_devices_cnt)
+  {
+    return VK_ERROR_INITIALIZATION_FAILED;
+  }
+
+  static const uint8_t empty[1] = { 0u };
+  static const uint8_t abc[3] = { 'a', 'b', 'c' };
+
+  uint8_t a56[56];
+  uint8_t a100[100];
+
+  memset (a56, 'a', sizeof (a56));
+  memset (a100, 'a', sizeof (a100));
+
+  const backend_vulkan_sha256_message_t messages[4] =
+  {
+    { .data = empty, .size = 0u },
+    { .data = abc, .size = sizeof (abc) },
+    { .data = a56, .size = sizeof (a56) },
+    { .data = a100, .size = sizeof (a100) }
+  };
+
+  static const uint8_t expected[4][BACKEND_VULKAN_SHA256_DIGEST_BYTES] =
+  {
+    {
+      0xe3u, 0xb0u, 0xc4u, 0x42u, 0x98u, 0xfcu, 0x1cu, 0x14u,
+      0x9au, 0xfbu, 0xf4u, 0xc8u, 0x99u, 0x6fu, 0xb9u, 0x24u,
+      0x27u, 0xaeu, 0x41u, 0xe4u, 0x64u, 0x9bu, 0x93u, 0x4cu,
+      0xa4u, 0x95u, 0x99u, 0x1bu, 0x78u, 0x52u, 0xb8u, 0x55u
+    },
+    {
+      0xbau, 0x78u, 0x16u, 0xbfu, 0x8fu, 0x01u, 0xcfu, 0xeau,
+      0x41u, 0x41u, 0x40u, 0xdeu, 0x5du, 0xaeu, 0x22u, 0x23u,
+      0xb0u, 0x03u, 0x61u, 0xa3u, 0x96u, 0x17u, 0x7au, 0x9cu,
+      0xb4u, 0x10u, 0xffu, 0x61u, 0xf2u, 0x00u, 0x15u, 0xadu
+    },
+    {
+      0xb3u, 0x54u, 0x39u, 0xa4u, 0xacu, 0x6fu, 0x09u, 0x48u,
+      0xb6u, 0xd6u, 0xf9u, 0xe3u, 0xc6u, 0xafu, 0x0fu, 0x5fu,
+      0x59u, 0x0cu, 0xe2u, 0x0fu, 0x1bu, 0xdeu, 0x70u, 0x90u,
+      0xefu, 0x79u, 0x70u, 0x68u, 0x6eu, 0xc6u, 0x73u, 0x8au
+    },
+    {
+      0x28u, 0x16u, 0x59u, 0x78u, 0x88u, 0xe4u, 0xa0u, 0xd3u,
+      0xa3u, 0x6bu, 0x82u, 0xb8u, 0x33u, 0x16u, 0xabu, 0x32u,
+      0x68u, 0x0eu, 0xb8u, 0xf0u, 0x0fu, 0x8cu, 0xd3u, 0xb9u,
+      0x04u, 0xd6u, 0x81u, 0x24u, 0x6du, 0x28u, 0x5au, 0x0eu
+    }
+  };
+
+  uint8_t digests[sizeof (expected)];
+
+  const VkResult result = backend_vulkan_sha256_hash_batch (
+    backend_ctx, device_index, messages, 4u, digests, diagnostics
+  );
+
+  if (result != VK_SUCCESS) return result;
+
+  for (uint32_t message_index = 0u; message_index < 4u; message_index++)
+  {
+    for (uint32_t byte_index = 0u;
+         byte_index < BACKEND_VULKAN_SHA256_DIGEST_BYTES;
+         byte_index++)
+    {
+      const uint8_t actual =
+        digests[
+          (size_t) message_index * BACKEND_VULKAN_SHA256_DIGEST_BYTES
+          + byte_index
+        ];
+
+      if (actual != expected[message_index][byte_index])
+      {
+        fprintf (
+          diagnostics,
+          "BACKEND_VULKAN_SHA256_MISMATCH"
+          " message=%" PRIu32
+          " byte=%" PRIu32
+          " actual=0x%02x"
+          " expected=0x%02x\n",
+          message_index, byte_index,
+          (unsigned int) actual,
+          (unsigned int) expected[message_index][byte_index]
+        );
+
+        return VK_ERROR_INITIALIZATION_FAILED;
+      }
+    }
+  }
+
+  fprintf (
+    diagnostics,
+    "BACKEND_VULKAN_SHA256_VERIFY_PASS"
+    " messages=4"
+    " one_block=2"
+    " two_block=2"
+    " verified_digest_bytes=128"
+    " password_generation=0"
+    " target_digests=0"
+    " scheduled=0\n"
+  );
+
+  return VK_SUCCESS;
 }
 
 /**
@@ -2108,7 +2722,7 @@ VkResult backend_vulkan_kernel_verify_chain4_fault (
   return backend_vulkan_kernel_verify_program (
     backend_ctx, device_index, diagnostics,
     &backend_vulkan_public_chain4,
-    BACKEND_VULKAN_EXECUTION_PUBLIC_U32,
+    BACKEND_VULKAN_EXECUTION_PUBLIC_U32, NULL,
     controlled_fault_point, VK_FALSE
   );
 }
@@ -2136,7 +2750,7 @@ VkResult backend_vulkan_kernel_verify_chain4_fence_timeout (
   return backend_vulkan_kernel_verify_program (
     backend_ctx, device_index, diagnostics,
     &backend_vulkan_public_chain4,
-    BACKEND_VULKAN_EXECUTION_PUBLIC_U32,
+    BACKEND_VULKAN_EXECUTION_PUBLIC_U32, NULL,
     0u, VK_TRUE
   );
 }

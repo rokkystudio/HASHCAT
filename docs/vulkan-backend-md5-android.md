@@ -291,7 +291,9 @@ does not yet provide:
 - mode-0 self-test or cracking dispatch through the normal scheduler;
 - performance tuning.
 
-The next cryptographic integration boundary is a declared MD5 mode-0 data
-contract: candidate message records and target digest records supplied to the
-same Vulkan program/executor path, with exact CPU-known results, while still
-keeping scheduler registration separate until that contract is proven.
+The companion [SHA-256 batch contract](vulkan-backend-sha256-android.md)
+demonstrates variable-length caller-owned byte spans and multi-block padding
+through the same executor. MD5 remains intentionally narrower: its current
+program consumes four fixed one-block public messages. The mode-0 boundary
+therefore remains explicit candidate records, target digest records and result
+reporting before Vulkan scheduler registration.

@@ -110,6 +110,67 @@ static VkResult backend_vulkan_program_validate_topology (
 }
 
 /**
+ * Return one program buffer's exact logical descriptor range.
+ *
+ * Uniform declarations use buffer_bytes and require buffer_sizes to be NULL.
+ * Heterogeneous declarations use buffer_sizes and require buffer_bytes zero.
+ * Invalid combinations, indices or zero explicit ranges return zero.
+ */
+VkDeviceSize backend_vulkan_program_buffer_bytes (
+  const backend_vulkan_program_t *program,
+  uint32_t buffer_index)
+{
+  if (program == NULL || buffer_index >= program->buffer_count)
+  {
+    return 0u;
+  }
+
+  if (program->buffer_sizes != NULL)
+  {
+    if (program->buffer_bytes != 0u)
+    {
+      return 0u;
+    }
+
+    return program->buffer_sizes[buffer_index];
+  }
+
+  return program->buffer_bytes;
+}
+
+/**
+ * Return the largest valid storage-buffer range in one program declaration.
+ *
+ * Every buffer must resolve to a nonzero logical size. Any malformed range
+ * returns zero rather than silently omitting it from physical-limit checks.
+ */
+VkDeviceSize backend_vulkan_program_largest_buffer_bytes (
+  const backend_vulkan_program_t *program)
+{
+  if (program == NULL || program->buffer_count == 0u)
+  {
+    return 0u;
+  }
+
+  VkDeviceSize largest = 0u;
+
+  for (uint32_t i = 0u; i < program->buffer_count; i++)
+  {
+    const VkDeviceSize bytes =
+      backend_vulkan_program_buffer_bytes (program, i);
+
+    if (bytes == 0u)
+    {
+      return 0u;
+    }
+
+    if (bytes > largest) largest = bytes;
+  }
+
+  return largest;
+}
+
+/**
  * Validate one exact sequential program without modifying caller state.
  *
  * Every destination buffer is unique across the graph, and stage N must
@@ -124,12 +185,22 @@ VkResult backend_vulkan_program_validate (
 {
   if (program == NULL || limits == NULL || diagnostics == NULL
    || program->stages == NULL || program->stage_count == 0u
-   || program->buffer_count < 2u || program->buffer_bytes == 0u)
+   || program->buffer_count < 2u
+   || (program->buffer_sizes == NULL && program->buffer_bytes == 0u)
+   || (program->buffer_sizes != NULL && program->buffer_bytes != 0u))
   {
     return VK_ERROR_INITIALIZATION_FAILED;
   }
 
-  if (program->buffer_bytes > limits->maxStorageBufferRange
+  const VkDeviceSize largest_buffer =
+    backend_vulkan_program_largest_buffer_bytes (program);
+
+  if (largest_buffer == 0u)
+  {
+    return VK_ERROR_INITIALIZATION_FAILED;
+  }
+
+  if (largest_buffer > limits->maxStorageBufferRange
    || limits->maxPerStageDescriptorStorageBuffers < 2u)
   {
     fprintf (
@@ -137,7 +208,7 @@ VkResult backend_vulkan_program_validate (
       "BACKEND_VULKAN_PROGRAM_REJECT_STORAGE"
       " bytes=%" PRIu64 " range_limit=%" PRIu32
       " descriptors_required=2 descriptor_limit=%" PRIu32 "\n",
-      (uint64_t) program->buffer_bytes,
+      (uint64_t) largest_buffer,
       limits->maxStorageBufferRange,
       limits->maxPerStageDescriptorStorageBuffers
     );
@@ -212,17 +283,35 @@ VkResult backend_vulkan_program_validate (
     if (topology != VK_SUCCESS) return topology;
   }
 
-  fprintf (
-    diagnostics,
-    "BACKEND_VULKAN_PROGRAM_ACCEPT"
-    " stages=%" PRIu32
-    " buffers=%" PRIu32
-    " bytes=%" PRIu64
-    " descriptors_per_stage=2\n",
-    program->stage_count,
-    program->buffer_count,
-    (uint64_t) program->buffer_bytes
-  );
+  if (program->buffer_sizes == NULL)
+  {
+    fprintf (
+      diagnostics,
+      "BACKEND_VULKAN_PROGRAM_ACCEPT"
+      " stages=%" PRIu32
+      " buffers=%" PRIu32
+      " bytes=%" PRIu64
+      " descriptors_per_stage=2\n",
+      program->stage_count,
+      program->buffer_count,
+      (uint64_t) largest_buffer
+    );
+  }
+  else
+  {
+    fprintf (
+      diagnostics,
+      "BACKEND_VULKAN_PROGRAM_ACCEPT"
+      " stages=%" PRIu32
+      " buffers=%" PRIu32
+      " bytes=%" PRIu64
+      " heterogeneous=1"
+      " descriptors_per_stage=2\n",
+      program->stage_count,
+      program->buffer_count,
+      (uint64_t) largest_buffer
+    );
+  }
 
   return VK_SUCCESS;
 }

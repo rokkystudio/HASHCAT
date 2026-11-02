@@ -30,6 +30,7 @@
 #if defined (WITH_VULKAN_DISCOVERY)
 #include "backend_vulkan.h"
 #include "backend_vulkan_kernel.h"
+#include "backend_vulkan_sha256.h"
 #endif
 
 #if defined (__linux__)
@@ -9091,7 +9092,7 @@ int backend_ctx_devices_init (hashcat_ctx_t *hashcat_ctx, const int comptime)
   backend_ctx->comptime = comptime;
 
   #if defined (WITH_VULKAN_DISCOVERY)
-  // Information mode verifies one-, two- and four-stage public SPIR-V Compute programs.
+  // Information mode verifies public Compute graphs and cryptographic Vulkan stages.
 
   if (user_options->backend_info > 0 && backend_ctx->vulkan_catalog != NULL)
   {
@@ -9198,6 +9199,27 @@ int backend_ctx_devices_init (hashcat_ctx_t *hashcat_ctx, const int comptime)
                 hashcat_ctx,
                 "Vulkan 1.0 MD5 SPIR-V known-answer vectors dispatched and verified; hashing remains disabled."
               );
+
+              const VkResult sha256_result =
+                backend_vulkan_sha256_verify_known_answers (
+                  backend_ctx, 0u, stderr
+                );
+
+              if (sha256_result != VK_SUCCESS)
+              {
+                event_log_warning (
+                  hashcat_ctx,
+                  "Vulkan 1.0 SHA-256 SPIR-V byte-message batch verification failed with VkResult %d; hashing remains disabled.",
+                  sha256_result
+                );
+              }
+              else
+              {
+                event_log_info (
+                  hashcat_ctx,
+                  "Vulkan 1.0 SHA-256 SPIR-V variable-length batch dispatched and verified; hashing remains disabled."
+                );
+              }
             }
           }
         }

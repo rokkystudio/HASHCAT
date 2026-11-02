@@ -3,7 +3,8 @@
 
 The GLSL shader is compiled for Vulkan 1.0 and SPIR-V 1.0. This generator
 preserves every little-endian 32-bit SPIR-V word without rewriting the module.
-The resulting header is included by the native SHA-256 Vulkan batch executor.
+The resulting header is consumed by the common dynamic Vulkan executor's
+variable-length SHA-256 batch contract.
 """
 
 from __future__ import annotations

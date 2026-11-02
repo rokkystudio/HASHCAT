@@ -138,10 +138,17 @@ The [first cryptographic Vulkan stage](docs/vulkan-backend-md5-android.md)
 executes the complete 64-round MD5 compression primitive through the
 same production dynamic executor. Four fixed public one-block messages
 match their standard 128-bit digests on Mali ARM64 and Adreno
-ARM64/ARMv7 for Vulkan 1.0 and 1.1. Full Pixel ARM64 and RedMagic ARMv7
-`hashcat -I` processes also execute the MD5 stage and preserve ordinary
-OpenCL discovery. Vulkan still does not consume HASHCAT password
-candidates or register with the normal hashing scheduler.
+ARM64/ARMv7 for Vulkan 1.0 and 1.1.
+
+The [variable-length SHA-256 batch](docs/vulkan-backend-sha256-android.md)
+uses the same resource owner with exact per-buffer storage ranges. One
+caller-provided byte batch covers one- and two-block messages, performs
+complete SHA-256 padding/compression and returns canonical 32-byte
+digests. Mali ARM64 and Adreno ARMv7 hardware checks pass, and full
+Pixel ARM64 plus RedMagic ARMv7 `hashcat -I` processes execute MD5,
+SHA-256 and ordinary OpenCL discovery in sequence. Vulkan still does
+not consume HASHCAT scheduler candidates or register as a hashing
+device.
 
 ## Working on hashcat source
 

@@ -32,11 +32,12 @@ Compute-to-host barriers, real `vkQueueSubmit`, `vkWaitForFences` and
 host-cache synchronization precede CPU comparison of every stage output.
 
 This is real Vulkan Compute execution **inside the complete Android HASHCAT
-binary**. The same dynamic executor now also owns the follow-on
-[one-block MD5 cryptographic stage](vulkan-backend-md5-android.md), while
+binary**. The same dynamic executor also owns the
+[one-block MD5 cryptographic stage](vulkan-backend-md5-android.md) and the
+[variable-length SHA-256 byte batch](vulkan-backend-sha256-android.md), while
 the public graph documented here remains synthetic arithmetic. The Vulkan
 path executes only in opt-in backend information mode, does not register a
-hashing device and never processes HASHCAT password candidates, target
+hashing device and does not consume HASHCAT scheduler candidates, target
 digests, salts or attack scheduling work.
 
 ## Source architecture
@@ -51,11 +52,14 @@ workgroup geometry.
 
 ### `backend_vulkan_program_t`
 
-Owns the immutable ordered stage declarations and the exact `stage_count`,
-`buffer_count` and `buffer_bytes`. `backend_vulkan_program_validate()`
-checks the graph, canonical SPIR-V 1.0 headers and Compute limits using
-the real selected physical GPU's `VkPhysicalDeviceLimits` before the
-temporary logical device is opened.
+Owns the immutable ordered stage declarations and exact storage sizing.
+Uniform programs set one nonzero `buffer_bytes`; heterogeneous programs
+set `buffer_bytes` to zero and provide exact nonzero `buffer_sizes[]`.
+`backend_vulkan_program_validate()` checks the graph, every declared range,
+canonical SPIR-V 1.0 headers and Compute limits using the real selected
+physical GPU's `VkPhysicalDeviceLimits` before the temporary logical device
+is opened. Public arithmetic and MD5 use uniform ranges; SHA-256 uses
+heterogeneous packed-input and digest-output ranges.
 
 ### `backend_vulkan_public_job_t`
 
@@ -271,13 +275,15 @@ Dynamic resource ownership and CPU-checked public Compute execution are
 verified inside the full Android HASHCAT frontend. This is not
 production password-hashing GPU execution.
 
-The production Vulkan path now includes one cryptographic primitive:
-the [fixed-vector one-block MD5 stage](vulkan-backend-md5-android.md).
-It executes the complete MD5 compression function through the same dynamic
-resource owner and passes real Adreno/Mali known-answer checks. It does not
-yet accept HASHCAT candidate records or target digests, and the Vulkan device
-is not inserted into the hashing scheduler. There is no public API for loading
-arbitrary SPIR-V programs from users. The
+The production Vulkan path includes two cryptographic contracts:
+the [fixed-vector one-block MD5 stage](vulkan-backend-md5-android.md) and the
+[variable-length SHA-256 byte batch](vulkan-backend-sha256-android.md).
+SHA-256 accepts arbitrary caller-owned byte spans, performs multi-block
+padding/compression and returns canonical digests through the same dynamic
+resource owner. Neither contract consumes HASHCAT scheduler candidates or
+target digests, and the Vulkan device is not inserted into the hashing
+scheduler. There is no public API for loading arbitrary SPIR-V programs from
+users. The
 [public resource-cleanup diagnostic](vulkan-backend-public-fault-android.md)
 exercises 37 controlled post-acquisition or submission-boundary faults
 against the four-stage arithmetic program, followed by new CPU-verified
