@@ -4,8 +4,9 @@
 The input is canonical SPIR-V 1.0 generated with glslangValidator for
 Vulkan 1.0. The output contains the exact original 32-bit shader words
 and algorithm-specific provenance in reproducible UTF-8 formatting.
-SHA3-224/256/384/512 and Keccak-256 use distinct configured variants
-of tools/vulkan-backend-keccak.comp with no optional shaderInt64 feature.
+SHA3-224/256/384/512 and Keccak-256 use configured variants of the
+Keccak-f[1600] shader; SHA-384/512 use configured SHA-512 compression
+with uvec2-based 64-bit operations and no optional shaderInt64 feature.
 """
 
 from __future__ import annotations
@@ -18,6 +19,8 @@ import struct
 ALGORITHMS = {
     "sha1": ("SHA-1", None),
     "sha224": ("SHA-224", None),
+    "sha384": ("SHA-384", None),
+    "sha512": ("SHA-512", None),
     "blake2s": ("BLAKE2s-256", None),
     "sha3_224": ("SHA3-224", (144, 6, 28)),
     "sha3_256": ("SHA3-256", (136, 6, 32)),
@@ -61,11 +64,12 @@ def embed_hash_spirv(
     symbol = f"backend_vulkan_{algorithm}_spirv"
     guard = f"HC_BACKEND_VULKAN_{algorithm.upper()}_SPIRV_H"
     display, variant = ALGORITHMS[algorithm]
-    source = (
-        "tools/vulkan-backend-keccak.comp"
-        if variant is not None
-        else f"tools/vulkan-backend-{algorithm}.comp"
-    )
+    if variant is not None:
+        source = "tools/vulkan-backend-keccak.comp"
+    elif algorithm in ("sha384", "sha512"):
+        source = "tools/vulkan-backend-sha512.comp"
+    else:
+        source = f"tools/vulkan-backend-{algorithm}.comp"
 
     lines = [
         "/**",
@@ -80,6 +84,12 @@ def embed_hash_spirv(
         lines.extend([
             f" * Build parameters: RATE_BYTES={rate}, SUFFIX={suffix},",
             f" * DIGEST_BYTES={digest}. The 1600-bit state uses 32-bit halves.",
+        ])
+    elif algorithm in ("sha384", "sha512"):
+        digest = 48 if algorithm == "sha384" else 64
+        lines.extend([
+            f" * Build parameter: VULKAN_SHA512_DIGEST_BYTES={digest}.",
+            " * SHA-512 operations use paired 32-bit state words.",
         ])
 
     lines.extend([

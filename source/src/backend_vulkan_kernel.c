@@ -13,8 +13,9 @@
  * from declared counts and exact uniform or per-buffer ranges. The public
  * arithmetic programs verify one, two or four ordered stages; MD5 executes a
  * real 64-round compression stage over fixed public one-block messages; and
- * SHA-1, SHA-224, SHA-256, BLAKE2s-256 and the SHA3/Keccak family accept
- * variable-length byte batches through the same dynamic resource owner.
+ * SHA-1/2, BLAKE2s-256 and SHA3/Keccak accept variable-length byte batches
+ * through the same dynamic resource owner, including 64-bit SHA-384/512
+ * compression built from pairs of unsigned 32-bit words.
  *
  * Information-mode outputs are checked against host references before
  * temporary Vulkan and host resources are released. The cryptographic paths
@@ -38,6 +39,8 @@
 #include "backend_vulkan_sha1_spirv.h"
 #include "backend_vulkan_sha224_spirv.h"
 #include "backend_vulkan_sha256_spirv.h"
+#include "backend_vulkan_sha384_spirv.h"
+#include "backend_vulkan_sha512_spirv.h"
 #include "backend_vulkan_public_spirv.h"
 #include "backend_vulkan_public_stage2_spirv.h"
 
@@ -2472,12 +2475,14 @@ VkResult backend_vulkan_kernel_verify_md5 (
 /**
  * Hash caller-owned bytes with SHA-1/2, SHA3/Keccak or BLAKE2s on Vulkan.
  *
- * Uses exact SPIR-V 1.0 modules for SHA padding, Keccak-f[1600] sponge
- * domain separation or BLAKE2s byte counters/finalization. All modules
- * share caller-owned byte spans and dynamic Vulkan resource ownership.
- * Validates byte offsets, lengths, padded block addresses and output sizes
- * before creating a one-stage heterogeneous-buffer program. Depending on
- * the algorithm, each message produces 20, 28, 32, 48 or 64 digest bytes.
+ * Uses immutable SPIR-V 1.0 programs for 32-bit SHA-1/2, 64-bit
+ * SHA-384/512 compression using paired uint32 words, Keccak-f[1600]
+ * sponge domain separation or BLAKE2s byte counters/finalization.
+ * Validates message spans, byte offsets, padded block addresses and
+ * output sizes before constructing the one-stage heterogeneous program.
+ * Every algorithm returns 20, 28, 32, 48 or 64 canonical digest bytes.
+ * The caller owns all message spans and output bytes; the dynamic
+ * executor owns each temporary Vulkan device, pipeline and buffer.
  *
  * The same dynamic backend_vulkan_program_t executor owns VkDevice,
  * descriptors, pipeline, command submission, fence and cleanup for all three
@@ -2605,6 +2610,26 @@ VkResult backend_vulkan_hash_batch (
       little_endian = VK_TRUE;
       algorithm_name = "KECCAK_256";
       stage_name = "keccak_256_byte_batch";
+      break;
+
+    case BACKEND_VULKAN_HASH_SHA384:
+      spirv = backend_vulkan_sha384_spirv;
+      spirv_words =
+        sizeof (backend_vulkan_sha384_spirv) / sizeof (uint32_t);
+      digest_bytes = 48u;
+      tail_bytes = 144u;
+      algorithm_name = "SHA384";
+      stage_name = "sha384_byte_batch";
+      break;
+
+    case BACKEND_VULKAN_HASH_SHA512:
+      spirv = backend_vulkan_sha512_spirv;
+      spirv_words =
+        sizeof (backend_vulkan_sha512_spirv) / sizeof (uint32_t);
+      digest_bytes = 64u;
+      tail_bytes = 144u;
+      algorithm_name = "SHA512";
+      stage_name = "sha512_byte_batch";
       break;
 
     default:

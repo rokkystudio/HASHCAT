@@ -1,0 +1,386 @@
+#version 450
+
+/*
+ * Compute SHA-384 or SHA-512 digests of independent byte strings.
+ *
+ * VULKAN_SHA512_DIGEST_BYTES selects the FIPS SHA-384 (48 bytes) or
+ * SHA-512 (64 bytes) initial state and output size at GLSL compile time.
+ * SHA-384 and SHA-512 share 80 round constants and compression operations.
+ *
+ * Input binding zero contains two uint32 metadata words (payload offset,
+ * message byte length) per message followed by packed bytes in little-
+ * endian uint32 lanes. Output binding one contains canonical digest words,
+ * stored in high-word-first order for host big-endian serialization.
+ *
+ * Every 64-bit SHA-2 value is represented by uvec2(low32, high32). The
+ * shader does not require Vulkan shaderInt64, optional device features,
+ * password candidates or any HASHCAT attack scheduling state.
+ */
+#ifndef VULKAN_SHA512_DIGEST_BYTES
+#define VULKAN_SHA512_DIGEST_BYTES 64
+#endif
+
+layout (local_size_x = 32, local_size_y = 1, local_size_z = 1) in;
+
+layout (set = 0, binding = 0, std430) readonly buffer InputBuffer
+{
+  uint words[];
+} input_data;
+
+layout (set = 0, binding = 1, std430) writeonly buffer OutputBuffer
+{
+  uint words[];
+} output_data;
+
+/*
+ * Read one payload byte from the packed little-endian input storage.
+ *
+ * The preceding message_count metadata records occupy two uint32 words
+ * each. Byte offsets are relative to the payload following those records.
+ */
+uint read_payload_byte (uint message_count, uint byte_offset)
+{
+  const uint word_index = message_count * 2u + (byte_offset >> 2u);
+  const uint shift = (byte_offset & 3u) * 8u;
+
+  return (input_data.words[word_index] >> shift) & 0xffu;
+}
+
+/*
+ * Sum two unsigned 64-bit SHA-2 values through their 32-bit halves.
+ *
+ * The low-word carry propagates into the high-word addition, which wraps
+ * modulo 2^32 to implement SHA-512's modulo-2^64 arithmetic exactly.
+ */
+uvec2 add_64 (uvec2 left, uvec2 right)
+{
+  const uint low = left.x + right.x;
+  const uint carry = uint (low < left.x);
+
+  return uvec2 (low, left.y + right.y + carry);
+}
+
+/*
+ * Rotate a 64-bit SHA-2 value right by an exact nonzero amount.
+ *
+ * Handles distances below, equal to and above 32 without any shift by
+ * 32. No driver-specific 64-bit integer feature is used.
+ */
+uvec2 rotate_right_64 (uvec2 value, uint amount)
+{
+  if (amount == 32u) return uvec2 (value.y, value.x);
+
+  if (amount < 32u)
+  {
+    return uvec2 (
+      (value.x >> amount) | (value.y << (32u - amount)),
+      (value.y >> amount) | (value.x << (32u - amount))
+    );
+  }
+
+  const uint remaining = amount - 32u;
+
+  return uvec2 (
+    (value.y >> remaining) | (value.x << (32u - remaining)),
+    (value.x >> remaining) | (value.y << (32u - remaining))
+  );
+}
+
+/* Shift a 64-bit SHA-2 word right by a value in the range 1..31. */
+uvec2 shift_right_64 (uvec2 value, uint amount)
+{
+  return uvec2 (
+    (value.x >> amount) | (value.y << (32u - amount)),
+    value.y >> amount
+  );
+}
+
+/* Compute SHA-512's small sigma-zero schedule operation. */
+uvec2 sigma_zero (uvec2 word)
+{
+  return rotate_right_64 (word, 1u)
+       ^ rotate_right_64 (word, 8u)
+       ^ shift_right_64 (word, 7u);
+}
+
+/* Compute SHA-512's small sigma-one schedule operation. */
+uvec2 sigma_one (uvec2 word)
+{
+  return rotate_right_64 (word, 19u)
+       ^ rotate_right_64 (word, 61u)
+       ^ shift_right_64 (word, 6u);
+}
+
+/* Compute SHA-512's big sigma-zero compression operation. */
+uvec2 sigma_zero_big (uvec2 word)
+{
+  return rotate_right_64 (word, 28u)
+       ^ rotate_right_64 (word, 34u)
+       ^ rotate_right_64 (word, 39u);
+}
+
+/* Compute SHA-512's big sigma-one compression operation. */
+uvec2 sigma_one_big (uvec2 word)
+{
+  return rotate_right_64 (word, 14u)
+       ^ rotate_right_64 (word, 18u)
+       ^ rotate_right_64 (word, 41u);
+}
+
+/*
+ * Hash one byte string using full SHA-384 or SHA-512 compression.
+ *
+ * The shader pads 1024-bit message blocks with one 0x80 byte, zeros and
+ * a 128-bit big-endian bit length. The user-visible byte length is uint32,
+ * so the high 64 length bits are zero; the low 64 length bits are assembled
+ * from two uint32 values. Each block expands 16 words to 80 and completes
+ * all 80 64-bit SHA-512 compression rounds. Output truncation follows
+ * the exact SHA-384/SHA-512 specification chosen at compile time.
+ */
+void main ()
+{
+  const uint message_index = gl_GlobalInvocationID.x;
+  const uint digest_words = uint (VULKAN_SHA512_DIGEST_BYTES) / 4u;
+  const uint message_count =
+    uint (output_data.words.length ()) / digest_words;
+
+  if (message_index >= message_count) return;
+
+  const uint message_offset = input_data.words[message_index * 2u];
+  const uint message_length = input_data.words[message_index * 2u + 1u];
+  const uint complete_blocks = message_length / 128u;
+  const uint remainder_bytes = message_length % 128u;
+  const uint block_count =
+    complete_blocks + (remainder_bytes < 112u ? 1u : 2u);
+  const uint padded_bytes = block_count * 128u;
+  const uint trailer_start = padded_bytes - 16u;
+  const uint bit_length_high = message_length >> 29u;
+  const uint bit_length_low = message_length << 3u;
+
+  const uvec2 constants[80] = uvec2[80](
+    uvec2 (0xd728ae22u, 0x428a2f98u),
+    uvec2 (0x23ef65cdu, 0x71374491u),
+    uvec2 (0xec4d3b2fu, 0xb5c0fbcfu),
+    uvec2 (0x8189dbbcu, 0xe9b5dba5u),
+    uvec2 (0xf348b538u, 0x3956c25bu),
+    uvec2 (0xb605d019u, 0x59f111f1u),
+    uvec2 (0xaf194f9bu, 0x923f82a4u),
+    uvec2 (0xda6d8118u, 0xab1c5ed5u),
+    uvec2 (0xa3030242u, 0xd807aa98u),
+    uvec2 (0x45706fbeu, 0x12835b01u),
+    uvec2 (0x4ee4b28cu, 0x243185beu),
+    uvec2 (0xd5ffb4e2u, 0x550c7dc3u),
+    uvec2 (0xf27b896fu, 0x72be5d74u),
+    uvec2 (0x3b1696b1u, 0x80deb1feu),
+    uvec2 (0x25c71235u, 0x9bdc06a7u),
+    uvec2 (0xcf692694u, 0xc19bf174u),
+    uvec2 (0x9ef14ad2u, 0xe49b69c1u),
+    uvec2 (0x384f25e3u, 0xefbe4786u),
+    uvec2 (0x8b8cd5b5u, 0x0fc19dc6u),
+    uvec2 (0x77ac9c65u, 0x240ca1ccu),
+    uvec2 (0x592b0275u, 0x2de92c6fu),
+    uvec2 (0x6ea6e483u, 0x4a7484aau),
+    uvec2 (0xbd41fbd4u, 0x5cb0a9dcu),
+    uvec2 (0x831153b5u, 0x76f988dau),
+    uvec2 (0xee66dfabu, 0x983e5152u),
+    uvec2 (0x2db43210u, 0xa831c66du),
+    uvec2 (0x98fb213fu, 0xb00327c8u),
+    uvec2 (0xbeef0ee4u, 0xbf597fc7u),
+    uvec2 (0x3da88fc2u, 0xc6e00bf3u),
+    uvec2 (0x930aa725u, 0xd5a79147u),
+    uvec2 (0xe003826fu, 0x06ca6351u),
+    uvec2 (0x0a0e6e70u, 0x14292967u),
+    uvec2 (0x46d22ffcu, 0x27b70a85u),
+    uvec2 (0x5c26c926u, 0x2e1b2138u),
+    uvec2 (0x5ac42aedu, 0x4d2c6dfcu),
+    uvec2 (0x9d95b3dfu, 0x53380d13u),
+    uvec2 (0x8baf63deu, 0x650a7354u),
+    uvec2 (0x3c77b2a8u, 0x766a0abbu),
+    uvec2 (0x47edaee6u, 0x81c2c92eu),
+    uvec2 (0x1482353bu, 0x92722c85u),
+    uvec2 (0x4cf10364u, 0xa2bfe8a1u),
+    uvec2 (0xbc423001u, 0xa81a664bu),
+    uvec2 (0xd0f89791u, 0xc24b8b70u),
+    uvec2 (0x0654be30u, 0xc76c51a3u),
+    uvec2 (0xd6ef5218u, 0xd192e819u),
+    uvec2 (0x5565a910u, 0xd6990624u),
+    uvec2 (0x5771202au, 0xf40e3585u),
+    uvec2 (0x32bbd1b8u, 0x106aa070u),
+    uvec2 (0xb8d2d0c8u, 0x19a4c116u),
+    uvec2 (0x5141ab53u, 0x1e376c08u),
+    uvec2 (0xdf8eeb99u, 0x2748774cu),
+    uvec2 (0xe19b48a8u, 0x34b0bcb5u),
+    uvec2 (0xc5c95a63u, 0x391c0cb3u),
+    uvec2 (0xe3418acbu, 0x4ed8aa4au),
+    uvec2 (0x7763e373u, 0x5b9cca4fu),
+    uvec2 (0xd6b2b8a3u, 0x682e6ff3u),
+    uvec2 (0x5defb2fcu, 0x748f82eeu),
+    uvec2 (0x43172f60u, 0x78a5636fu),
+    uvec2 (0xa1f0ab72u, 0x84c87814u),
+    uvec2 (0x1a6439ecu, 0x8cc70208u),
+    uvec2 (0x23631e28u, 0x90befffau),
+    uvec2 (0xde82bde9u, 0xa4506cebu),
+    uvec2 (0xb2c67915u, 0xbef9a3f7u),
+    uvec2 (0xe372532bu, 0xc67178f2u),
+    uvec2 (0xea26619cu, 0xca273eceu),
+    uvec2 (0x21c0c207u, 0xd186b8c7u),
+    uvec2 (0xcde0eb1eu, 0xeada7dd6u),
+    uvec2 (0xee6ed178u, 0xf57d4f7fu),
+    uvec2 (0x72176fbau, 0x06f067aau),
+    uvec2 (0xa2c898a6u, 0x0a637dc5u),
+    uvec2 (0xbef90daeu, 0x113f9804u),
+    uvec2 (0x131c471bu, 0x1b710b35u),
+    uvec2 (0x23047d84u, 0x28db77f5u),
+    uvec2 (0x40c72493u, 0x32caab7bu),
+    uvec2 (0x15c9bebcu, 0x3c9ebe0au),
+    uvec2 (0x9c100d4cu, 0x431d67c4u),
+    uvec2 (0xcb3e42b6u, 0x4cc5d4beu),
+    uvec2 (0xfc657e2au, 0x597f299cu),
+    uvec2 (0x3ad6faecu, 0x5fcb6fabu),
+    uvec2 (0x4a475817u, 0x6c44198cu)
+  );
+
+#if VULKAN_SHA512_DIGEST_BYTES == 48
+  uvec2 state[8] = uvec2[8](
+    uvec2 (0xc1059ed8u, 0xcbbb9d5du),
+    uvec2 (0x367cd507u, 0x629a292au),
+    uvec2 (0x3070dd17u, 0x9159015au),
+    uvec2 (0xf70e5939u, 0x152fecd8u),
+    uvec2 (0xffc00b31u, 0x67332667u),
+    uvec2 (0x68581511u, 0x8eb44a87u),
+    uvec2 (0x64f98fa7u, 0xdb0c2e0du),
+    uvec2 (0xbefa4fa4u, 0x47b5481du)
+  );
+#else
+  uvec2 state[8] = uvec2[8](
+    uvec2 (0xf3bcc908u, 0x6a09e667u),
+    uvec2 (0x84caa73bu, 0xbb67ae85u),
+    uvec2 (0xfe94f82bu, 0x3c6ef372u),
+    uvec2 (0x5f1d36f1u, 0xa54ff53au),
+    uvec2 (0xade682d1u, 0x510e527fu),
+    uvec2 (0x2b3e6c1fu, 0x9b05688cu),
+    uvec2 (0xfb41bd6bu, 0x1f83d9abu),
+    uvec2 (0x137e2179u, 0x5be0cd19u)
+  );
+#endif
+
+  for (uint block_index = 0u; block_index < block_count; block_index++)
+  {
+    uvec2 schedule[80];
+
+    for (uint i = 0u; i < 16u; i++)
+    {
+      uint high = 0u;
+      uint low = 0u;
+
+      for (uint j = 0u; j < 8u; j++)
+      {
+        const uint position = block_index * 128u + i * 8u + j;
+        uint value = 0u;
+
+        if (position < message_length)
+        {
+          value = read_payload_byte (
+            message_count, message_offset + position
+          );
+        }
+        else if (position == message_length)
+        {
+          value = 0x80u;
+        }
+        else if (position >= trailer_start + 8u)
+        {
+          const uint trailer_index =
+            position - trailer_start - 8u;
+
+          if (trailer_index < 4u)
+          {
+            value =
+              (bit_length_high >> (24u - trailer_index * 8u)) & 0xffu;
+          }
+          else
+          {
+            value =
+              (bit_length_low >> (24u - (trailer_index - 4u) * 8u))
+              & 0xffu;
+          }
+        }
+
+        if (j < 4u)
+        {
+          high = (high << 8u) | value;
+        }
+        else
+        {
+          low = (low << 8u) | value;
+        }
+      }
+
+      schedule[i] = uvec2 (low, high);
+    }
+
+    for (uint i = 16u; i < 80u; i++)
+    {
+      schedule[i] = add_64 (
+        add_64 (
+          schedule[i - 16u], sigma_zero (schedule[i - 15u])
+        ),
+        add_64 (
+          schedule[i - 7u], sigma_one (schedule[i - 2u])
+        )
+      );
+    }
+
+    uvec2 a = state[0];
+    uvec2 b = state[1];
+    uvec2 c = state[2];
+    uvec2 d = state[3];
+    uvec2 e = state[4];
+    uvec2 f = state[5];
+    uvec2 g = state[6];
+    uvec2 h = state[7];
+
+    for (uint i = 0u; i < 80u; i++)
+    {
+      const uvec2 choice = (e & f) ^ ((~e) & g);
+      const uvec2 majority = (a & b) ^ (a & c) ^ (b & c);
+
+      const uvec2 temp1 = add_64 (
+        add_64 (h, sigma_one_big (e)),
+        add_64 (
+          add_64 (choice, constants[i]), schedule[i]
+        )
+      );
+
+      const uvec2 temp2 = add_64 (
+        sigma_zero_big (a), majority
+      );
+
+      h = g;
+      g = f;
+      f = e;
+      e = add_64 (d, temp1);
+      d = c;
+      c = b;
+      b = a;
+      a = add_64 (temp1, temp2);
+    }
+
+    state[0] = add_64 (state[0], a);
+    state[1] = add_64 (state[1], b);
+    state[2] = add_64 (state[2], c);
+    state[3] = add_64 (state[3], d);
+    state[4] = add_64 (state[4], e);
+    state[5] = add_64 (state[5], f);
+    state[6] = add_64 (state[6], g);
+    state[7] = add_64 (state[7], h);
+  }
+
+  const uint output_index = message_index * digest_words;
+
+  for (uint i = 0u; i < digest_words / 2u; i++)
+  {
+    output_data.words[output_index + 2u * i] = state[i].y;
+    output_data.words[output_index + 2u * i + 1u] = state[i].x;
+  }
+}

@@ -3,11 +3,12 @@
 Compile SHA-1/2, BLAKE2s and Keccak-family Vulkan Compute modules for Android.
 
 .DESCRIPTION
-Compiles SHA-1, SHA-224, BLAKE2s-256, SHA3-224/256/384/512 and Keccak-256
-byte-message shaders into canonical Vulkan 1.0 SPIR-V 1.0. SHA3 and Keccak
-variants use exact rate, domain suffix and digest byte counts in the common
-Keccak-f[1600] implementation. Every regenerated embedded module must match
-the tracked C header byte-for-byte.
+Compiles SHA-1, SHA-224, SHA-384, SHA-512, BLAKE2s-256,
+SHA3-224/256/384/512 and Keccak-256 byte-message shaders into canonical
+Vulkan 1.0 SPIR-V 1.0. SHA-384/512 use paired 32-bit compression words;
+SHA3 and Keccak use exact rate, domain suffix and digest byte counts in
+one Keccak-f[1600] implementation. Every embedded module must match the
+tracked C header byte-for-byte.
 
 Compiles the common Vulkan program executor for Android ARM64 and ARMv7 with
 warnings treated as errors. Does not perform password candidate generation,
@@ -77,6 +78,35 @@ foreach ($algorithm in @('sha1', 'sha224', 'blake2s')) {
 
     if ($LASTEXITCODE -ne 0) {
         throw "Vulkan 1.0 shader compilation failed: $algorithm"
+    }
+
+    & python -B $generator --algorithm $algorithm --spirv $module --header $header
+
+    if ($LASTEXITCODE -ne 0 -or
+        (Get-FileHash -LiteralPath $header -Algorithm SHA256).Hash -ne $expected) {
+        throw "Embedded SPIR-V bytes differ from the compiled $algorithm module."
+    }
+
+    Write-Output "PASS reproducible Vulkan SPIR-V 1.0 $algorithm module"
+}
+
+$sha512Source = Join-Path $root 'tools\vulkan-backend-sha512.comp'
+
+foreach ($variant in @(
+    @{ Algorithm = 'sha384'; Digest = 48 },
+    @{ Algorithm = 'sha512'; Digest = 64 }
+)) {
+    $algorithm = $variant.Algorithm
+    $header = Join-Path $root "source\include\backend_vulkan_$($algorithm)_spirv.h"
+    $module = Join-Path $directory "vulkan-backend-$algorithm.spv"
+    $expected = (Get-FileHash -LiteralPath $header -Algorithm SHA256).Hash
+
+    & $glslang -V --target-env vulkan1.0 -S comp -e main `
+      "-DVULKAN_SHA512_DIGEST_BYTES=$($variant.Digest)" `
+      -o $module $sha512Source
+
+    if ($LASTEXITCODE -ne 0) {
+        throw "Vulkan 1.0 SHA-512 shader compilation failed: $algorithm"
     }
 
     & python -B $generator --algorithm $algorithm --spirv $module --header $header

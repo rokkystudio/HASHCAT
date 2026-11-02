@@ -10,8 +10,8 @@
  * Hash independent byte strings through the common Vulkan 1.0 executor.
  *
  * The caller provides immutable message spans and receives canonical digest
- * bytes. SHA-1, SHA-224, SHA-256, BLAKE2s-256 and the SHA3/Keccak family
- * use immutable SPIR-V modules with common input metadata, dynamic GPU
+ * bytes. SHA-1/2, BLAKE2s-256 and SHA3/Keccak use immutable SPIR-V
+ * modules with common input metadata, dynamic GPU
  * allocation, dispatch, fence, cache synchronization and cleanup. No candidate generation, target hash
  * comparison, salt processing or HASHCAT attack scheduling is performed.
  */
@@ -26,8 +26,9 @@
  * Identify the exact standard digest algorithm for one Vulkan hash batch.
  *
  * Every option accepts packed byte messages. SHA-1/2 apply Merkle-Damgard
- * padding, BLAKE2s uses block counters/finalization, and SHA3/Keccak use
- * Keccak-f[1600] with explicit domain separation. The selected enum controls
+ * padding, including SHA-384/512 with 1024-bit blocks. BLAKE2s uses
+ * block counters/finalization and SHA3/Keccak uses Keccak-f[1600] with
+ * explicit domain separation. The selected enum controls
  * the shader module, digest length, padding and output byte order.
  */
 typedef enum backend_vulkan_hash_algorithm
@@ -40,7 +41,9 @@ typedef enum backend_vulkan_hash_algorithm
   BACKEND_VULKAN_HASH_SHA3_256 = 6,
   BACKEND_VULKAN_HASH_SHA3_384 = 7,
   BACKEND_VULKAN_HASH_SHA3_512 = 8,
-  BACKEND_VULKAN_HASH_KECCAK_256 = 9
+  BACKEND_VULKAN_HASH_KECCAK_256 = 9,
+  BACKEND_VULKAN_HASH_SHA384 = 10,
+  BACKEND_VULKAN_HASH_SHA512 = 11
 } backend_vulkan_hash_algorithm_t;
 
 /**
@@ -63,7 +66,7 @@ typedef struct backend_vulkan_hash_message
  * diagnostics. Every nonempty message requires non-NULL data. Output has
  * exactly message_count consecutive digests: 20 bytes for SHA-1, 28 bytes
  * for SHA-224/SHA3-224, 32 bytes for SHA-256/SHA3-256/Keccak-256/BLAKE2s,
- * 48 bytes for SHA3-384 or 64 bytes for SHA3-512.
+ * 48 bytes for SHA-384/SHA3-384 or 64 bytes for SHA-512/SHA3-512.
  *
  * The method packs lengths and byte offsets into one source storage buffer,
  * validates device limits and sizes, executes one real Compute dispatch and
