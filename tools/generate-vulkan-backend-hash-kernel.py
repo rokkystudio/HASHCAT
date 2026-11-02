@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Embed a standard byte-message Vulkan SHA Compute module in a C header.
+"""Embed Vulkan SHA, BLAKE2s and Keccak-family Compute modules in C headers.
 
 The input is canonical SPIR-V 1.0 generated with glslangValidator for
 Vulkan 1.0. The output contains the exact original 32-bit shader words
 and algorithm-specific provenance in reproducible UTF-8 formatting.
-Supported modules are SHA-1, SHA-224 and BLAKE2s-256.
+SHA3-224/256/384/512 and Keccak-256 use distinct configured variants
+of tools/vulkan-backend-keccak.comp with no optional shaderInt64 feature.
 """
 
 from __future__ import annotations
@@ -14,19 +15,32 @@ from pathlib import Path
 import struct
 
 
+ALGORITHMS = {
+    "sha1": ("SHA-1", None),
+    "sha224": ("SHA-224", None),
+    "blake2s": ("BLAKE2s-256", None),
+    "sha3_224": ("SHA3-224", (144, 6, 28)),
+    "sha3_256": ("SHA3-256", (136, 6, 32)),
+    "sha3_384": ("SHA3-384", (104, 6, 48)),
+    "sha3_512": ("SHA3-512", (72, 6, 64)),
+    "keccak_256": ("Keccak-256", (136, 1, 32)),
+}
+
+
 def embed_hash_spirv(
     spirv_path: Path,
     header_path: Path,
     algorithm: str,
 ) -> None:
-    """Generate a C uint32 module for the selected SHA or BLAKE2s shader.
+    """Generate a deterministic C uint32 array for one declared GPU shader.
 
-    Validates the complete SPIR-V word alignment, canonical signature,
-    SPIR-V 1.0 version and reserved schema before emitting a fixed symbol
-    and include guard. The payload is preserved without transformations.
+    Validates complete SPIR-V word alignment, canonical little-endian magic,
+    SPIR-V 1.0 version and reserved schema. Writes the exact binary words
+    with source provenance and Keccak-family compile-time parameters.
+    A missing algorithm or malformed module raises ValueError.
     """
-    if algorithm not in ("sha1", "sha224", "blake2s"):
-        raise ValueError("Expected sha1, sha224 or blake2s")
+    if algorithm not in ALGORITHMS:
+        raise ValueError(f"Unsupported Vulkan hash algorithm: {algorithm}")
 
     data = spirv_path.read_bytes()
 
@@ -46,18 +60,29 @@ def embed_hash_spirv(
 
     symbol = f"backend_vulkan_{algorithm}_spirv"
     guard = f"HC_BACKEND_VULKAN_{algorithm.upper()}_SPIRV_H"
-    display = {
-        "sha1": "SHA-1",
-        "sha224": "SHA-224",
-        "blake2s": "BLAKE2s-256",
-    }[algorithm]
+    display, variant = ALGORITHMS[algorithm]
+    source = (
+        "tools/vulkan-backend-keccak.comp"
+        if variant is not None
+        else f"tools/vulkan-backend-{algorithm}.comp"
+    )
 
     lines = [
         "/**",
         f" * Embed the Vulkan 1.0 {display} message-batch Compute shader.",
         " *",
-        f" * Compiled from tools/vulkan-backend-{algorithm}.comp with",
+        f" * Compiled from {source} with",
         " * glslangValidator -V --target-env vulkan1.0 -S comp.",
+    ]
+
+    if variant is not None:
+        rate, suffix, digest = variant
+        lines.extend([
+            f" * Build parameters: RATE_BYTES={rate}, SUFFIX={suffix},",
+            f" * DIGEST_BYTES={digest}. The 1600-bit state uses 32-bit halves.",
+        ])
+
+    lines.extend([
         " * Each invocation hashes caller-supplied byte data independently;",
         " * candidate generation and target comparison are not performed.",
         " */",
@@ -69,7 +94,7 @@ def embed_hash_spirv(
         "",
         f"static const uint32_t {symbol}[] =",
         "{",
-    ]
+    ])
 
     for offset in range(0, len(words), 8):
         group = words[offset:offset + 8]
@@ -96,12 +121,12 @@ def embed_hash_spirv(
 
 
 def main() -> None:
-    """Read the target algorithm, source SPIR-V and output header paths."""
+    """Read one declared algorithm, SPIR-V module and C header destination."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--algorithm",
         required=True,
-        choices=("sha1", "sha224", "blake2s"),
+        choices=tuple(ALGORITHMS),
     )
     parser.add_argument("--spirv", required=True, type=Path)
     parser.add_argument("--header", required=True, type=Path)

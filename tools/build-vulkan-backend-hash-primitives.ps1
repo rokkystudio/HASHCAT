@@ -1,15 +1,17 @@
 <#
 .SYNOPSIS
-Compile SHA-1, SHA-224 and BLAKE2s-256 Vulkan Compute modules for Android.
+Compile SHA-1/2, BLAKE2s and Keccak-family Vulkan Compute modules for Android.
 
 .DESCRIPTION
-Compiles the production byte-message GPU shaders for Vulkan 1.0 and embeds
-canonical SPIR-V 1.0 arrays. Requires every generated header to match the
-existing embedded bytes. Compiles the common dynamic Vulkan executor for
-Android ARM64 and ARMv7 with warnings treated as errors.
+Compiles SHA-1, SHA-224, BLAKE2s-256, SHA3-224/256/384/512 and Keccak-256
+byte-message shaders into canonical Vulkan 1.0 SPIR-V 1.0. SHA3 and Keccak
+variants use exact rate, domain suffix and digest byte counts in the common
+Keccak-f[1600] implementation. Every regenerated embedded module must match
+the tracked C header byte-for-byte.
 
-This build does not execute a password attack, Hashcat scheduler workload
-or hardware test matrix.
+Compiles the common Vulkan program executor for Android ARM64 and ARMv7 with
+warnings treated as errors. Does not perform password candidate generation,
+target comparison, attack scheduling or hardware test matrices.
 
 .PARAMETER AndroidNdk
 Android NDK containing clang and llvm-readelf.
@@ -63,6 +65,7 @@ elseif (-not [System.IO.Path]::IsPathRooted($OutputDirectory)) {
 
 New-Item -Path $OutputDirectory -ItemType Directory -Force | Out-Null
 $directory = (Resolve-Path -LiteralPath $OutputDirectory).Path
+$generator = Join-Path $root 'tools\generate-vulkan-backend-hash-kernel.py'
 
 foreach ($algorithm in @('sha1', 'sha224', 'blake2s')) {
     $source = Join-Path $root "tools\vulkan-backend-$algorithm.comp"
@@ -76,7 +79,43 @@ foreach ($algorithm in @('sha1', 'sha224', 'blake2s')) {
         throw "Vulkan 1.0 shader compilation failed: $algorithm"
     }
 
-    & python -B (Join-Path $root 'tools\generate-vulkan-backend-hash-kernel.py') --algorithm $algorithm --spirv $module --header $header
+    & python -B $generator --algorithm $algorithm --spirv $module --header $header
+
+    if ($LASTEXITCODE -ne 0 -or
+        (Get-FileHash -LiteralPath $header -Algorithm SHA256).Hash -ne $expected) {
+        throw "Embedded SPIR-V bytes differ from the compiled $algorithm module."
+    }
+
+    Write-Output "PASS reproducible Vulkan SPIR-V 1.0 $algorithm module"
+}
+
+$keccakSource = Join-Path $root 'tools\vulkan-backend-keccak.comp'
+
+$keccakVariants = @(
+    @{ Algorithm = 'sha3_224'; Rate = 144; Suffix = 6; Digest = 28 },
+    @{ Algorithm = 'sha3_256'; Rate = 136; Suffix = 6; Digest = 32 },
+    @{ Algorithm = 'sha3_384'; Rate = 104; Suffix = 6; Digest = 48 },
+    @{ Algorithm = 'sha3_512'; Rate = 72; Suffix = 6; Digest = 64 },
+    @{ Algorithm = 'keccak_256'; Rate = 136; Suffix = 1; Digest = 32 }
+)
+
+foreach ($variant in $keccakVariants) {
+    $algorithm = $variant.Algorithm
+    $header = Join-Path $root "source\include\backend_vulkan_$($algorithm)_spirv.h"
+    $module = Join-Path $directory "vulkan-backend-$algorithm.spv"
+    $expected = (Get-FileHash -LiteralPath $header -Algorithm SHA256).Hash
+
+    & $glslang -V --target-env vulkan1.0 -S comp -e main `
+      "-DVULKAN_HASH_RATE_BYTES=$($variant.Rate)" `
+      "-DVULKAN_HASH_SUFFIX=$($variant.Suffix)" `
+      "-DVULKAN_HASH_DIGEST_BYTES=$($variant.Digest)" `
+      -o $module $keccakSource
+
+    if ($LASTEXITCODE -ne 0) {
+        throw "Vulkan 1.0 Keccak shader compilation failed: $algorithm"
+    }
+
+    & python -B $generator --algorithm $algorithm --spirv $module --header $header
 
     if ($LASTEXITCODE -ne 0 -or
         (Get-FileHash -LiteralPath $header -Algorithm SHA256).Hash -ne $expected) {
@@ -126,7 +165,7 @@ foreach ($target in @(
         throw "Common Vulkan hash API symbols missing for $($target.Abi)."
     }
 
-    Write-Output "PASS Android API $AndroidApi $($target.Abi) SHA-1/SHA-224/SHA-256/BLAKE2s-256 executor"
+    Write-Output "PASS Android API $AndroidApi $($target.Abi) SHA-1/2 SHA3 Keccak-256 BLAKE2s-256 executor"
     Write-Output "HASH_CORE_ARTIFACT $($target.Abi) sha256=$((Get-FileHash -LiteralPath $object -Algorithm SHA256).Hash.ToLowerInvariant())"
 }
 

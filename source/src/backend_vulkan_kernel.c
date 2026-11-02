@@ -13,8 +13,8 @@
  * from declared counts and exact uniform or per-buffer ranges. The public
  * arithmetic programs verify one, two or four ordered stages; MD5 executes a
  * real 64-round compression stage over fixed public one-block messages; and
- * SHA-1, SHA-224, SHA-256 and BLAKE2s-256 accept variable-length byte
- * batches with algorithm-specific compression through the same owner.
+ * SHA-1, SHA-224, SHA-256, BLAKE2s-256 and the SHA3/Keccak family accept
+ * variable-length byte batches through the same dynamic resource owner.
  *
  * Information-mode outputs are checked against host references before
  * temporary Vulkan and host resources are released. The cryptographic paths
@@ -30,6 +30,11 @@
 #include "backend_vulkan_hash.h"
 #include "backend_vulkan_sha256.h"
 #include "backend_vulkan_blake2s_spirv.h"
+#include "backend_vulkan_keccak_256_spirv.h"
+#include "backend_vulkan_sha3_224_spirv.h"
+#include "backend_vulkan_sha3_256_spirv.h"
+#include "backend_vulkan_sha3_384_spirv.h"
+#include "backend_vulkan_sha3_512_spirv.h"
 #include "backend_vulkan_sha1_spirv.h"
 #include "backend_vulkan_sha224_spirv.h"
 #include "backend_vulkan_sha256_spirv.h"
@@ -188,7 +193,7 @@ static const backend_vulkan_program_t backend_vulkan_md5_program =
  *
  * PUBLIC_U32 uses the synthetic arithmetic reference and optional controlled
  * fault/timeout probes. MD5 uses fixed public known-answer vectors. The
- * hash batch accepts caller-owned messages for SHA-1, SHA-224, SHA-256 or
+ * hash batch accepts caller-owned messages for SHA-1/2, SHA3/Keccak or
  * BLAKE2s-256 and returns canonical digest bytes. The execution contract
  * is selected explicitly, never inferred from shader or GPU identity.
  */
@@ -200,7 +205,7 @@ typedef enum backend_vulkan_execution_kind
 } backend_vulkan_execution_kind_t;
 
 /**
- * Borrow input and output memory for a selected SHA or BLAKE2s-256 batch.
+ * Borrow input and output memory for a selected SHA, Keccak or BLAKE2s batch.
  *
  * input_bytes and output_bytes are the validated descriptor ranges.
  * digest_bytes selects the exact 20-, 28- or 32-byte result; name provides
@@ -1201,7 +1206,7 @@ static VkResult backend_vulkan_md5_dispatch (
 }
 
 /**
- * Pack caller-owned SHA or BLAKE2s messages into the input storage buffer.
+ * Pack caller-owned SHA, Keccak or BLAKE2s inputs into the storage buffer.
  *
  * The buffer begins with two uint32 words per message: byte offset relative to
  * the payload start and byte length. Payload bytes follow the complete metadata
@@ -1258,7 +1263,7 @@ static VkResult backend_vulkan_hash_batch_pack_input (
 }
 
 /**
- * Dispatch one caller-owned SHA-family or BLAKE2s-256 byte-message batch.
+ * Dispatch one SHA-1/2, SHA3/Keccak or BLAKE2s byte-message batch.
  *
  * The exact heterogeneous input/output ranges come from the validated program.
  * Input metadata and bytes are flushed before a host-write-to-shader-read
@@ -2465,12 +2470,14 @@ VkResult backend_vulkan_kernel_verify_md5 (
 }
 
 /**
- * Hash independent byte messages with SHA-1, SHA-224, SHA-256 or BLAKE2s.
+ * Hash caller-owned bytes with SHA-1/2, SHA3/Keccak or BLAKE2s on Vulkan.
  *
- * Uses dedicated SPIR-V 1.0 modules with standard SHA padding or BLAKE2s
- * byte counters/finalization. Validates exact byte spans, packed offsets
- * and output sizes before creating a one-stage heterogeneous-buffer program.
- * The selected algorithm produces 20, 28 or 32 canonical digest bytes.
+ * Uses exact SPIR-V 1.0 modules for SHA padding, Keccak-f[1600] sponge
+ * domain separation or BLAKE2s byte counters/finalization. All modules
+ * share caller-owned byte spans and dynamic Vulkan resource ownership.
+ * Validates byte offsets, lengths, padded block addresses and output sizes
+ * before creating a one-stage heterogeneous-buffer program. Depending on
+ * the algorithm, each message produces 20, 28, 32, 48 or 64 digest bytes.
  *
  * The same dynamic backend_vulkan_program_t executor owns VkDevice,
  * descriptors, pipeline, command submission, fence and cleanup for all three
@@ -2501,6 +2508,7 @@ VkResult backend_vulkan_hash_batch (
   const uint32_t *spirv = NULL;
   uint32_t spirv_words = 0u;
   uint32_t digest_bytes = 0u;
+  uint32_t tail_bytes = 72u;
   VkBool32 little_endian = VK_FALSE;
   const char *algorithm_name = NULL;
   const char *stage_name = NULL;
@@ -2544,6 +2552,61 @@ VkResult backend_vulkan_hash_batch (
       stage_name = "blake2s_byte_batch";
       break;
 
+    case BACKEND_VULKAN_HASH_SHA3_224:
+      spirv = backend_vulkan_sha3_224_spirv;
+      spirv_words =
+        sizeof (backend_vulkan_sha3_224_spirv) / sizeof (uint32_t);
+      digest_bytes = 28u;
+      tail_bytes = 144u;
+      little_endian = VK_TRUE;
+      algorithm_name = "SHA3_224";
+      stage_name = "sha3_224_byte_batch";
+      break;
+
+    case BACKEND_VULKAN_HASH_SHA3_256:
+      spirv = backend_vulkan_sha3_256_spirv;
+      spirv_words =
+        sizeof (backend_vulkan_sha3_256_spirv) / sizeof (uint32_t);
+      digest_bytes = 32u;
+      tail_bytes = 136u;
+      little_endian = VK_TRUE;
+      algorithm_name = "SHA3_256";
+      stage_name = "sha3_256_byte_batch";
+      break;
+
+    case BACKEND_VULKAN_HASH_SHA3_384:
+      spirv = backend_vulkan_sha3_384_spirv;
+      spirv_words =
+        sizeof (backend_vulkan_sha3_384_spirv) / sizeof (uint32_t);
+      digest_bytes = 48u;
+      tail_bytes = 104u;
+      little_endian = VK_TRUE;
+      algorithm_name = "SHA3_384";
+      stage_name = "sha3_384_byte_batch";
+      break;
+
+    case BACKEND_VULKAN_HASH_SHA3_512:
+      spirv = backend_vulkan_sha3_512_spirv;
+      spirv_words =
+        sizeof (backend_vulkan_sha3_512_spirv) / sizeof (uint32_t);
+      digest_bytes = 64u;
+      tail_bytes = 72u;
+      little_endian = VK_TRUE;
+      algorithm_name = "SHA3_512";
+      stage_name = "sha3_512_byte_batch";
+      break;
+
+    case BACKEND_VULKAN_HASH_KECCAK_256:
+      spirv = backend_vulkan_keccak_256_spirv;
+      spirv_words =
+        sizeof (backend_vulkan_keccak_256_spirv) / sizeof (uint32_t);
+      digest_bytes = 32u;
+      tail_bytes = 136u;
+      little_endian = VK_TRUE;
+      algorithm_name = "KECCAK_256";
+      stage_name = "keccak_256_byte_batch";
+      break;
+
     default:
       return VK_ERROR_INITIALIZATION_FAILED;
   }
@@ -2553,7 +2616,7 @@ VkResult backend_vulkan_hash_batch (
   for (uint32_t i = 0u; i < message_count; i++)
   {
     if ((messages[i].size != 0u && messages[i].data == NULL)
-     || messages[i].size > UINT32_MAX - 72u)
+     || messages[i].size > UINT32_MAX - tail_bytes)
     {
       return VK_ERROR_INITIALIZATION_FAILED;
     }

@@ -151,11 +151,13 @@ not consume HASHCAT scheduler candidates or register as a hashing
 device.
 
 The [common Vulkan hash batch API](docs/vulkan-backend-hash-primitives-android.md)
-also includes separate SHA-1, SHA-224 and unkeyed BLAKE2s-256 SPIR-V
-Compute modules. All four byte-message algorithms share dynamic Vulkan
-resource ownership, explicit message lengths and canonical digest output.
-ARM64 and ARMv7 native compilation succeeds; execution of these three
-additional algorithms on physical GPU hardware has not yet been verified.
+now includes SHA-1, SHA-224, SHA-256, unkeyed BLAKE2s-256,
+SHA3-224/256/384/512 and Keccak-256. All nine byte-message algorithms
+share the same dynamic Vulkan resource owner, explicit message lengths
+and canonical digest serialization. Keccak-f[1600] uses 32-bit lane halves,
+requiring no optional Vulkan shaderInt64 feature. ARM64 and ARMv7 native
+compilation succeeds; hardware execution and digest equality for the
+additional non-SHA-256 algorithms have not yet been confirmed.
 
 ## Working on hashcat source
 

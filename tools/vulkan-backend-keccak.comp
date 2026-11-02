@@ -1,0 +1,264 @@
+#version 450
+
+/*
+ * Hash independent byte strings with Keccak-f[1600] on Vulkan 1.0.
+ *
+ * Build variants select an exact SHA3 or Keccak byte rate, domain suffix
+ * and digest length using VULKAN_HASH_RATE_BYTES, VULKAN_HASH_SUFFIX and
+ * VULKAN_HASH_DIGEST_BYTES. Every variant uses the same message metadata
+ * format as the common SHA-1, SHA-224, SHA-256 and BLAKE2s batch executor.
+ *
+ * Keccak's 25 64-bit state lanes use pairs of 32-bit words, so shaderInt64
+ * and optional Vulkan device features are not required.
+ */
+#ifndef VULKAN_HASH_RATE_BYTES
+#define VULKAN_HASH_RATE_BYTES 136
+#endif
+
+#ifndef VULKAN_HASH_SUFFIX
+#define VULKAN_HASH_SUFFIX 6
+#endif
+
+#ifndef VULKAN_HASH_DIGEST_BYTES
+#define VULKAN_HASH_DIGEST_BYTES 32
+#endif
+
+layout (local_size_x = 32, local_size_y = 1, local_size_z = 1) in;
+
+layout (set = 0, binding = 0, std430) readonly buffer InputBuffer
+{
+  uint words[];
+} input_data;
+
+layout (set = 0, binding = 1, std430) writeonly buffer OutputBuffer
+{
+  uint words[];
+} output_data;
+
+/*
+ * Read an unsigned byte in the little-endian message payload.
+ *
+ * The input buffer begins with message_count offset/length pairs; offsets
+ * point into the byte payload immediately following the metadata table.
+ */
+uint read_payload_byte (uint message_count, uint byte_offset)
+{
+  const uint word_index = message_count * 2u + (byte_offset >> 2u);
+  const uint shift = (byte_offset & 3u) * 8u;
+
+  return (input_data.words[word_index] >> shift) & 0xffu;
+}
+
+/*
+ * Rotate a 64-bit Keccak lane left using two 32-bit lane halves.
+ *
+ * A uvec2 contains the lower and upper 32 bits, respectively. All Keccak
+ * rho rotations in 0..63 are handled explicitly without shift-by-32 or
+ * a shaderInt64 device feature.
+ */
+uvec2 rotate_lane_left (uvec2 lane, uint amount)
+{
+  if (amount == 0u) return lane;
+
+  if (amount < 32u)
+  {
+    return uvec2 (
+      (lane.x << amount) | (lane.y >> (32u - amount)),
+      (lane.y << amount) | (lane.x >> (32u - amount))
+    );
+  }
+
+  if (amount == 32u) return uvec2 (lane.y, lane.x);
+
+  const uint remaining = amount - 32u;
+
+  return uvec2 (
+    (lane.y << remaining) | (lane.x >> (32u - remaining)),
+    (lane.x << remaining) | (lane.y >> (32u - remaining))
+  );
+}
+
+/*
+ * Permute one 1600-bit state with all 24 Keccak-f rounds.
+ *
+ * Each round applies theta, rho, pi, chi and iota to the 25 little-endian
+ * lanes using the standard rotation offsets and 64-bit round constants.
+ * The independent working state is private to the current invocation.
+ */
+void keccak_f1600 (inout uvec2 state[25])
+{
+  const uint rho[25] = uint[25](
+     0u,  1u, 62u, 28u, 27u,
+    36u, 44u,  6u, 55u, 20u,
+     3u, 10u, 43u, 25u, 39u,
+    41u, 45u, 15u, 21u,  8u,
+    18u,  2u, 61u, 56u, 14u
+  );
+
+  const uvec2 round_constants[24] = uvec2[24](
+    uvec2 (0x00000001u, 0x00000000u),
+    uvec2 (0x00008082u, 0x00000000u),
+    uvec2 (0x0000808au, 0x80000000u),
+    uvec2 (0x80008000u, 0x80000000u),
+    uvec2 (0x0000808bu, 0x00000000u),
+    uvec2 (0x80000001u, 0x00000000u),
+    uvec2 (0x80008081u, 0x80000000u),
+    uvec2 (0x00008009u, 0x80000000u),
+    uvec2 (0x0000008au, 0x00000000u),
+    uvec2 (0x00000088u, 0x00000000u),
+    uvec2 (0x80008009u, 0x00000000u),
+    uvec2 (0x8000000au, 0x00000000u),
+    uvec2 (0x8000808bu, 0x00000000u),
+    uvec2 (0x0000008bu, 0x80000000u),
+    uvec2 (0x00008089u, 0x80000000u),
+    uvec2 (0x00008003u, 0x80000000u),
+    uvec2 (0x00008002u, 0x80000000u),
+    uvec2 (0x00000080u, 0x80000000u),
+    uvec2 (0x0000800au, 0x00000000u),
+    uvec2 (0x8000000au, 0x80000000u),
+    uvec2 (0x80008081u, 0x80000000u),
+    uvec2 (0x00008080u, 0x80000000u),
+    uvec2 (0x80000001u, 0x00000000u),
+    uvec2 (0x80008008u, 0x80000000u)
+  );
+
+  for (uint round = 0u; round < 24u; round++)
+  {
+    uvec2 columns[5];
+
+    for (uint x = 0u; x < 5u; x++)
+    {
+      columns[x] =
+        state[x] ^ state[x + 5u] ^ state[x + 10u]
+        ^ state[x + 15u] ^ state[x + 20u];
+    }
+
+    for (uint x = 0u; x < 5u; x++)
+    {
+      const uvec2 delta =
+        columns[(x + 4u) % 5u]
+        ^ rotate_lane_left (columns[(x + 1u) % 5u], 1u);
+
+      for (uint y = 0u; y < 5u; y++)
+      {
+        state[x + 5u * y] ^= delta;
+      }
+    }
+
+    uvec2 moved[25];
+
+    for (uint y = 0u; y < 5u; y++)
+    {
+      for (uint x = 0u; x < 5u; x++)
+      {
+        const uint old_index = x + 5u * y;
+        const uint new_index = y + 5u * ((2u * x + 3u * y) % 5u);
+
+        moved[new_index] = rotate_lane_left (
+          state[old_index], rho[old_index]
+        );
+      }
+    }
+
+    for (uint y = 0u; y < 5u; y++)
+    {
+      for (uint x = 0u; x < 5u; x++)
+      {
+        state[x + 5u * y] =
+          moved[x + 5u * y]
+          ^ ((~moved[(x + 1u) % 5u + 5u * y])
+          & moved[(x + 2u) % 5u + 5u * y]);
+      }
+    }
+
+    state[0] ^= round_constants[round];
+  }
+}
+
+/*
+ * Hash one message using SHA-3 sponge padding or legacy Keccak padding.
+ *
+ * Each message absorbs its actual byte content in rate-byte blocks. The
+ * final block applies the selected domain suffix at the byte immediately
+ * after the content, plus bit seven of the last rate byte. This supports
+ * zero-length, rate-aligned and arbitrarily sized multi-block messages.
+ * A full 1600-bit permutation follows each absorbed block.
+ *
+ * The digest is the first VULKAN_HASH_DIGEST_BYTES bytes of the final
+ * sponge state, serialized as canonical little-endian 32-bit words.
+ */
+void main ()
+{
+  const uint message_index = gl_GlobalInvocationID.x;
+  const uint digest_words = uint (VULKAN_HASH_DIGEST_BYTES) / 4u;
+  const uint message_count =
+    uint (output_data.words.length ()) / digest_words;
+
+  if (message_index >= message_count) return;
+
+  const uint message_offset = input_data.words[message_index * 2u];
+  const uint message_length = input_data.words[message_index * 2u + 1u];
+  const uint rate_bytes = uint (VULKAN_HASH_RATE_BYTES);
+  const uint suffix = uint (VULKAN_HASH_SUFFIX);
+  const uint block_count = message_length / rate_bytes + 1u;
+
+  uvec2 state[25];
+
+  for (uint i = 0u; i < 25u; i++)
+  {
+    state[i] = uvec2 (0u);
+  }
+
+  for (uint block_index = 0u; block_index < block_count; block_index++)
+  {
+    const uint block_start = block_index * rate_bytes;
+    const bool final_block = block_index + 1u == block_count;
+
+    for (uint byte_index = 0u; byte_index < rate_bytes; byte_index++)
+    {
+      const uint position = block_start + byte_index;
+      uint value = 0u;
+
+      if (position < message_length)
+      {
+        value = read_payload_byte (
+          message_count, message_offset + position
+        );
+      }
+      else if (position == message_length)
+      {
+        value = suffix;
+      }
+
+      if (final_block && byte_index + 1u == rate_bytes)
+      {
+        value |= 0x80u;
+      }
+
+      const uint lane_index = byte_index / 8u;
+      const uint lane_offset = byte_index % 8u;
+
+      if (lane_offset < 4u)
+      {
+        state[lane_index].x ^= value << (lane_offset * 8u);
+      }
+      else
+      {
+        state[lane_index].y ^= value << ((lane_offset - 4u) * 8u);
+      }
+    }
+
+    keccak_f1600 (state);
+  }
+
+  const uint output_index = message_index * digest_words;
+
+  for (uint word_index = 0u; word_index < digest_words; word_index++)
+  {
+    const uint lane_index = word_index / 2u;
+
+    output_data.words[output_index + word_index] =
+      (word_index % 2u == 0u)
+        ? state[lane_index].x : state[lane_index].y;
+  }
+}
