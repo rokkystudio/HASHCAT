@@ -1,0 +1,642 @@
+TEST=vulkan-backend-public-fault
+ABI=arm64-v8a
+API=1.0
+ADB_EXIT_CODE=0
+VULKAN_LOADER_VERSION=1.4.0 source=vkEnumerateInstanceVersion
+SELECT_INSTANCE_API=1.0 loader_minor=4 cap=1.1
+DEVICE_CATALOG_OPEN requested_api=1.0 instance_api=1.0 devices=1 extensions=0 layers=0
+BACKEND_VULKAN_CATALOG_READY devices=1 requested_api=1.0 scheduled=0
+BACKEND_PUBLIC_FAULT_CONTROLS_PASS invalid_points=2 invalid_context=3 gpu_submissions=0 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=1
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_PUBLIC_FAULT_TRIGGER point=1 resource=host_arrays simulated=1 submitted=0 result=-3
+BACKEND_PUBLIC_FAULT_RELEASE point=1 reached=1 hit=1 submitted=0 device=0 buffers=0 memories=0 maps=0 descriptor_sets=0 shaders=0 pipelines=0 descriptor_pool=0 pipeline_layout=0 descriptor_layout=0 fence=0 command_buffer=0 command_pool=0 host_arrays=4 wait_idle=0 completed=1 cleanup_result=0 simulated=1
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=-3 released=1 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=2
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_VULKAN_PROGRAM_READY index=0 queue_family=0 api=1.0 stages=4 buffers=5 descriptor_sets=4 descriptors=8 shader_modules=4 pipelines=4 local=32 groups=2 program_validated=1 dynamic_resources=1 features=0 extensions=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_DISPATCH_PASS stages=4 buffers=5 words=64 dispatches=4 verified_words=256 dependency_barriers=3 descriptors=8 coherent_input=1 noncoherent_outputs=0 password_inputs=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=0 released=1 scheduled=0
+BACKEND_PUBLIC_FAULT_RECOVERY_PASS point=1 injected=1 new_device=1 dispatches=4 verified_words=256 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=3
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_PUBLIC_FAULT_TRIGGER point=2 resource=device simulated=1 submitted=0 result=-3
+BACKEND_PUBLIC_FAULT_RELEASE point=2 reached=2 hit=1 submitted=0 device=1 buffers=0 memories=0 maps=0 descriptor_sets=0 shaders=0 pipelines=0 descriptor_pool=0 pipeline_layout=0 descriptor_layout=0 fence=0 command_buffer=0 command_pool=0 host_arrays=4 wait_idle=0 completed=1 cleanup_result=0 simulated=1
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=-3 released=1 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=4
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_VULKAN_PROGRAM_READY index=0 queue_family=0 api=1.0 stages=4 buffers=5 descriptor_sets=4 descriptors=8 shader_modules=4 pipelines=4 local=32 groups=2 program_validated=1 dynamic_resources=1 features=0 extensions=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_DISPATCH_PASS stages=4 buffers=5 words=64 dispatches=4 verified_words=256 dependency_barriers=3 descriptors=8 coherent_input=1 noncoherent_outputs=0 password_inputs=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=0 released=1 scheduled=0
+BACKEND_PUBLIC_FAULT_RECOVERY_PASS point=2 injected=1 new_device=1 dispatches=4 verified_words=256 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=5
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_PUBLIC_FAULT_TRIGGER point=3 resource=buffer simulated=1 submitted=0 result=-3
+BACKEND_PUBLIC_FAULT_RELEASE point=3 reached=3 hit=1 submitted=0 device=1 buffers=1 memories=0 maps=0 descriptor_sets=0 shaders=0 pipelines=0 descriptor_pool=0 pipeline_layout=0 descriptor_layout=0 fence=0 command_buffer=0 command_pool=0 host_arrays=4 wait_idle=0 completed=1 cleanup_result=0 simulated=1
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=-3 released=1 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=6
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_VULKAN_PROGRAM_READY index=0 queue_family=0 api=1.0 stages=4 buffers=5 descriptor_sets=4 descriptors=8 shader_modules=4 pipelines=4 local=32 groups=2 program_validated=1 dynamic_resources=1 features=0 extensions=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_DISPATCH_PASS stages=4 buffers=5 words=64 dispatches=4 verified_words=256 dependency_barriers=3 descriptors=8 coherent_input=1 noncoherent_outputs=0 password_inputs=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=0 released=1 scheduled=0
+BACKEND_PUBLIC_FAULT_RECOVERY_PASS point=3 injected=1 new_device=1 dispatches=4 verified_words=256 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=7
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_PUBLIC_FAULT_TRIGGER point=4 resource=memory simulated=1 submitted=0 result=-3
+BACKEND_PUBLIC_FAULT_RELEASE point=4 reached=4 hit=1 submitted=0 device=1 buffers=1 memories=1 maps=0 descriptor_sets=0 shaders=0 pipelines=0 descriptor_pool=0 pipeline_layout=0 descriptor_layout=0 fence=0 command_buffer=0 command_pool=0 host_arrays=4 wait_idle=0 completed=1 cleanup_result=0 simulated=1
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=-3 released=1 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=8
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_VULKAN_PROGRAM_READY index=0 queue_family=0 api=1.0 stages=4 buffers=5 descriptor_sets=4 descriptors=8 shader_modules=4 pipelines=4 local=32 groups=2 program_validated=1 dynamic_resources=1 features=0 extensions=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_DISPATCH_PASS stages=4 buffers=5 words=64 dispatches=4 verified_words=256 dependency_barriers=3 descriptors=8 coherent_input=1 noncoherent_outputs=0 password_inputs=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=0 released=1 scheduled=0
+BACKEND_PUBLIC_FAULT_RECOVERY_PASS point=4 injected=1 new_device=1 dispatches=4 verified_words=256 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=9
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_PUBLIC_FAULT_TRIGGER point=5 resource=map simulated=1 submitted=0 result=-3
+BACKEND_PUBLIC_FAULT_RELEASE point=5 reached=5 hit=1 submitted=0 device=1 buffers=1 memories=1 maps=1 descriptor_sets=0 shaders=0 pipelines=0 descriptor_pool=0 pipeline_layout=0 descriptor_layout=0 fence=0 command_buffer=0 command_pool=0 host_arrays=4 wait_idle=0 completed=1 cleanup_result=0 simulated=1
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=-3 released=1 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=10
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_VULKAN_PROGRAM_READY index=0 queue_family=0 api=1.0 stages=4 buffers=5 descriptor_sets=4 descriptors=8 shader_modules=4 pipelines=4 local=32 groups=2 program_validated=1 dynamic_resources=1 features=0 extensions=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_DISPATCH_PASS stages=4 buffers=5 words=64 dispatches=4 verified_words=256 dependency_barriers=3 descriptors=8 coherent_input=1 noncoherent_outputs=0 password_inputs=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=0 released=1 scheduled=0
+BACKEND_PUBLIC_FAULT_RECOVERY_PASS point=5 injected=1 new_device=1 dispatches=4 verified_words=256 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=11
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_PUBLIC_FAULT_TRIGGER point=6 resource=buffer simulated=1 submitted=0 result=-3
+BACKEND_PUBLIC_FAULT_RELEASE point=6 reached=6 hit=1 submitted=0 device=1 buffers=2 memories=1 maps=1 descriptor_sets=0 shaders=0 pipelines=0 descriptor_pool=0 pipeline_layout=0 descriptor_layout=0 fence=0 command_buffer=0 command_pool=0 host_arrays=4 wait_idle=0 completed=1 cleanup_result=0 simulated=1
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=-3 released=1 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=12
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_VULKAN_PROGRAM_READY index=0 queue_family=0 api=1.0 stages=4 buffers=5 descriptor_sets=4 descriptors=8 shader_modules=4 pipelines=4 local=32 groups=2 program_validated=1 dynamic_resources=1 features=0 extensions=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_DISPATCH_PASS stages=4 buffers=5 words=64 dispatches=4 verified_words=256 dependency_barriers=3 descriptors=8 coherent_input=1 noncoherent_outputs=0 password_inputs=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=0 released=1 scheduled=0
+BACKEND_PUBLIC_FAULT_RECOVERY_PASS point=6 injected=1 new_device=1 dispatches=4 verified_words=256 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=13
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_PUBLIC_FAULT_TRIGGER point=7 resource=memory simulated=1 submitted=0 result=-3
+BACKEND_PUBLIC_FAULT_RELEASE point=7 reached=7 hit=1 submitted=0 device=1 buffers=2 memories=2 maps=1 descriptor_sets=0 shaders=0 pipelines=0 descriptor_pool=0 pipeline_layout=0 descriptor_layout=0 fence=0 command_buffer=0 command_pool=0 host_arrays=4 wait_idle=0 completed=1 cleanup_result=0 simulated=1
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=-3 released=1 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=14
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_VULKAN_PROGRAM_READY index=0 queue_family=0 api=1.0 stages=4 buffers=5 descriptor_sets=4 descriptors=8 shader_modules=4 pipelines=4 local=32 groups=2 program_validated=1 dynamic_resources=1 features=0 extensions=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_DISPATCH_PASS stages=4 buffers=5 words=64 dispatches=4 verified_words=256 dependency_barriers=3 descriptors=8 coherent_input=1 noncoherent_outputs=0 password_inputs=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=0 released=1 scheduled=0
+BACKEND_PUBLIC_FAULT_RECOVERY_PASS point=7 injected=1 new_device=1 dispatches=4 verified_words=256 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=15
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_PUBLIC_FAULT_TRIGGER point=8 resource=map simulated=1 submitted=0 result=-3
+BACKEND_PUBLIC_FAULT_RELEASE point=8 reached=8 hit=1 submitted=0 device=1 buffers=2 memories=2 maps=2 descriptor_sets=0 shaders=0 pipelines=0 descriptor_pool=0 pipeline_layout=0 descriptor_layout=0 fence=0 command_buffer=0 command_pool=0 host_arrays=4 wait_idle=0 completed=1 cleanup_result=0 simulated=1
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=-3 released=1 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=16
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_VULKAN_PROGRAM_READY index=0 queue_family=0 api=1.0 stages=4 buffers=5 descriptor_sets=4 descriptors=8 shader_modules=4 pipelines=4 local=32 groups=2 program_validated=1 dynamic_resources=1 features=0 extensions=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_DISPATCH_PASS stages=4 buffers=5 words=64 dispatches=4 verified_words=256 dependency_barriers=3 descriptors=8 coherent_input=1 noncoherent_outputs=0 password_inputs=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=0 released=1 scheduled=0
+BACKEND_PUBLIC_FAULT_RECOVERY_PASS point=8 injected=1 new_device=1 dispatches=4 verified_words=256 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=17
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_PUBLIC_FAULT_TRIGGER point=9 resource=buffer simulated=1 submitted=0 result=-3
+BACKEND_PUBLIC_FAULT_RELEASE point=9 reached=9 hit=1 submitted=0 device=1 buffers=3 memories=2 maps=2 descriptor_sets=0 shaders=0 pipelines=0 descriptor_pool=0 pipeline_layout=0 descriptor_layout=0 fence=0 command_buffer=0 command_pool=0 host_arrays=4 wait_idle=0 completed=1 cleanup_result=0 simulated=1
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=-3 released=1 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=18
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_VULKAN_PROGRAM_READY index=0 queue_family=0 api=1.0 stages=4 buffers=5 descriptor_sets=4 descriptors=8 shader_modules=4 pipelines=4 local=32 groups=2 program_validated=1 dynamic_resources=1 features=0 extensions=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_DISPATCH_PASS stages=4 buffers=5 words=64 dispatches=4 verified_words=256 dependency_barriers=3 descriptors=8 coherent_input=1 noncoherent_outputs=0 password_inputs=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=0 released=1 scheduled=0
+BACKEND_PUBLIC_FAULT_RECOVERY_PASS point=9 injected=1 new_device=1 dispatches=4 verified_words=256 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=19
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_PUBLIC_FAULT_TRIGGER point=10 resource=memory simulated=1 submitted=0 result=-3
+BACKEND_PUBLIC_FAULT_RELEASE point=10 reached=10 hit=1 submitted=0 device=1 buffers=3 memories=3 maps=2 descriptor_sets=0 shaders=0 pipelines=0 descriptor_pool=0 pipeline_layout=0 descriptor_layout=0 fence=0 command_buffer=0 command_pool=0 host_arrays=4 wait_idle=0 completed=1 cleanup_result=0 simulated=1
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=-3 released=1 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=20
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_VULKAN_PROGRAM_READY index=0 queue_family=0 api=1.0 stages=4 buffers=5 descriptor_sets=4 descriptors=8 shader_modules=4 pipelines=4 local=32 groups=2 program_validated=1 dynamic_resources=1 features=0 extensions=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_DISPATCH_PASS stages=4 buffers=5 words=64 dispatches=4 verified_words=256 dependency_barriers=3 descriptors=8 coherent_input=1 noncoherent_outputs=0 password_inputs=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=0 released=1 scheduled=0
+BACKEND_PUBLIC_FAULT_RECOVERY_PASS point=10 injected=1 new_device=1 dispatches=4 verified_words=256 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=21
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_PUBLIC_FAULT_TRIGGER point=11 resource=map simulated=1 submitted=0 result=-3
+BACKEND_PUBLIC_FAULT_RELEASE point=11 reached=11 hit=1 submitted=0 device=1 buffers=3 memories=3 maps=3 descriptor_sets=0 shaders=0 pipelines=0 descriptor_pool=0 pipeline_layout=0 descriptor_layout=0 fence=0 command_buffer=0 command_pool=0 host_arrays=4 wait_idle=0 completed=1 cleanup_result=0 simulated=1
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=-3 released=1 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=22
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_VULKAN_PROGRAM_READY index=0 queue_family=0 api=1.0 stages=4 buffers=5 descriptor_sets=4 descriptors=8 shader_modules=4 pipelines=4 local=32 groups=2 program_validated=1 dynamic_resources=1 features=0 extensions=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_DISPATCH_PASS stages=4 buffers=5 words=64 dispatches=4 verified_words=256 dependency_barriers=3 descriptors=8 coherent_input=1 noncoherent_outputs=0 password_inputs=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=0 released=1 scheduled=0
+BACKEND_PUBLIC_FAULT_RECOVERY_PASS point=11 injected=1 new_device=1 dispatches=4 verified_words=256 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=23
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_PUBLIC_FAULT_TRIGGER point=12 resource=buffer simulated=1 submitted=0 result=-3
+BACKEND_PUBLIC_FAULT_RELEASE point=12 reached=12 hit=1 submitted=0 device=1 buffers=4 memories=3 maps=3 descriptor_sets=0 shaders=0 pipelines=0 descriptor_pool=0 pipeline_layout=0 descriptor_layout=0 fence=0 command_buffer=0 command_pool=0 host_arrays=4 wait_idle=0 completed=1 cleanup_result=0 simulated=1
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=-3 released=1 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=24
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_VULKAN_PROGRAM_READY index=0 queue_family=0 api=1.0 stages=4 buffers=5 descriptor_sets=4 descriptors=8 shader_modules=4 pipelines=4 local=32 groups=2 program_validated=1 dynamic_resources=1 features=0 extensions=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_DISPATCH_PASS stages=4 buffers=5 words=64 dispatches=4 verified_words=256 dependency_barriers=3 descriptors=8 coherent_input=1 noncoherent_outputs=0 password_inputs=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=0 released=1 scheduled=0
+BACKEND_PUBLIC_FAULT_RECOVERY_PASS point=12 injected=1 new_device=1 dispatches=4 verified_words=256 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=25
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_PUBLIC_FAULT_TRIGGER point=13 resource=memory simulated=1 submitted=0 result=-3
+BACKEND_PUBLIC_FAULT_RELEASE point=13 reached=13 hit=1 submitted=0 device=1 buffers=4 memories=4 maps=3 descriptor_sets=0 shaders=0 pipelines=0 descriptor_pool=0 pipeline_layout=0 descriptor_layout=0 fence=0 command_buffer=0 command_pool=0 host_arrays=4 wait_idle=0 completed=1 cleanup_result=0 simulated=1
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=-3 released=1 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=26
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_VULKAN_PROGRAM_READY index=0 queue_family=0 api=1.0 stages=4 buffers=5 descriptor_sets=4 descriptors=8 shader_modules=4 pipelines=4 local=32 groups=2 program_validated=1 dynamic_resources=1 features=0 extensions=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_DISPATCH_PASS stages=4 buffers=5 words=64 dispatches=4 verified_words=256 dependency_barriers=3 descriptors=8 coherent_input=1 noncoherent_outputs=0 password_inputs=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=0 released=1 scheduled=0
+BACKEND_PUBLIC_FAULT_RECOVERY_PASS point=13 injected=1 new_device=1 dispatches=4 verified_words=256 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=27
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_PUBLIC_FAULT_TRIGGER point=14 resource=map simulated=1 submitted=0 result=-3
+BACKEND_PUBLIC_FAULT_RELEASE point=14 reached=14 hit=1 submitted=0 device=1 buffers=4 memories=4 maps=4 descriptor_sets=0 shaders=0 pipelines=0 descriptor_pool=0 pipeline_layout=0 descriptor_layout=0 fence=0 command_buffer=0 command_pool=0 host_arrays=4 wait_idle=0 completed=1 cleanup_result=0 simulated=1
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=-3 released=1 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=28
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_VULKAN_PROGRAM_READY index=0 queue_family=0 api=1.0 stages=4 buffers=5 descriptor_sets=4 descriptors=8 shader_modules=4 pipelines=4 local=32 groups=2 program_validated=1 dynamic_resources=1 features=0 extensions=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_DISPATCH_PASS stages=4 buffers=5 words=64 dispatches=4 verified_words=256 dependency_barriers=3 descriptors=8 coherent_input=1 noncoherent_outputs=0 password_inputs=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=0 released=1 scheduled=0
+BACKEND_PUBLIC_FAULT_RECOVERY_PASS point=14 injected=1 new_device=1 dispatches=4 verified_words=256 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=29
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_PUBLIC_FAULT_TRIGGER point=15 resource=buffer simulated=1 submitted=0 result=-3
+BACKEND_PUBLIC_FAULT_RELEASE point=15 reached=15 hit=1 submitted=0 device=1 buffers=5 memories=4 maps=4 descriptor_sets=0 shaders=0 pipelines=0 descriptor_pool=0 pipeline_layout=0 descriptor_layout=0 fence=0 command_buffer=0 command_pool=0 host_arrays=4 wait_idle=0 completed=1 cleanup_result=0 simulated=1
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=-3 released=1 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=30
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_VULKAN_PROGRAM_READY index=0 queue_family=0 api=1.0 stages=4 buffers=5 descriptor_sets=4 descriptors=8 shader_modules=4 pipelines=4 local=32 groups=2 program_validated=1 dynamic_resources=1 features=0 extensions=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_DISPATCH_PASS stages=4 buffers=5 words=64 dispatches=4 verified_words=256 dependency_barriers=3 descriptors=8 coherent_input=1 noncoherent_outputs=0 password_inputs=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=0 released=1 scheduled=0
+BACKEND_PUBLIC_FAULT_RECOVERY_PASS point=15 injected=1 new_device=1 dispatches=4 verified_words=256 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=31
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_PUBLIC_FAULT_TRIGGER point=16 resource=memory simulated=1 submitted=0 result=-3
+BACKEND_PUBLIC_FAULT_RELEASE point=16 reached=16 hit=1 submitted=0 device=1 buffers=5 memories=5 maps=4 descriptor_sets=0 shaders=0 pipelines=0 descriptor_pool=0 pipeline_layout=0 descriptor_layout=0 fence=0 command_buffer=0 command_pool=0 host_arrays=4 wait_idle=0 completed=1 cleanup_result=0 simulated=1
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=-3 released=1 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=32
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_VULKAN_PROGRAM_READY index=0 queue_family=0 api=1.0 stages=4 buffers=5 descriptor_sets=4 descriptors=8 shader_modules=4 pipelines=4 local=32 groups=2 program_validated=1 dynamic_resources=1 features=0 extensions=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_DISPATCH_PASS stages=4 buffers=5 words=64 dispatches=4 verified_words=256 dependency_barriers=3 descriptors=8 coherent_input=1 noncoherent_outputs=0 password_inputs=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=0 released=1 scheduled=0
+BACKEND_PUBLIC_FAULT_RECOVERY_PASS point=16 injected=1 new_device=1 dispatches=4 verified_words=256 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=33
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_PUBLIC_FAULT_TRIGGER point=17 resource=map simulated=1 submitted=0 result=-3
+BACKEND_PUBLIC_FAULT_RELEASE point=17 reached=17 hit=1 submitted=0 device=1 buffers=5 memories=5 maps=5 descriptor_sets=0 shaders=0 pipelines=0 descriptor_pool=0 pipeline_layout=0 descriptor_layout=0 fence=0 command_buffer=0 command_pool=0 host_arrays=4 wait_idle=0 completed=1 cleanup_result=0 simulated=1
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=-3 released=1 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=34
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_VULKAN_PROGRAM_READY index=0 queue_family=0 api=1.0 stages=4 buffers=5 descriptor_sets=4 descriptors=8 shader_modules=4 pipelines=4 local=32 groups=2 program_validated=1 dynamic_resources=1 features=0 extensions=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_DISPATCH_PASS stages=4 buffers=5 words=64 dispatches=4 verified_words=256 dependency_barriers=3 descriptors=8 coherent_input=1 noncoherent_outputs=0 password_inputs=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=0 released=1 scheduled=0
+BACKEND_PUBLIC_FAULT_RECOVERY_PASS point=17 injected=1 new_device=1 dispatches=4 verified_words=256 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=35
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_PUBLIC_FAULT_TRIGGER point=18 resource=descriptor_layout simulated=1 submitted=0 result=-3
+BACKEND_PUBLIC_FAULT_RELEASE point=18 reached=18 hit=1 submitted=0 device=1 buffers=5 memories=5 maps=5 descriptor_sets=0 shaders=0 pipelines=0 descriptor_pool=0 pipeline_layout=0 descriptor_layout=1 fence=0 command_buffer=0 command_pool=0 host_arrays=4 wait_idle=0 completed=1 cleanup_result=0 simulated=1
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=-3 released=1 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=36
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_VULKAN_PROGRAM_READY index=0 queue_family=0 api=1.0 stages=4 buffers=5 descriptor_sets=4 descriptors=8 shader_modules=4 pipelines=4 local=32 groups=2 program_validated=1 dynamic_resources=1 features=0 extensions=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_DISPATCH_PASS stages=4 buffers=5 words=64 dispatches=4 verified_words=256 dependency_barriers=3 descriptors=8 coherent_input=1 noncoherent_outputs=0 password_inputs=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=0 released=1 scheduled=0
+BACKEND_PUBLIC_FAULT_RECOVERY_PASS point=18 injected=1 new_device=1 dispatches=4 verified_words=256 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=37
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_PUBLIC_FAULT_TRIGGER point=19 resource=pipeline_layout simulated=1 submitted=0 result=-3
+BACKEND_PUBLIC_FAULT_RELEASE point=19 reached=19 hit=1 submitted=0 device=1 buffers=5 memories=5 maps=5 descriptor_sets=0 shaders=0 pipelines=0 descriptor_pool=0 pipeline_layout=1 descriptor_layout=1 fence=0 command_buffer=0 command_pool=0 host_arrays=4 wait_idle=0 completed=1 cleanup_result=0 simulated=1
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=-3 released=1 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=38
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_VULKAN_PROGRAM_READY index=0 queue_family=0 api=1.0 stages=4 buffers=5 descriptor_sets=4 descriptors=8 shader_modules=4 pipelines=4 local=32 groups=2 program_validated=1 dynamic_resources=1 features=0 extensions=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_DISPATCH_PASS stages=4 buffers=5 words=64 dispatches=4 verified_words=256 dependency_barriers=3 descriptors=8 coherent_input=1 noncoherent_outputs=0 password_inputs=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=0 released=1 scheduled=0
+BACKEND_PUBLIC_FAULT_RECOVERY_PASS point=19 injected=1 new_device=1 dispatches=4 verified_words=256 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=39
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_PUBLIC_FAULT_TRIGGER point=20 resource=descriptor_pool simulated=1 submitted=0 result=-3
+BACKEND_PUBLIC_FAULT_RELEASE point=20 reached=20 hit=1 submitted=0 device=1 buffers=5 memories=5 maps=5 descriptor_sets=0 shaders=0 pipelines=0 descriptor_pool=1 pipeline_layout=1 descriptor_layout=1 fence=0 command_buffer=0 command_pool=0 host_arrays=4 wait_idle=0 completed=1 cleanup_result=0 simulated=1
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=-3 released=1 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=40
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_VULKAN_PROGRAM_READY index=0 queue_family=0 api=1.0 stages=4 buffers=5 descriptor_sets=4 descriptors=8 shader_modules=4 pipelines=4 local=32 groups=2 program_validated=1 dynamic_resources=1 features=0 extensions=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_DISPATCH_PASS stages=4 buffers=5 words=64 dispatches=4 verified_words=256 dependency_barriers=3 descriptors=8 coherent_input=1 noncoherent_outputs=0 password_inputs=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=0 released=1 scheduled=0
+BACKEND_PUBLIC_FAULT_RECOVERY_PASS point=20 injected=1 new_device=1 dispatches=4 verified_words=256 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=41
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_PUBLIC_FAULT_TRIGGER point=21 resource=descriptor_set simulated=1 submitted=0 result=-3
+BACKEND_PUBLIC_FAULT_RELEASE point=21 reached=21 hit=1 submitted=0 device=1 buffers=5 memories=5 maps=5 descriptor_sets=1 shaders=0 pipelines=0 descriptor_pool=1 pipeline_layout=1 descriptor_layout=1 fence=0 command_buffer=0 command_pool=0 host_arrays=4 wait_idle=0 completed=1 cleanup_result=0 simulated=1
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=-3 released=1 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=42
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_VULKAN_PROGRAM_READY index=0 queue_family=0 api=1.0 stages=4 buffers=5 descriptor_sets=4 descriptors=8 shader_modules=4 pipelines=4 local=32 groups=2 program_validated=1 dynamic_resources=1 features=0 extensions=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_DISPATCH_PASS stages=4 buffers=5 words=64 dispatches=4 verified_words=256 dependency_barriers=3 descriptors=8 coherent_input=1 noncoherent_outputs=0 password_inputs=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=0 released=1 scheduled=0
+BACKEND_PUBLIC_FAULT_RECOVERY_PASS point=21 injected=1 new_device=1 dispatches=4 verified_words=256 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=43
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_PUBLIC_FAULT_TRIGGER point=22 resource=shader simulated=1 submitted=0 result=-3
+BACKEND_PUBLIC_FAULT_RELEASE point=22 reached=22 hit=1 submitted=0 device=1 buffers=5 memories=5 maps=5 descriptor_sets=1 shaders=1 pipelines=0 descriptor_pool=1 pipeline_layout=1 descriptor_layout=1 fence=0 command_buffer=0 command_pool=0 host_arrays=4 wait_idle=0 completed=1 cleanup_result=0 simulated=1
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=-3 released=1 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=44
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_VULKAN_PROGRAM_READY index=0 queue_family=0 api=1.0 stages=4 buffers=5 descriptor_sets=4 descriptors=8 shader_modules=4 pipelines=4 local=32 groups=2 program_validated=1 dynamic_resources=1 features=0 extensions=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_DISPATCH_PASS stages=4 buffers=5 words=64 dispatches=4 verified_words=256 dependency_barriers=3 descriptors=8 coherent_input=1 noncoherent_outputs=0 password_inputs=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=0 released=1 scheduled=0
+BACKEND_PUBLIC_FAULT_RECOVERY_PASS point=22 injected=1 new_device=1 dispatches=4 verified_words=256 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=45
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_PUBLIC_FAULT_TRIGGER point=23 resource=pipeline simulated=1 submitted=0 result=-3
+BACKEND_PUBLIC_FAULT_RELEASE point=23 reached=23 hit=1 submitted=0 device=1 buffers=5 memories=5 maps=5 descriptor_sets=1 shaders=1 pipelines=1 descriptor_pool=1 pipeline_layout=1 descriptor_layout=1 fence=0 command_buffer=0 command_pool=0 host_arrays=4 wait_idle=0 completed=1 cleanup_result=0 simulated=1
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=-3 released=1 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=46
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_VULKAN_PROGRAM_READY index=0 queue_family=0 api=1.0 stages=4 buffers=5 descriptor_sets=4 descriptors=8 shader_modules=4 pipelines=4 local=32 groups=2 program_validated=1 dynamic_resources=1 features=0 extensions=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_DISPATCH_PASS stages=4 buffers=5 words=64 dispatches=4 verified_words=256 dependency_barriers=3 descriptors=8 coherent_input=1 noncoherent_outputs=0 password_inputs=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=0 released=1 scheduled=0
+BACKEND_PUBLIC_FAULT_RECOVERY_PASS point=23 injected=1 new_device=1 dispatches=4 verified_words=256 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=47
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_PUBLIC_FAULT_TRIGGER point=24 resource=descriptor_set simulated=1 submitted=0 result=-3
+BACKEND_PUBLIC_FAULT_RELEASE point=24 reached=24 hit=1 submitted=0 device=1 buffers=5 memories=5 maps=5 descriptor_sets=2 shaders=1 pipelines=1 descriptor_pool=1 pipeline_layout=1 descriptor_layout=1 fence=0 command_buffer=0 command_pool=0 host_arrays=4 wait_idle=0 completed=1 cleanup_result=0 simulated=1
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=-3 released=1 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=48
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_VULKAN_PROGRAM_READY index=0 queue_family=0 api=1.0 stages=4 buffers=5 descriptor_sets=4 descriptors=8 shader_modules=4 pipelines=4 local=32 groups=2 program_validated=1 dynamic_resources=1 features=0 extensions=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_DISPATCH_PASS stages=4 buffers=5 words=64 dispatches=4 verified_words=256 dependency_barriers=3 descriptors=8 coherent_input=1 noncoherent_outputs=0 password_inputs=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=0 released=1 scheduled=0
+BACKEND_PUBLIC_FAULT_RECOVERY_PASS point=24 injected=1 new_device=1 dispatches=4 verified_words=256 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=49
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_PUBLIC_FAULT_TRIGGER point=25 resource=shader simulated=1 submitted=0 result=-3
+BACKEND_PUBLIC_FAULT_RELEASE point=25 reached=25 hit=1 submitted=0 device=1 buffers=5 memories=5 maps=5 descriptor_sets=2 shaders=2 pipelines=1 descriptor_pool=1 pipeline_layout=1 descriptor_layout=1 fence=0 command_buffer=0 command_pool=0 host_arrays=4 wait_idle=0 completed=1 cleanup_result=0 simulated=1
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=-3 released=1 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=50
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_VULKAN_PROGRAM_READY index=0 queue_family=0 api=1.0 stages=4 buffers=5 descriptor_sets=4 descriptors=8 shader_modules=4 pipelines=4 local=32 groups=2 program_validated=1 dynamic_resources=1 features=0 extensions=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_DISPATCH_PASS stages=4 buffers=5 words=64 dispatches=4 verified_words=256 dependency_barriers=3 descriptors=8 coherent_input=1 noncoherent_outputs=0 password_inputs=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=0 released=1 scheduled=0
+BACKEND_PUBLIC_FAULT_RECOVERY_PASS point=25 injected=1 new_device=1 dispatches=4 verified_words=256 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=51
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_PUBLIC_FAULT_TRIGGER point=26 resource=pipeline simulated=1 submitted=0 result=-3
+BACKEND_PUBLIC_FAULT_RELEASE point=26 reached=26 hit=1 submitted=0 device=1 buffers=5 memories=5 maps=5 descriptor_sets=2 shaders=2 pipelines=2 descriptor_pool=1 pipeline_layout=1 descriptor_layout=1 fence=0 command_buffer=0 command_pool=0 host_arrays=4 wait_idle=0 completed=1 cleanup_result=0 simulated=1
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=-3 released=1 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=52
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_VULKAN_PROGRAM_READY index=0 queue_family=0 api=1.0 stages=4 buffers=5 descriptor_sets=4 descriptors=8 shader_modules=4 pipelines=4 local=32 groups=2 program_validated=1 dynamic_resources=1 features=0 extensions=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_DISPATCH_PASS stages=4 buffers=5 words=64 dispatches=4 verified_words=256 dependency_barriers=3 descriptors=8 coherent_input=1 noncoherent_outputs=0 password_inputs=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=0 released=1 scheduled=0
+BACKEND_PUBLIC_FAULT_RECOVERY_PASS point=26 injected=1 new_device=1 dispatches=4 verified_words=256 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=53
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_PUBLIC_FAULT_TRIGGER point=27 resource=descriptor_set simulated=1 submitted=0 result=-3
+BACKEND_PUBLIC_FAULT_RELEASE point=27 reached=27 hit=1 submitted=0 device=1 buffers=5 memories=5 maps=5 descriptor_sets=3 shaders=2 pipelines=2 descriptor_pool=1 pipeline_layout=1 descriptor_layout=1 fence=0 command_buffer=0 command_pool=0 host_arrays=4 wait_idle=0 completed=1 cleanup_result=0 simulated=1
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=-3 released=1 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=54
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_VULKAN_PROGRAM_READY index=0 queue_family=0 api=1.0 stages=4 buffers=5 descriptor_sets=4 descriptors=8 shader_modules=4 pipelines=4 local=32 groups=2 program_validated=1 dynamic_resources=1 features=0 extensions=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_DISPATCH_PASS stages=4 buffers=5 words=64 dispatches=4 verified_words=256 dependency_barriers=3 descriptors=8 coherent_input=1 noncoherent_outputs=0 password_inputs=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=0 released=1 scheduled=0
+BACKEND_PUBLIC_FAULT_RECOVERY_PASS point=27 injected=1 new_device=1 dispatches=4 verified_words=256 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=55
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_PUBLIC_FAULT_TRIGGER point=28 resource=shader simulated=1 submitted=0 result=-3
+BACKEND_PUBLIC_FAULT_RELEASE point=28 reached=28 hit=1 submitted=0 device=1 buffers=5 memories=5 maps=5 descriptor_sets=3 shaders=3 pipelines=2 descriptor_pool=1 pipeline_layout=1 descriptor_layout=1 fence=0 command_buffer=0 command_pool=0 host_arrays=4 wait_idle=0 completed=1 cleanup_result=0 simulated=1
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=-3 released=1 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=56
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_VULKAN_PROGRAM_READY index=0 queue_family=0 api=1.0 stages=4 buffers=5 descriptor_sets=4 descriptors=8 shader_modules=4 pipelines=4 local=32 groups=2 program_validated=1 dynamic_resources=1 features=0 extensions=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_DISPATCH_PASS stages=4 buffers=5 words=64 dispatches=4 verified_words=256 dependency_barriers=3 descriptors=8 coherent_input=1 noncoherent_outputs=0 password_inputs=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=0 released=1 scheduled=0
+BACKEND_PUBLIC_FAULT_RECOVERY_PASS point=28 injected=1 new_device=1 dispatches=4 verified_words=256 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=57
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_PUBLIC_FAULT_TRIGGER point=29 resource=pipeline simulated=1 submitted=0 result=-3
+BACKEND_PUBLIC_FAULT_RELEASE point=29 reached=29 hit=1 submitted=0 device=1 buffers=5 memories=5 maps=5 descriptor_sets=3 shaders=3 pipelines=3 descriptor_pool=1 pipeline_layout=1 descriptor_layout=1 fence=0 command_buffer=0 command_pool=0 host_arrays=4 wait_idle=0 completed=1 cleanup_result=0 simulated=1
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=-3 released=1 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=58
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_VULKAN_PROGRAM_READY index=0 queue_family=0 api=1.0 stages=4 buffers=5 descriptor_sets=4 descriptors=8 shader_modules=4 pipelines=4 local=32 groups=2 program_validated=1 dynamic_resources=1 features=0 extensions=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_DISPATCH_PASS stages=4 buffers=5 words=64 dispatches=4 verified_words=256 dependency_barriers=3 descriptors=8 coherent_input=1 noncoherent_outputs=0 password_inputs=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=0 released=1 scheduled=0
+BACKEND_PUBLIC_FAULT_RECOVERY_PASS point=29 injected=1 new_device=1 dispatches=4 verified_words=256 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=59
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_PUBLIC_FAULT_TRIGGER point=30 resource=descriptor_set simulated=1 submitted=0 result=-3
+BACKEND_PUBLIC_FAULT_RELEASE point=30 reached=30 hit=1 submitted=0 device=1 buffers=5 memories=5 maps=5 descriptor_sets=4 shaders=3 pipelines=3 descriptor_pool=1 pipeline_layout=1 descriptor_layout=1 fence=0 command_buffer=0 command_pool=0 host_arrays=4 wait_idle=0 completed=1 cleanup_result=0 simulated=1
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=-3 released=1 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=60
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_VULKAN_PROGRAM_READY index=0 queue_family=0 api=1.0 stages=4 buffers=5 descriptor_sets=4 descriptors=8 shader_modules=4 pipelines=4 local=32 groups=2 program_validated=1 dynamic_resources=1 features=0 extensions=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_DISPATCH_PASS stages=4 buffers=5 words=64 dispatches=4 verified_words=256 dependency_barriers=3 descriptors=8 coherent_input=1 noncoherent_outputs=0 password_inputs=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=0 released=1 scheduled=0
+BACKEND_PUBLIC_FAULT_RECOVERY_PASS point=30 injected=1 new_device=1 dispatches=4 verified_words=256 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=61
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_PUBLIC_FAULT_TRIGGER point=31 resource=shader simulated=1 submitted=0 result=-3
+BACKEND_PUBLIC_FAULT_RELEASE point=31 reached=31 hit=1 submitted=0 device=1 buffers=5 memories=5 maps=5 descriptor_sets=4 shaders=4 pipelines=3 descriptor_pool=1 pipeline_layout=1 descriptor_layout=1 fence=0 command_buffer=0 command_pool=0 host_arrays=4 wait_idle=0 completed=1 cleanup_result=0 simulated=1
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=-3 released=1 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=62
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_VULKAN_PROGRAM_READY index=0 queue_family=0 api=1.0 stages=4 buffers=5 descriptor_sets=4 descriptors=8 shader_modules=4 pipelines=4 local=32 groups=2 program_validated=1 dynamic_resources=1 features=0 extensions=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_DISPATCH_PASS stages=4 buffers=5 words=64 dispatches=4 verified_words=256 dependency_barriers=3 descriptors=8 coherent_input=1 noncoherent_outputs=0 password_inputs=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=0 released=1 scheduled=0
+BACKEND_PUBLIC_FAULT_RECOVERY_PASS point=31 injected=1 new_device=1 dispatches=4 verified_words=256 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=63
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_PUBLIC_FAULT_TRIGGER point=32 resource=pipeline simulated=1 submitted=0 result=-3
+BACKEND_PUBLIC_FAULT_RELEASE point=32 reached=32 hit=1 submitted=0 device=1 buffers=5 memories=5 maps=5 descriptor_sets=4 shaders=4 pipelines=4 descriptor_pool=1 pipeline_layout=1 descriptor_layout=1 fence=0 command_buffer=0 command_pool=0 host_arrays=4 wait_idle=0 completed=1 cleanup_result=0 simulated=1
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=-3 released=1 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=64
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_VULKAN_PROGRAM_READY index=0 queue_family=0 api=1.0 stages=4 buffers=5 descriptor_sets=4 descriptors=8 shader_modules=4 pipelines=4 local=32 groups=2 program_validated=1 dynamic_resources=1 features=0 extensions=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_DISPATCH_PASS stages=4 buffers=5 words=64 dispatches=4 verified_words=256 dependency_barriers=3 descriptors=8 coherent_input=1 noncoherent_outputs=0 password_inputs=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=0 released=1 scheduled=0
+BACKEND_PUBLIC_FAULT_RECOVERY_PASS point=32 injected=1 new_device=1 dispatches=4 verified_words=256 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=65
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_PUBLIC_FAULT_TRIGGER point=33 resource=command_pool simulated=1 submitted=0 result=-3
+BACKEND_PUBLIC_FAULT_RELEASE point=33 reached=33 hit=1 submitted=0 device=1 buffers=5 memories=5 maps=5 descriptor_sets=4 shaders=4 pipelines=4 descriptor_pool=1 pipeline_layout=1 descriptor_layout=1 fence=0 command_buffer=0 command_pool=1 host_arrays=4 wait_idle=0 completed=1 cleanup_result=0 simulated=1
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=-3 released=1 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=66
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_VULKAN_PROGRAM_READY index=0 queue_family=0 api=1.0 stages=4 buffers=5 descriptor_sets=4 descriptors=8 shader_modules=4 pipelines=4 local=32 groups=2 program_validated=1 dynamic_resources=1 features=0 extensions=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_DISPATCH_PASS stages=4 buffers=5 words=64 dispatches=4 verified_words=256 dependency_barriers=3 descriptors=8 coherent_input=1 noncoherent_outputs=0 password_inputs=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=0 released=1 scheduled=0
+BACKEND_PUBLIC_FAULT_RECOVERY_PASS point=33 injected=1 new_device=1 dispatches=4 verified_words=256 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=67
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_PUBLIC_FAULT_TRIGGER point=34 resource=command_buffer simulated=1 submitted=0 result=-3
+BACKEND_PUBLIC_FAULT_RELEASE point=34 reached=34 hit=1 submitted=0 device=1 buffers=5 memories=5 maps=5 descriptor_sets=4 shaders=4 pipelines=4 descriptor_pool=1 pipeline_layout=1 descriptor_layout=1 fence=0 command_buffer=1 command_pool=1 host_arrays=4 wait_idle=0 completed=1 cleanup_result=0 simulated=1
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=-3 released=1 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=68
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_VULKAN_PROGRAM_READY index=0 queue_family=0 api=1.0 stages=4 buffers=5 descriptor_sets=4 descriptors=8 shader_modules=4 pipelines=4 local=32 groups=2 program_validated=1 dynamic_resources=1 features=0 extensions=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_DISPATCH_PASS stages=4 buffers=5 words=64 dispatches=4 verified_words=256 dependency_barriers=3 descriptors=8 coherent_input=1 noncoherent_outputs=0 password_inputs=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=0 released=1 scheduled=0
+BACKEND_PUBLIC_FAULT_RECOVERY_PASS point=34 injected=1 new_device=1 dispatches=4 verified_words=256 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=69
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_PUBLIC_FAULT_TRIGGER point=35 resource=fence simulated=1 submitted=0 result=-3
+BACKEND_PUBLIC_FAULT_RELEASE point=35 reached=35 hit=1 submitted=0 device=1 buffers=5 memories=5 maps=5 descriptor_sets=4 shaders=4 pipelines=4 descriptor_pool=1 pipeline_layout=1 descriptor_layout=1 fence=1 command_buffer=1 command_pool=1 host_arrays=4 wait_idle=0 completed=1 cleanup_result=0 simulated=1
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=-3 released=1 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=70
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_VULKAN_PROGRAM_READY index=0 queue_family=0 api=1.0 stages=4 buffers=5 descriptor_sets=4 descriptors=8 shader_modules=4 pipelines=4 local=32 groups=2 program_validated=1 dynamic_resources=1 features=0 extensions=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_DISPATCH_PASS stages=4 buffers=5 words=64 dispatches=4 verified_words=256 dependency_barriers=3 descriptors=8 coherent_input=1 noncoherent_outputs=0 password_inputs=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=0 released=1 scheduled=0
+BACKEND_PUBLIC_FAULT_RECOVERY_PASS point=35 injected=1 new_device=1 dispatches=4 verified_words=256 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=71
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_VULKAN_PROGRAM_READY index=0 queue_family=0 api=1.0 stages=4 buffers=5 descriptor_sets=4 descriptors=8 shader_modules=4 pipelines=4 local=32 groups=2 program_validated=1 dynamic_resources=1 features=0 extensions=0 scheduled=0
+BACKEND_PUBLIC_FAULT_TRIGGER point=36 resource=before_submit simulated=1 submitted=0 result=-3
+BACKEND_PUBLIC_FAULT_RELEASE point=36 reached=36 hit=1 submitted=0 device=1 buffers=5 memories=5 maps=5 descriptor_sets=4 shaders=4 pipelines=4 descriptor_pool=1 pipeline_layout=1 descriptor_layout=1 fence=1 command_buffer=1 command_pool=1 host_arrays=4 wait_idle=0 completed=1 cleanup_result=0 simulated=1
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=-3 released=1 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=72
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_VULKAN_PROGRAM_READY index=0 queue_family=0 api=1.0 stages=4 buffers=5 descriptor_sets=4 descriptors=8 shader_modules=4 pipelines=4 local=32 groups=2 program_validated=1 dynamic_resources=1 features=0 extensions=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_DISPATCH_PASS stages=4 buffers=5 words=64 dispatches=4 verified_words=256 dependency_barriers=3 descriptors=8 coherent_input=1 noncoherent_outputs=0 password_inputs=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=0 released=1 scheduled=0
+BACKEND_PUBLIC_FAULT_RECOVERY_PASS point=36 injected=1 new_device=1 dispatches=4 verified_words=256 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=73
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_VULKAN_PROGRAM_READY index=0 queue_family=0 api=1.0 stages=4 buffers=5 descriptor_sets=4 descriptors=8 shader_modules=4 pipelines=4 local=32 groups=2 program_validated=1 dynamic_resources=1 features=0 extensions=0 scheduled=0
+BACKEND_PUBLIC_FAULT_TRIGGER point=37 resource=after_submit simulated=1 submitted=1 result=-3
+BACKEND_PUBLIC_FAULT_RELEASE point=37 reached=37 hit=1 submitted=1 device=1 buffers=5 memories=5 maps=5 descriptor_sets=4 shaders=4 pipelines=4 descriptor_pool=1 pipeline_layout=1 descriptor_layout=1 fence=1 command_buffer=1 command_pool=1 host_arrays=4 wait_idle=0 completed=1 cleanup_result=0 simulated=1
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=-3 released=1 scheduled=0
+SELECT_DEVICE_API=1.0 reported_minor=4 instance_minor=0 cap=1.1
+VULKAN_CANDIDATE index=0 name=Mali-G715 vendor=0x13b5 device=0xb8a20000 api=1.4.305 driver=0x0d802000
+ACCEPT_COMPUTE index=0 queue_family=0 local_max=1024 invocations_max=1024 groups_max=4294967295 shared_max=32768 storage_range_max=2147483648 descriptor_max=8388608 non_coherent_atom=64
+DEVICE_CATALOG_SELECT index=0 queue_family=0 effective_api=1.0 selections=74
+BACKEND_VULKAN_PROGRAM_ACCEPT stages=4 buffers=5 bytes=256 descriptors_per_stage=2
+BACKEND_VULKAN_PROGRAM_READY index=0 queue_family=0 api=1.0 stages=4 buffers=5 descriptor_sets=4 descriptors=8 shader_modules=4 pipelines=4 local=32 groups=2 program_validated=1 dynamic_resources=1 features=0 extensions=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_DISPATCH_PASS stages=4 buffers=5 words=64 dispatches=4 verified_words=256 dependency_barriers=3 descriptors=8 coherent_input=1 noncoherent_outputs=0 password_inputs=0 scheduled=0
+BACKEND_VULKAN_PROGRAM_CLOSE index=0 stages=4 result=0 released=1 scheduled=0
+BACKEND_PUBLIC_FAULT_RECOVERY_PASS point=37 injected=1 new_device=1 dispatches=4 verified_words=256 scheduled=0
+DEVICE_CATALOG_CLOSE devices=1 selections=74
+BACKEND_PUBLIC_FAULT_DIAGNOSTIC_PASS api=1.0 checkpoints=37 injected=37 recovered_devices=37 recovered_dispatches=148 verified_words=9472 abandoned_before_submit=1 abandoned_after_submit=1 real_driver_losses=0 password_inputs=0 scheduled=0

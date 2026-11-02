@@ -1,0 +1,282 @@
+{
+  "date": "2026-11-02",
+  "scope": "Explicit host-controlled Vulkan four-stage resource fault checkpoints and working same-instance recovery on physical Adreno and Mali Android GPUs",
+  "minimum_android_api": 24,
+  "requested_vulkan_apis": [
+    "1.0",
+    "1.1"
+  ],
+  "full_hashcat_requested_api": "1.0",
+  "physical_gpu_profiles": [
+    "redmagic-arm64",
+    "redmagic-armv7",
+    "pixel-arm64"
+  ],
+  "checkpoints": 37,
+  "checkpoints_tested_on_real_gpu": true,
+  "faults_are_test_control_not_driver_failures": true,
+  "actual_driver_device_losses": 0,
+  "actual_failed_queue_submissions_observed": 0,
+  "actual_failed_fence_waits_observed": 0,
+  "after_submit_real_queue_successes": 6,
+  "after_submit_idle_succeeded": true,
+  "hashcat_info_mode_only": true,
+  "hashcat_hashing_scheduler_connected": false,
+  "cryptographic_spirv_kernels_ported": 0,
+  "password_or_hash_inputs_processed": false,
+  "normal_opencl_discovery_preserved": true,
+  "source_hash_policy": "CRLF normalized to LF",
+  "source_sha256": {
+    "source/src/backend.c": "92d2202900abf410e485728e4da5384266220bddd25640276d474766a7ab782b",
+    "source/src/backend_vulkan.c": "799a73573ea33016a5238a1a64e00a18dddefe4d714716de6bf89626f4206354",
+    "source/src/backend_vulkan_session.c": "9b73ddac998abee95bb5509a5956668a592fd5b62079e95d3480358f2b143747",
+    "source/src/backend_vulkan_kernel.c": "1f272be2e7b3dc2523e53aafc49a8a4906661c46140adbc02c3d670e3137a02d",
+    "source/src/backend_vulkan_program.c": "f500bb60f93b88ecf362c11874fd2d440fb0cd2a1b5c2ee891588ea0c70bd5e4",
+    "source/src/Makefile": "8e84be3bc01e967462d6a1817264ecc5d99f1a4434bfa6bc6cb637f85ef47af9",
+    "source/include/backend_vulkan.h": "563be5227e892b1d4a2425f656d3afb2777bef694d416e8fb79836c8f58c5e65",
+    "source/include/backend_vulkan_kernel.h": "1b5bce897230b272e6b842d44af44ac58736b2fa256dde54a388661c567a4341",
+    "source/include/backend_vulkan_program.h": "a6005056fb7df7a9f7dea572e33e901dde3c7d419b0a9525a35ba5e9bc690693",
+    "source/include/backend_vulkan_public_spirv.h": "77ceebcd882df888f7c324a0ebd5deb29c1e482fa2872bf5a6b1d0ebc34ea316",
+    "source/include/backend_vulkan_public_stage2_spirv.h": "76056c2a69c9219708a76d321ef26aeb2fe90ce67f44bd81b456d3dc08ce10e1",
+    "source/include/types.h": "aedb58a085178b1434e897f612792646e3bbeddcc9be0c7021c52f8bde006a20",
+    "tools/vulkan-backend-public-kernel.comp": "8a495c0e6c87441350bf40e9383aa82e07a8ae1cac227daadab3e5186b9b0791",
+    "tools/vulkan-backend-public-stage2.comp": "afb4a7d9d31d8aec9500e03e096b0d658e74077fcef6db88073d899af469f05b",
+    "tools/generate-vulkan-backend-public-kernel.py": "e6421c53644d5f7bcd8d3aded27c5186f422e902fbe567966db26a9cad5b0351",
+    "tools/vulkan-backend-public-fault-diagnostic.c": "3a4c15523bf06774cf3fd6c3ebf2b00f141c9252212b06f0f3eba48ca7f26150",
+    "tools/build-vulkan-backend-public-fault.ps1": "679e7634eda2c2db6cec451881e38a24de916bbab4033db2df713e218215dc23",
+    "tools/run-vulkan-backend-public-fault.ps1": "fdb796cc315a5a7ba7c3f2a3dc27a933246cd71949e00188af6b6cbd6aa9f112",
+    "tools/run-vulkan-hashcat-public-fault.ps1": "626a9cd7134ed7b58cb1586f5ae968ce8a9f1a9fa99a6b4909cc732fa46b63f4",
+    "tools/archive-vulkan-backend-public-fault-evidence.py": "3e2144b342204c18901c2252511053408d2d03db7c2a3b44b6f52bf0bf9a4c48",
+    "tools/test-vulkan-backend-public-fault-evidence.py": "e7cc9df900ae057a1c0684b5ee095dc948e2fbbbd7cc2056f638ad31f41fb2c5",
+    "tools/vulkan-core10-device-catalog.c": "7e454956b965356b1418e8730913b92304b78bab20b1cd3d510a90e19cc6ef6b",
+    "tools/vulkan-core10-device-catalog.h": "8c963d3b6dfaee7137a2d4269114448ec0521d8ee548e7daa83f273e2dde9c05",
+    "tools/vulkan-core11-policy.c": "ac4fd1bf17a4e61d801de94ee51f6df920e9ce1b9285168e94f2ea412305ede8",
+    "tools/vulkan-core11-policy.h": "e56989252c758b7e8289067540b7d04b9e534d85ae56a05e3f3a4d465662b0fa",
+    "tools/vulkan-auto-config.c": "7dda45d969c6fd092c31821cc8022f69a4dd8b748e852fcb7a2bd23552a571dd",
+    "tools/vulkan-auto-config.h": "1329f5b833bd8a0ffed9e3eadddead210665a1e8fba2f051e6f4259d63385086",
+    "scripts/BUILD.ps1": "40ef1f91ee731cd660da43427885c93b1e61312c5fd655cc9b7b711db542925f"
+  },
+  "spirv_modules": {
+    "public_u32_transform": {
+      "bytes": 1304,
+      "words": 326,
+      "sha256": "bd1f85baee40cb3c4db70ddd4a1e86af8428521951a8363445ef95d1b92f77a9"
+    },
+    "public_u32_rotate": {
+      "bytes": 1452,
+      "words": 363,
+      "sha256": "bb1ce39b44be765920bbf52fd7db66229e7b83a49b1487bdc64e1e190614e0a5"
+    }
+  },
+  "native_artifact_sha256": {
+    "arm64": {
+      "diagnostic": "dae4bf25ada3491e757df02000086fba8a5ab1e6cea0356188147762f0f7fddb",
+      "production_backend_object": "d604bd84c029fc422bf36da04edabaa718ec623747a040991240d9bca7e6f506"
+    },
+    "armv7": {
+      "diagnostic": "bc066d09f033a6afed69f3055d8956786bc8bc93b1ffbdc79e762f6d2261c7f5",
+      "production_backend_object": "05433113be1514566d8cca463a3e50a633c4cfe7bbc9fa61585e388bfdb11b1a"
+    }
+  },
+  "full_hashcat_artifact_sha256": {
+    "arm64-v8a": {
+      "frontend": "6c8d303088a0c2f36ec88eba85604766235711443240a9eb8344147670210d68",
+      "module_00000": "373b743ea4078f920077ccecdc203313739e948e40bfa648ae5cffc1068d98ea"
+    },
+    "armeabi-v7a": {
+      "frontend": "7e5043aed711bd81d1f477f3f30c62613d7e9e346ad0e2bb1fe83d76a09bcc01",
+      "module_00000": "7bd6c03e72d4a52a5c8124f7cc1ec7100541c4af4944b4ccbf0459e3f3ceb1e8"
+    }
+  },
+  "native_runs": [
+    {
+      "device": "redmagic-arm64",
+      "abi": "arm64-v8a",
+      "requested_api": "1.0",
+      "file": "redmagic-arm64-1.0.log",
+      "sha256": "64f110b1e2dde442c1b23de343da35995edb8d019d02d6c64759e648d60c2a7d",
+      "native_exit_code": 0,
+      "real_instances": 1,
+      "simulated_error_checkpoints": 37,
+      "partial_resource_jobs_released": 37,
+      "new_working_four_stage_devices": 37,
+      "recovered_real_dispatches": 148,
+      "cpu_verified_public_words": 9472,
+      "after_submit_real_queue_successes": 1,
+      "after_submit_unchecked_dispatches": 4
+    },
+    {
+      "device": "redmagic-arm64",
+      "abi": "arm64-v8a",
+      "requested_api": "1.1",
+      "file": "redmagic-arm64-1.1.log",
+      "sha256": "124b5f69f56bab160b1e3ec36e87036af7f7289269c8935e0096e4fc3d6c3208",
+      "native_exit_code": 0,
+      "real_instances": 1,
+      "simulated_error_checkpoints": 37,
+      "partial_resource_jobs_released": 37,
+      "new_working_four_stage_devices": 37,
+      "recovered_real_dispatches": 148,
+      "cpu_verified_public_words": 9472,
+      "after_submit_real_queue_successes": 1,
+      "after_submit_unchecked_dispatches": 4
+    },
+    {
+      "device": "redmagic-armv7",
+      "abi": "armeabi-v7a",
+      "requested_api": "1.0",
+      "file": "redmagic-armv7-1.0.log",
+      "sha256": "5bad858618a956fe4df4aad6ce7c5b3351f7778d1e2f5d22ff99e2ceada9c7b6",
+      "native_exit_code": 0,
+      "real_instances": 1,
+      "simulated_error_checkpoints": 37,
+      "partial_resource_jobs_released": 37,
+      "new_working_four_stage_devices": 37,
+      "recovered_real_dispatches": 148,
+      "cpu_verified_public_words": 9472,
+      "after_submit_real_queue_successes": 1,
+      "after_submit_unchecked_dispatches": 4
+    },
+    {
+      "device": "redmagic-armv7",
+      "abi": "armeabi-v7a",
+      "requested_api": "1.1",
+      "file": "redmagic-armv7-1.1.log",
+      "sha256": "5ac05924c51fc89db6530bbb51cc9810cbaf135b98b6d897a4d4bd8e1526220c",
+      "native_exit_code": 0,
+      "real_instances": 1,
+      "simulated_error_checkpoints": 37,
+      "partial_resource_jobs_released": 37,
+      "new_working_four_stage_devices": 37,
+      "recovered_real_dispatches": 148,
+      "cpu_verified_public_words": 9472,
+      "after_submit_real_queue_successes": 1,
+      "after_submit_unchecked_dispatches": 4
+    },
+    {
+      "device": "pixel-arm64",
+      "abi": "arm64-v8a",
+      "requested_api": "1.0",
+      "file": "pixel-arm64-1.0.log",
+      "sha256": "2e706af77ee015a38e1194eb2a4f7bb5ab3e53f257da3696a4168885bc7a5d94",
+      "native_exit_code": 0,
+      "real_instances": 1,
+      "simulated_error_checkpoints": 37,
+      "partial_resource_jobs_released": 37,
+      "new_working_four_stage_devices": 37,
+      "recovered_real_dispatches": 148,
+      "cpu_verified_public_words": 9472,
+      "after_submit_real_queue_successes": 1,
+      "after_submit_unchecked_dispatches": 4
+    },
+    {
+      "device": "pixel-arm64",
+      "abi": "arm64-v8a",
+      "requested_api": "1.1",
+      "file": "pixel-arm64-1.1.log",
+      "sha256": "9c97f9d17a523534b7ce83ebb46bd4bb2b4ec825ac03861589be52c146135b2b",
+      "native_exit_code": 0,
+      "real_instances": 1,
+      "simulated_error_checkpoints": 37,
+      "partial_resource_jobs_released": 37,
+      "new_working_four_stage_devices": 37,
+      "recovered_real_dispatches": 148,
+      "cpu_verified_public_words": 9472,
+      "after_submit_real_queue_successes": 1,
+      "after_submit_unchecked_dispatches": 4
+    }
+  ],
+  "full_hashcat_info_runs": [
+    {
+      "device": "redmagic-arm64",
+      "abi": "arm64-v8a",
+      "file": "redmagic-arm64-hashcat-fault-info.log",
+      "sha256": "8ffa8cc26c07f0dd2595375609c0e88613a4a6a5af8034476b14419a1d023630",
+      "native_exit_code": 0,
+      "real_instances": 1,
+      "one_stage_dispatches": 1,
+      "two_stage_dispatches": 2,
+      "four_stage_dispatches": 4,
+      "cpu_verified_public_words": 448,
+      "fault_injection_enabled": false,
+      "ordinary_opencl_gpu_enumeration": true,
+      "hashcat_hash_scheduler_enabled": false
+    },
+    {
+      "device": "redmagic-armv7",
+      "abi": "armeabi-v7a",
+      "file": "redmagic-armv7-hashcat-fault-info.log",
+      "sha256": "8807a62f60ef103abb5f452d22e046696d35f40852b15070ffc07e77cf653ad1",
+      "native_exit_code": 0,
+      "real_instances": 1,
+      "one_stage_dispatches": 1,
+      "two_stage_dispatches": 2,
+      "four_stage_dispatches": 4,
+      "cpu_verified_public_words": 448,
+      "fault_injection_enabled": false,
+      "ordinary_opencl_gpu_enumeration": true,
+      "hashcat_hash_scheduler_enabled": false
+    },
+    {
+      "device": "pixel-arm64",
+      "abi": "arm64-v8a",
+      "file": "pixel-arm64-hashcat-fault-info.log",
+      "sha256": "c4ff75a38ff8e1c03eadc156c9e172c1114cbc86025babcd205cd9c7fea7e13f",
+      "native_exit_code": 0,
+      "real_instances": 1,
+      "one_stage_dispatches": 1,
+      "two_stage_dispatches": 2,
+      "four_stage_dispatches": 4,
+      "cpu_verified_public_words": 448,
+      "fault_injection_enabled": false,
+      "ordinary_opencl_gpu_enumeration": true,
+      "hashcat_hash_scheduler_enabled": false
+    }
+  ],
+  "invalid_cli": [
+    {
+      "device": "redmagic-arm64",
+      "abi": "arm64-v8a",
+      "file": "redmagic-arm64-negative-controls.log",
+      "sha256": "f9e5cc22d8d7618d13060bf917a696e46aacb9ee55f009e7221b19b8992ce34c",
+      "malformed_cli_rejections": 3
+    },
+    {
+      "device": "redmagic-armv7",
+      "abi": "armeabi-v7a",
+      "file": "redmagic-armv7-negative-controls.log",
+      "sha256": "da153f60309b60b1bd2388e3c073da78187bbe0b65342221dd61dd0f8f979d17",
+      "malformed_cli_rejections": 3
+    },
+    {
+      "device": "pixel-arm64",
+      "abi": "arm64-v8a",
+      "file": "pixel-arm64-negative-controls.log",
+      "sha256": "f9e5cc22d8d7618d13060bf917a696e46aacb9ee55f009e7221b19b8992ce34c",
+      "malformed_cli_rejections": 3
+    }
+  ],
+  "totals": {
+    "real_native_android_processes": 6,
+    "full_hashcat_info_processes": 3,
+    "controlled_resource_failures": 222,
+    "released_partial_jobs": 222,
+    "successful_same_instance_recoveries": 222,
+    "verified_recovery_gpu_dispatches": 888,
+    "verified_recovery_public_words": 56832,
+    "unverified_after_submit_gpu_dispatches": 24,
+    "full_info_verified_gpu_dispatches": 21,
+    "full_info_verified_public_words": 1344,
+    "all_cpu_verified_gpu_dispatches": 909,
+    "all_cpu_verified_public_words": 58176,
+    "malformed_cli_requests_rejected": 9
+  },
+  "capture_policy": "Native ADB stdout/stderr is saved by the PowerShell runner as UTF-8 LF-only text. Archived evidence is byte-identical to the saved runner transcript, not the raw ADB stream.",
+  "limitations": [
+    "All 37 failures are intentional post-acquisition or submit-boundary host errors labeled simulated=1. No actual VkResult driver failure is simulated or claimed.",
+    "The after-submit control calls real vkQueueSubmit and waits for real device idle during cleanup; its GPU outputs are not compared with CPU.",
+    "Real GPU device loss, physical reset, allocator exhaustion and failed vkQueueSubmit/vkWaitForFences were not reproduced.",
+    "Only synthetic 64-word public Compute buffers are used; no HASHCAT candidate, salt, target digest, hashing algorithm, or attack scheduler is connected.",
+    "Android API24-compiled Vulkan core1.0 applications ran on newer Android and Vulkan drivers, not a physically Vulkan-1.0-only GPU or Android 7.0 OS."
+  ]
+}

@@ -120,6 +120,11 @@ allocates buffers, descriptors, shader modules and pipelines from
 validated program counts, executes four ordered public SPIR-V stages
 on Adreno ARM64/ARMv7 and Mali ARM64, and verifies both standalone and
 full Android `hashcat -I` results without enabling Vulkan hashing.
+The [controlled Vulkan cleanup and recovery tests](docs/vulkan-backend-public-fault-android.md)
+exercise 37 explicit resource checkpoints on Adreno ARM64/ARMv7 and
+Mali ARM64. Every simulated failure is followed by a real working
+four-stage Vulkan device under the same instance; ordinary HASHCAT
+information-mode execution and OpenCL discovery remain available.
 
 ## Working on hashcat source
 

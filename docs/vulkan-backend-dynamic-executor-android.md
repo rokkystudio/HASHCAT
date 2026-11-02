@@ -272,4 +272,10 @@ production password-hashing GPU execution.
 No cryptographic OpenCL HASHCAT kernel has been ported to Vulkan,
 the Vulkan device is not inserted into the hashing scheduler, and
 there is no public API for loading arbitrary SPIR-V programs from
-users. No real Vulkan device-loss or stress/leak testing is claimed.
+users. The [public resource-cleanup diagnostic](vulkan-backend-public-fault-android.md)
+exercises 37 controlled post-acquisition or submission-boundary faults
+against the same four-stage production executor, followed by new
+CPU-verified Compute sessions on the same live Vulkan instance.
+The injected failures are explicitly simulated, and actual Vulkan
+device loss, driver submit failure or memory-exhaustion behavior
+remains unverified.

@@ -91,4 +91,29 @@ VkResult backend_vulkan_kernel_verify_chain4 (
   uint32_t device_index,
   FILE *diagnostics);
 
+/**
+ * Validate four-stage Vulkan resource cleanup at one explicit fault point.
+ *
+ * Requires a live backend catalogue, a valid physical-device index,
+ * non-NULL diagnostics and controlled_fault_point in the range 1..37.
+ * The method creates actual Vulkan objects, then returns a simulated
+ * VK_ERROR_INITIALIZATION_FAILED at the selected checkpoint and runs
+ * the standard resource cleanup path. It logs exact owned resources,
+ * device-idle status and host-array cleanup completion.
+ *
+ * Checkpoints 1..35 occur after resource acquisition. Checkpoint 36
+ * aborts before any queue submission. Checkpoint 37 aborts after a
+ * successful real vkQueueSubmit and relies on vkDeviceWaitIdle during
+ * cleanup. No Vulkan driver return is replaced or fabricated, and no
+ * actual device-loss event is induced.
+ *
+ * The method is dedicated to synthetic public-integer diagnostics.
+ * It never reads or schedules HASHCAT password/hash workloads.
+ */
+VkResult backend_vulkan_kernel_verify_chain4_fault (
+  backend_ctx_t *backend_ctx,
+  uint32_t device_index,
+  FILE *diagnostics,
+  uint32_t controlled_fault_point);
+
 #endif // HC_BACKEND_VULKAN_KERNEL_H

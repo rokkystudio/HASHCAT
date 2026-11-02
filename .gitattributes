@@ -104,3 +104,7 @@ tests/fixtures/android-gpu/vulkan-backend-program-executor-20261101/manifest.jso
 # Preserve four-stage public Vulkan dynamic GPU and complete HASHCAT -I evidence.
 tests/fixtures/android-gpu/vulkan-backend-public-dynamic-20261102/*.log -text whitespace=-blank-at-eol
 tests/fixtures/android-gpu/vulkan-backend-public-dynamic-20261102/manifest.json text eol=lf
+
+# Preserve explicit public Vulkan fault checkpoints and real GPU recovery evidence.
+tests/fixtures/android-gpu/vulkan-backend-public-fault-20261102/*.log -text whitespace=-blank-at-eol
+tests/fixtures/android-gpu/vulkan-backend-public-fault-20261102/manifest.json text eol=lf

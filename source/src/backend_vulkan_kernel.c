@@ -164,7 +164,93 @@ typedef struct backend_vulkan_public_job
   VkShaderModule *shader;
   VkPipeline *pipeline;
   const backend_vulkan_program_t *program;
+  struct backend_vulkan_public_fault *fault;
 } backend_vulkan_public_job_t;
+
+/**
+ * Track a controlled diagnostic failure at an exact resource checkpoint.
+ *
+ * A non-NULL fault pointer activates consecutive checkpoint accounting.
+ * The test's point is a positive one-based checkpoint number. An injected
+ * error returns VK_ERROR_INITIALIZATION_FAILED and is explicitly identified
+ * as simulated, never as a driver result or physical device loss.
+ */
+typedef struct backend_vulkan_public_fault
+{
+  uint32_t point;
+  uint32_t reached;
+  uint32_t hit;
+  uint32_t submitted;
+  FILE *diagnostics;
+} backend_vulkan_public_fault_t;
+
+/**
+ * Record exact resources owned at the entry to deterministic cleanup.
+ *
+ * Resource counts describe non-null Vulkan handles and mapped allocations
+ * passed through the normal ownership cleanup. completed records completion
+ * of all cleanup calls and host-array releases. wait_result is the actual
+ * vkDeviceWaitIdle result for an acquired VkDevice.
+ */
+typedef struct backend_vulkan_public_release_counts
+{
+  uint32_t device;
+  uint32_t buffers;
+  uint32_t memories;
+  uint32_t maps;
+  uint32_t descriptor_sets;
+  uint32_t shaders;
+  uint32_t pipelines;
+  uint32_t descriptor_pool;
+  uint32_t pipeline_layout;
+  uint32_t descriptor_layout;
+  uint32_t fence;
+  uint32_t command;
+  uint32_t command_pool;
+  uint32_t host_arrays;
+  uint32_t completed;
+  VkResult wait_result;
+} backend_vulkan_public_release_counts_t;
+
+/**
+ * Trigger one explicitly numbered test checkpoint after resource acquisition.
+ *
+ * Without an active diagnostic fault, the function is a no-op. With a
+ * diagnostic fault, each checkpoint increments reached exactly once.
+ * The selected point prints its resource label and whether a real queue
+ * submission already occurred, then returns a simulated initialization
+ * error without substituting any Vulkan driver function or VkResult.
+ */
+static VkResult backend_vulkan_public_checkpoint (
+  backend_vulkan_public_job_t *job,
+  const char *resource)
+{
+  if (job->fault == NULL) return VK_SUCCESS;
+
+  backend_vulkan_public_fault_t *fault = job->fault;
+
+  fault->reached++;
+
+  if (fault->reached != fault->point) return VK_SUCCESS;
+
+  fault->hit = 1u;
+
+  fprintf (
+    fault->diagnostics,
+    "BACKEND_PUBLIC_FAULT_TRIGGER"
+    " point=%" PRIu32
+    " resource=%s"
+    " simulated=1"
+    " submitted=%" PRIu32
+    " result=%d\n",
+    fault->reached,
+    resource,
+    fault->submitted,
+    VK_ERROR_INITIALIZATION_FAILED
+  );
+
+  return VK_ERROR_INITIALIZATION_FAILED;
+}
 
 /**
  * Allocate host ownership arrays for one validated public program.
@@ -250,12 +336,15 @@ static VkResult backend_vulkan_public_prepare (
  *
  * Waits for VkDevice idle when a logical device exists, then releases every
  * pipeline, shader, descriptor object, command object and storage allocation
- * using the exact program counts. Host ownership arrays are also freed when
- * VkDevice creation never succeeded. A null or partially initialized job is
- * safe to release. The first vkDeviceWaitIdle result survives cleanup.
+ * using exact program counts. Host arrays are freed even without VkDevice.
+ * An optional counts output records the exact resources owned on entry,
+ * the actual device-idle result and completion of the entire cleanup.
+ * A null or partially initialized job is safe to release. The first
+ * vkDeviceWaitIdle result survives cleanup.
  */
 static VkResult backend_vulkan_public_release (
-  backend_vulkan_public_job_t *job)
+  backend_vulkan_public_job_t *job,
+  backend_vulkan_public_release_counts_t *counts)
 {
   if (job == NULL) return VK_ERROR_INITIALIZATION_FAILED;
 
@@ -267,9 +356,59 @@ static VkResult backend_vulkan_public_release (
   const uint32_t buffer_count =
     job->program != NULL ? job->program->buffer_count : 0u;
 
+  if (counts != NULL)
+  {
+    memset (counts, 0, sizeof (*counts));
+
+    counts->device = job->device != VK_NULL_HANDLE;
+    counts->descriptor_pool = job->descriptor_pool != VK_NULL_HANDLE;
+    counts->pipeline_layout = job->pipeline_layout != VK_NULL_HANDLE;
+    counts->descriptor_layout = job->descriptor_layout != VK_NULL_HANDLE;
+    counts->fence = job->fence != VK_NULL_HANDLE;
+    counts->command = job->command != VK_NULL_HANDLE;
+    counts->command_pool = job->command_pool != VK_NULL_HANDLE;
+    counts->host_arrays =
+      (job->buffers != NULL)
+      + (job->descriptor_set != NULL)
+      + (job->shader != NULL)
+      + (job->pipeline != NULL);
+
+    for (uint32_t stage = 0u; stage < stage_count; stage++)
+    {
+      if (job->descriptor_set != NULL)
+      {
+        counts->descriptor_sets +=
+          job->descriptor_set[stage] != VK_NULL_HANDLE;
+      }
+
+      if (job->shader != NULL)
+      {
+        counts->shaders += job->shader[stage] != VK_NULL_HANDLE;
+      }
+
+      if (job->pipeline != NULL)
+      {
+        counts->pipelines += job->pipeline[stage] != VK_NULL_HANDLE;
+      }
+    }
+
+    for (uint32_t i = 0u; i < buffer_count; i++)
+    {
+      if (job->buffers == NULL) break;
+
+      counts->buffers +=
+        job->buffers[i].buffer != VK_NULL_HANDLE;
+      counts->memories +=
+        job->buffers[i].memory != VK_NULL_HANDLE;
+      counts->maps += job->buffers[i].mapped != NULL;
+    }
+  }
+
   if (job->device != VK_NULL_HANDLE)
   {
     result = vkDeviceWaitIdle (job->device);
+
+    if (counts != NULL) counts->wait_result = result;
 
     for (uint32_t stage = 0u; stage < stage_count; stage++)
     {
@@ -363,6 +502,8 @@ static VkResult backend_vulkan_public_release (
 
   memset (job, 0, sizeof (*job));
 
+  if (counts != NULL) counts->completed = 1u;
+
   return result;
 }
 
@@ -373,8 +514,10 @@ static VkResult backend_vulkan_public_release (
  * vkGetBufferMemoryRequirements bitmask to select an
  * explicitly compatible memory type. Prefers HOST_COHERENT and accepts
  * HOST_VISIBLE noncoherent memory only with explicit cache sync.
- * Returns the driver VkResult on failure; the parent job owns all
- * partial resources and must release them on the error path.
+ * After each successful buffer, memory and mapping acquisition, an
+ * optional numbered diagnostic checkpoint can return a simulated
+ * VK_ERROR_INITIALIZATION_FAILED. Otherwise real driver VkResults
+ * propagate unchanged. The parent job releases every partial resource.
  */
 static VkResult backend_vulkan_public_buffer_open (
   backend_vulkan_public_job_t *job,
@@ -392,6 +535,10 @@ static VkResult backend_vulkan_public_buffer_open (
   VkResult result = vkCreateBuffer (
     job->device, &info, NULL, &buffer->buffer
   );
+
+  if (result != VK_SUCCESS) return result;
+
+  result = backend_vulkan_public_checkpoint (job, "buffer");
 
   if (result != VK_SUCCESS) return result;
 
@@ -436,16 +583,24 @@ static VkResult backend_vulkan_public_buffer_open (
 
   if (result != VK_SUCCESS) return result;
 
+  result = backend_vulkan_public_checkpoint (job, "memory");
+
+  if (result != VK_SUCCESS) return result;
+
   result = vkBindBufferMemory (
     job->device, buffer->buffer, buffer->memory, 0u
   );
 
   if (result != VK_SUCCESS) return result;
 
-  return vkMapMemory (
+  result = vkMapMemory (
     job->device, buffer->memory, 0u,
     VK_WHOLE_SIZE, 0u, &buffer->mapped
   );
+
+  if (result != VK_SUCCESS) return result;
+
+  return backend_vulkan_public_checkpoint (job, "map");
 }
 
 /**
@@ -454,8 +609,10 @@ static VkResult backend_vulkan_public_buffer_open (
  * The validated program supplies immutable SPIR-V bytes, exact source and
  * destination buffer indices and stage count. Every stage uses one common
  * two-binding STORAGE_BUFFER layout. Descriptor sets are allocated one at a
- * time into host arrays sized by backend_vulkan_public_prepare, so no fixed
- * stage capacity remains in this executor.
+ * time into host arrays sized by backend_vulkan_public_prepare.
+ * Explicit diagnostic checkpoints follow layout, pool and per-stage
+ * descriptor/shader/pipeline acquisitions. An injected initialization
+ * error leaves all acquired objects owned by the standard job cleanup.
  */
 static VkResult backend_vulkan_public_pipeline_open (
   backend_vulkan_public_job_t *job)
@@ -499,6 +656,10 @@ static VkResult backend_vulkan_public_pipeline_open (
 
   if (result != VK_SUCCESS) return result;
 
+  result = backend_vulkan_public_checkpoint (job, "descriptor_layout");
+
+  if (result != VK_SUCCESS) return result;
+
   const VkPipelineLayoutCreateInfo pipeline_layout_info =
   {
     .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
@@ -509,6 +670,10 @@ static VkResult backend_vulkan_public_pipeline_open (
   result = vkCreatePipelineLayout (
     job->device, &pipeline_layout_info, NULL, &job->pipeline_layout
   );
+
+  if (result != VK_SUCCESS) return result;
+
+  result = backend_vulkan_public_checkpoint (job, "pipeline_layout");
 
   if (result != VK_SUCCESS) return result;
 
@@ -532,6 +697,10 @@ static VkResult backend_vulkan_public_pipeline_open (
 
   if (result != VK_SUCCESS) return result;
 
+  result = backend_vulkan_public_checkpoint (job, "descriptor_pool");
+
+  if (result != VK_SUCCESS) return result;
+
   for (uint32_t stage_index = 0u;
        stage_index < job->program->stage_count;
        stage_index++)
@@ -547,6 +716,10 @@ static VkResult backend_vulkan_public_pipeline_open (
     result = vkAllocateDescriptorSets (
       job->device, &set_info, &job->descriptor_set[stage_index]
     );
+
+    if (result != VK_SUCCESS) return result;
+
+    result = backend_vulkan_public_checkpoint (job, "descriptor_set");
 
     if (result != VK_SUCCESS) return result;
 
@@ -604,6 +777,10 @@ static VkResult backend_vulkan_public_pipeline_open (
 
     if (result != VK_SUCCESS) return result;
 
+    result = backend_vulkan_public_checkpoint (job, "shader");
+
+    if (result != VK_SUCCESS) return result;
+
     const VkComputePipelineCreateInfo compute_info =
     {
       .sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO,
@@ -623,6 +800,10 @@ static VkResult backend_vulkan_public_pipeline_open (
     );
 
     if (result != VK_SUCCESS) return result;
+
+    result = backend_vulkan_public_checkpoint (job, "pipeline");
+
+    if (result != VK_SUCCESS) return result;
   }
 
   return VK_SUCCESS;
@@ -637,6 +818,10 @@ static VkResult backend_vulkan_public_pipeline_open (
  * comes from the program declaration. Final shader-write-to-host-read
  * barriers cover every distinct destination buffer. A real fence completes
  * before noncoherent invalidation and CPU comparison of every stage output.
+ * Controlled diagnostics can abort immediately before vkQueueSubmit or
+ * immediately after a successful real submission; the latter is completed
+ * by vkDeviceWaitIdle in the ordinary job cleanup. No failed Vulkan driver
+ * result or device-loss condition is synthesized.
  *
  * Stage zero uses the public_u32_transform CPU reference. Every following
  * stage uses the public_u32_rotate reference, matching the immutable public
@@ -775,6 +960,10 @@ static VkResult backend_vulkan_public_dispatch (
 
   if (result != VK_SUCCESS) return result;
 
+  result = backend_vulkan_public_checkpoint (job, "before_submit");
+
+  if (result != VK_SUCCESS) return result;
+
   const VkSubmitInfo submit =
   {
     .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
@@ -785,6 +974,12 @@ static VkResult backend_vulkan_public_dispatch (
   result = vkQueueSubmit (
     job->queue, 1u, &submit, job->fence
   );
+
+  if (result != VK_SUCCESS) return result;
+
+  if (job->fault != NULL) job->fault->submitted = 1u;
+
+  result = backend_vulkan_public_checkpoint (job, "after_submit");
 
   if (result != VK_SUCCESS) return result;
 
@@ -955,18 +1150,23 @@ static VkResult backend_vulkan_public_dispatch (
  * validates the complete graph against those limits, allocates host ownership
  * arrays from program counts, then creates exactly one temporary VkDevice.
  * Buffers, descriptor sets, shaders, pipelines and command recording all
- * consume the same declaration. No Vulkan HASHCAT hashing device is created.
+ * consume the same declaration. The explicit controlled_fault_point is
+ * zero in normal information mode; positive values 1..37 enable host-only
+ * diagnostic checkpoints and release-inventory reporting. Injected errors
+ * never replace driver VkResults. No Vulkan HASHCAT hashing device is created.
  */
 static VkResult backend_vulkan_kernel_verify_program (
   backend_ctx_t *backend_ctx,
   uint32_t device_index,
   FILE *diagnostics,
-  const backend_vulkan_program_t *program)
+  const backend_vulkan_program_t *program,
+  uint32_t controlled_fault_point)
 {
   if (backend_ctx == NULL || diagnostics == NULL
    || backend_ctx->vulkan_catalog == NULL
    || device_index >= backend_ctx->vulkan_devices_cnt
-   || program == NULL || program->stage_count == 0u)
+   || program == NULL || program->stage_count == 0u
+   || controlled_fault_point > 37u)
   {
     return VK_ERROR_INITIALIZATION_FAILED;
   }
@@ -1011,9 +1211,21 @@ static VkResult backend_vulkan_kernel_verify_program (
 
   backend_vulkan_public_job_t job = { 0 };
 
+  backend_vulkan_public_fault_t fault =
+  {
+    .point = controlled_fault_point,
+    .diagnostics = diagnostics
+  };
+
   result = backend_vulkan_public_prepare (&job, program);
 
   if (result != VK_SUCCESS) return result;
+
+  if (controlled_fault_point != 0u) job.fault = &fault;
+
+  result = backend_vulkan_public_checkpoint (&job, "host_arrays");
+
+  if (result != VK_SUCCESS) goto cleanup;
 
   const float priority = 1.0f;
 
@@ -1038,6 +1250,10 @@ static VkResult backend_vulkan_kernel_verify_program (
   result = vkCreateDevice (
     selected.physical, &device_info, NULL, &job.device
   );
+
+  if (result != VK_SUCCESS) goto cleanup;
+
+  result = backend_vulkan_public_checkpoint (&job, "device");
 
   if (result != VK_SUCCESS) goto cleanup;
 
@@ -1078,6 +1294,10 @@ static VkResult backend_vulkan_kernel_verify_program (
 
   if (result != VK_SUCCESS) goto cleanup;
 
+  result = backend_vulkan_public_checkpoint (&job, "command_pool");
+
+  if (result != VK_SUCCESS) goto cleanup;
+
   const VkCommandBufferAllocateInfo command_info =
   {
     .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
@@ -1092,6 +1312,10 @@ static VkResult backend_vulkan_kernel_verify_program (
 
   if (result != VK_SUCCESS) goto cleanup;
 
+  result = backend_vulkan_public_checkpoint (&job, "command_buffer");
+
+  if (result != VK_SUCCESS) goto cleanup;
+
   const VkFenceCreateInfo fence_info =
   {
     .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO
@@ -1100,6 +1324,10 @@ static VkResult backend_vulkan_kernel_verify_program (
   result = vkCreateFence (
     job.device, &fence_info, NULL, &job.fence
   );
+
+  if (result != VK_SUCCESS) goto cleanup;
+
+  result = backend_vulkan_public_checkpoint (&job, "fence");
 
   if (result != VK_SUCCESS) goto cleanup;
 
@@ -1184,9 +1412,72 @@ static VkResult backend_vulkan_kernel_verify_program (
 
 cleanup:
   {
-    const VkResult released = backend_vulkan_public_release (&job);
+    backend_vulkan_public_release_counts_t counts = { 0 };
+
+    const VkResult released = backend_vulkan_public_release (
+      &job, controlled_fault_point != 0u ? &counts : NULL
+    );
 
     if (result == VK_SUCCESS) result = released;
+
+    if (controlled_fault_point != 0u)
+    {
+      fprintf (
+        diagnostics,
+        "BACKEND_PUBLIC_FAULT_RELEASE"
+        " point=%" PRIu32
+        " reached=%" PRIu32
+        " hit=%" PRIu32
+        " submitted=%" PRIu32
+        " device=%" PRIu32
+        " buffers=%" PRIu32
+        " memories=%" PRIu32
+        " maps=%" PRIu32
+        " descriptor_sets=%" PRIu32
+        " shaders=%" PRIu32
+        " pipelines=%" PRIu32
+        " descriptor_pool=%" PRIu32
+        " pipeline_layout=%" PRIu32
+        " descriptor_layout=%" PRIu32
+        " fence=%" PRIu32
+        " command_buffer=%" PRIu32
+        " command_pool=%" PRIu32
+        " host_arrays=%" PRIu32
+        " wait_idle=%d"
+        " completed=%" PRIu32
+        " cleanup_result=%d"
+        " simulated=1\n",
+        controlled_fault_point,
+        fault.reached,
+        fault.hit,
+        fault.submitted,
+        counts.device,
+        counts.buffers,
+        counts.memories,
+        counts.maps,
+        counts.descriptor_sets,
+        counts.shaders,
+        counts.pipelines,
+        counts.descriptor_pool,
+        counts.pipeline_layout,
+        counts.descriptor_layout,
+        counts.fence,
+        counts.command,
+        counts.command_pool,
+        counts.host_arrays,
+        counts.wait_result,
+        counts.completed,
+        released
+      );
+
+      if (fault.hit != 1u
+       || fault.reached != controlled_fault_point
+       || counts.completed != 1u
+       || released != VK_SUCCESS)
+      {
+        result = VK_ERROR_INITIALIZATION_FAILED;
+      }
+    }
 
     if (program->stage_count == 1u)
     {
@@ -1242,7 +1533,7 @@ VkResult backend_vulkan_kernel_verify (
 {
   return backend_vulkan_kernel_verify_program (
     backend_ctx, device_index, diagnostics,
-    &backend_vulkan_public_single
+    &backend_vulkan_public_single, 0u
   );
 }
 
@@ -1262,7 +1553,7 @@ VkResult backend_vulkan_kernel_verify_chain (
 {
   return backend_vulkan_kernel_verify_program (
     backend_ctx, device_index, diagnostics,
-    &backend_vulkan_public_chain
+    &backend_vulkan_public_chain, 0u
   );
 }
 
@@ -1285,6 +1576,44 @@ VkResult backend_vulkan_kernel_verify_chain4 (
 {
   return backend_vulkan_kernel_verify_program (
     backend_ctx, device_index, diagnostics,
-    &backend_vulkan_public_chain4
+    &backend_vulkan_public_chain4, 0u
+  );
+}
+
+
+/**
+ * Exercise one controlled ownership checkpoint of a four-stage public program.
+ *
+ * Requires an active Vulkan backend catalogue and point in the inclusive
+ * range 1..37. Each point aborts after exactly one successful acquisition
+ * or at a declared command-submission boundary. A real driver function is
+ * never replaced. The test destroys all acquired resources, reports their
+ * exact ownership counts and returns VK_ERROR_INITIALIZATION_FAILED.
+ *
+ * Points 1..35 cover host arrays, VkDevice, five storage buffers and their
+ * memory/mappings, four descriptor/shader/pipeline stages, command pool,
+ * command buffer and fence. Point 36 aborts before vkQueueSubmit; point 37
+ * aborts after a real successful vkQueueSubmit but before fence wait.
+ * Cleanup then performs a real vkDeviceWaitIdle before destroying the job.
+ *
+ * No input from HASHCAT candidates, hashes, salts or attack scheduling is
+ * accepted. A new working four-stage device can be created under the same
+ * live catalogue after this method returns.
+ */
+VkResult backend_vulkan_kernel_verify_chain4_fault (
+  backend_ctx_t *backend_ctx,
+  uint32_t device_index,
+  FILE *diagnostics,
+  uint32_t controlled_fault_point)
+{
+  if (controlled_fault_point == 0u
+   || controlled_fault_point > 37u)
+  {
+    return VK_ERROR_INITIALIZATION_FAILED;
+  }
+
+  return backend_vulkan_kernel_verify_program (
+    backend_ctx, device_index, diagnostics,
+    &backend_vulkan_public_chain4, controlled_fault_point
   );
 }
