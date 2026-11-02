@@ -116,4 +116,23 @@ VkResult backend_vulkan_kernel_verify_chain4_fault (
   FILE *diagnostics,
   uint32_t controlled_fault_point);
 
+/**
+ * Observe a real VK_TIMEOUT on an unsignaled fence after GPU submission.
+ *
+ * Requires an open backend Vulkan catalogue, a valid device index and
+ * non-NULL diagnostics. The full four-stage public program is submitted
+ * using VK_NULL_HANDLE as its submission fence; the separately owned fence
+ * remains unsignaled. vkWaitForFences with zero timeout returns the actual
+ * driver status, which must be VK_TIMEOUT for a successful diagnostic.
+ * The standard cleanup waits for actual device idle before freeing all
+ * dynamically owned Vulkan resources. No password workload is scheduled.
+ *
+ * VK_TIMEOUT indicates successful observation and complete cleanup.
+ * Any other Vulkan or cleanup error is returned directly.
+ */
+VkResult backend_vulkan_kernel_verify_chain4_fence_timeout (
+  backend_ctx_t *backend_ctx,
+  uint32_t device_index,
+  FILE *diagnostics);
+
 #endif // HC_BACKEND_VULKAN_KERNEL_H

@@ -128,8 +128,12 @@ four-stage Vulkan device under the same instance. The follow-on
 delivers test-only negative results at the executor's linked buffer,
 shader, pipeline, queue-submit and fence-wait calls, confirms real
 cleanup waits and recreates healthy four-stage devices on all three
-GPU/process configurations. Ordinary HASHCAT information-mode execution
-and OpenCL discovery remain available.
+GPU/process configurations. A separate
+[real fence-timeout diagnostic](docs/vulkan-backend-public-fence-timeout-android.md)
+observes an actual driver VK_TIMEOUT after real four-stage submission,
+waits for device idle during production cleanup and then recreates a
+working device on Mali ARM64 and Adreno ARM64/ARMv7. Ordinary HASHCAT
+information-mode execution and OpenCL discovery remain available.
 
 ## Working on hashcat source
 

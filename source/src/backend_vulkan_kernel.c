@@ -156,6 +156,7 @@ typedef struct backend_vulkan_public_job
   VkCommandPool command_pool;
   VkCommandBuffer command;
   VkFence fence;
+  uint32_t submitted;
   backend_vulkan_public_buffer_t *buffers;
   VkDescriptorSetLayout descriptor_layout;
   VkPipelineLayout pipeline_layout;
@@ -820,8 +821,10 @@ static VkResult backend_vulkan_public_pipeline_open (
  * before noncoherent invalidation and CPU comparison of every stage output.
  * Controlled diagnostics can abort immediately before vkQueueSubmit or
  * immediately after a successful real submission; the latter is completed
- * by vkDeviceWaitIdle in the ordinary job cleanup. No failed Vulkan driver
- * result or device-loss condition is synthesized.
+ * by vkDeviceWaitIdle in the ordinary job cleanup. An explicit fence probe
+ * submits the same commands without associating the fresh unsignaled fence,
+ * then reads a real VK_TIMEOUT from a zero-duration vkWaitForFences call.
+ * No failed Vulkan driver result or device-loss condition is synthesized.
  *
  * Stage zero uses the public_u32_transform CPU reference. Every following
  * stage uses the public_u32_rotate reference, matching the immutable public
@@ -830,7 +833,8 @@ static VkResult backend_vulkan_public_pipeline_open (
  */
 static VkResult backend_vulkan_public_dispatch (
   backend_vulkan_public_job_t *job,
-  FILE *diagnostics)
+  FILE *diagnostics,
+  VkBool32 probe_unsignaled_fence)
 {
   if (job == NULL || job->program == NULL
    || job->buffers == NULL
@@ -972,12 +976,37 @@ static VkResult backend_vulkan_public_dispatch (
   };
 
   result = vkQueueSubmit (
-    job->queue, 1u, &submit, job->fence
+    job->queue, 1u, &submit,
+    probe_unsignaled_fence == VK_TRUE ? VK_NULL_HANDLE : job->fence
   );
 
   if (result != VK_SUCCESS) return result;
 
+  job->submitted = 1u;
+
   if (job->fault != NULL) job->fault->submitted = 1u;
+
+  if (probe_unsignaled_fence == VK_TRUE)
+  {
+    result = vkWaitForFences (
+      job->device, 1u, &job->fence, VK_TRUE, 0u
+    );
+
+    fprintf (
+      diagnostics,
+      "BACKEND_PUBLIC_FENCE_WAIT"
+      " submitted=%" PRIu32
+      " fence_submitted=0"
+      " timeout_ns=0"
+      " driver_call=1"
+      " result=%d"
+      " scheduled=0\n",
+      job->submitted, result
+    );
+
+    return result == VK_SUCCESS
+      ? VK_ERROR_INITIALIZATION_FAILED : result;
+  }
 
   result = backend_vulkan_public_checkpoint (job, "after_submit");
 
@@ -1152,21 +1181,26 @@ static VkResult backend_vulkan_public_dispatch (
  * Buffers, descriptor sets, shaders, pipelines and command recording all
  * consume the same declaration. The explicit controlled_fault_point is
  * zero in normal information mode; positive values 1..37 enable host-only
- * diagnostic checkpoints and release-inventory reporting. Injected errors
- * never replace driver VkResults. No Vulkan HASHCAT hashing device is created.
+ * diagnostic checkpoints and release-inventory reporting. An optional
+ * unsignaled-fence probe uses the same four-stage execution with a real
+ * zero-timeout fence wait and reports the cleanup status. No Vulkan HASHCAT
+ * hashing device is created or driver VkResult fabricated.
  */
 static VkResult backend_vulkan_kernel_verify_program (
   backend_ctx_t *backend_ctx,
   uint32_t device_index,
   FILE *diagnostics,
   const backend_vulkan_program_t *program,
-  uint32_t controlled_fault_point)
+  uint32_t controlled_fault_point,
+  VkBool32 probe_unsignaled_fence)
 {
   if (backend_ctx == NULL || diagnostics == NULL
    || backend_ctx->vulkan_catalog == NULL
    || device_index >= backend_ctx->vulkan_devices_cnt
    || program == NULL || program->stage_count == 0u
-   || controlled_fault_point > 37u)
+   || controlled_fault_point > 37u
+   || (probe_unsignaled_fence == VK_TRUE
+    && (controlled_fault_point != 0u || program->stage_count != 4u)))
   {
     return VK_ERROR_INITIALIZATION_FAILED;
   }
@@ -1407,18 +1441,61 @@ static VkResult backend_vulkan_kernel_verify_program (
   }
 
   result = backend_vulkan_public_dispatch (
-    &job, diagnostics
+    &job, diagnostics, probe_unsignaled_fence
   );
 
 cleanup:
   {
     backend_vulkan_public_release_counts_t counts = { 0 };
 
+    const uint32_t submitted = job.submitted;
+
     const VkResult released = backend_vulkan_public_release (
-      &job, controlled_fault_point != 0u ? &counts : NULL
+      &job,
+      controlled_fault_point != 0u || probe_unsignaled_fence == VK_TRUE
+        ? &counts : NULL
     );
 
-    if (result == VK_SUCCESS) result = released;
+    if (result == VK_SUCCESS || (probe_unsignaled_fence == VK_TRUE
+      && released != VK_SUCCESS)) result = released;
+
+    if (probe_unsignaled_fence == VK_TRUE)
+    {
+      fprintf (
+        diagnostics,
+        "BACKEND_PUBLIC_FENCE_RELEASE"
+        " submitted=%" PRIu32
+        " device=%" PRIu32
+        " fence=%" PRIu32
+        " command_buffer=%" PRIu32
+        " pipelines=%" PRIu32
+        " buffers=%" PRIu32
+        " wait_idle=%d"
+        " completed=%" PRIu32
+        " cleanup_result=%d"
+        " scheduled=0\n",
+        submitted,
+        counts.device,
+        counts.fence,
+        counts.command,
+        counts.pipelines,
+        counts.buffers,
+        counts.wait_result,
+        counts.completed,
+        released
+      );
+
+      if (submitted == 1u
+       && (counts.device != 1u
+        || counts.fence != 1u
+        || counts.command != 1u
+        || counts.pipelines != program->stage_count
+        || counts.buffers != program->buffer_count
+        || counts.completed != 1u))
+      {
+        result = VK_ERROR_INITIALIZATION_FAILED;
+      }
+    }
 
     if (controlled_fault_point != 0u)
     {
@@ -1533,7 +1610,7 @@ VkResult backend_vulkan_kernel_verify (
 {
   return backend_vulkan_kernel_verify_program (
     backend_ctx, device_index, diagnostics,
-    &backend_vulkan_public_single, 0u
+    &backend_vulkan_public_single, 0u, VK_FALSE
   );
 }
 
@@ -1553,7 +1630,7 @@ VkResult backend_vulkan_kernel_verify_chain (
 {
   return backend_vulkan_kernel_verify_program (
     backend_ctx, device_index, diagnostics,
-    &backend_vulkan_public_chain, 0u
+    &backend_vulkan_public_chain, 0u, VK_FALSE
   );
 }
 
@@ -1576,7 +1653,7 @@ VkResult backend_vulkan_kernel_verify_chain4 (
 {
   return backend_vulkan_kernel_verify_program (
     backend_ctx, device_index, diagnostics,
-    &backend_vulkan_public_chain4, 0u
+    &backend_vulkan_public_chain4, 0u, VK_FALSE
   );
 }
 
@@ -1614,6 +1691,32 @@ VkResult backend_vulkan_kernel_verify_chain4_fault (
 
   return backend_vulkan_kernel_verify_program (
     backend_ctx, device_index, diagnostics,
-    &backend_vulkan_public_chain4, controlled_fault_point
+    &backend_vulkan_public_chain4, controlled_fault_point, VK_FALSE
+  );
+}
+
+/**
+ * Observe a real unsignaled-fence timeout after four public GPU dispatches.
+ *
+ * Runs the validated four-stage program on a real Vulkan queue, but submits
+ * its command buffer with VK_NULL_HANDLE instead of the owned unsignaled
+ * fence. A zero-duration vkWaitForFences call on that fence returns the
+ * driver's VK_TIMEOUT status. The normal release path waits for device
+ * idle before destroying the resources, without reading incomplete output.
+ * No queue or wait driver function is replaced, and no HASHCAT workload
+ * or scheduler is accessed.
+ *
+ * Returns VK_TIMEOUT only when the real fence wait times out and all
+ * resources are released successfully. Driver and cleanup errors are
+ * propagated as Vulkan results.
+ */
+VkResult backend_vulkan_kernel_verify_chain4_fence_timeout (
+  backend_ctx_t *backend_ctx,
+  uint32_t device_index,
+  FILE *diagnostics)
+{
+  return backend_vulkan_kernel_verify_program (
+    backend_ctx, device_index, diagnostics,
+    &backend_vulkan_public_chain4, 0u, VK_TRUE
   );
 }

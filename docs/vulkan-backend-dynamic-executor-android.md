@@ -282,7 +282,13 @@ also links the unchanged executor through dedicated test-only wrappers
 for buffer, shader, pipeline, queue-submit and fence-wait calls. Negative
 VkResults are injected at those exact call sites, cleanup performs a real
 vkDeviceWaitIdle, and a fresh four-stage VkDevice then succeeds under the
-same instance on Mali ARM64 and Adreno ARM64/ARMv7. These returns remain
-synthetic test-linker results: actual physical device loss, real driver
-allocation failure and recovery of a genuinely lost VkDevice are still
-unverified.
+same instance on Mali ARM64 and Adreno ARM64/ARMv7.
+
+The [real fence-timeout diagnostic](vulkan-backend-public-fence-timeout-android.md)
+uses no test-linker wrappers. It performs a real queue submission without
+associating the separately owned unsignaled fence, observes the driver's
+VK_TIMEOUT from a zero-duration vkWaitForFences call, releases the submitted
+job through real vkDeviceWaitIdle and recreates a healthy four-stage device
+on all three GPU/process configurations. Actual physical device loss, real
+driver allocation failure, a driver-returned queue-submit failure and
+recovery of a genuinely lost VkDevice are still unverified.

@@ -204,5 +204,12 @@ reproduce. The diagnostic establishes that the production executor propagates
 these negative results, performs its owned-resource cleanup, leaves the parent
 VkInstance usable and can create a fresh healthy four-stage device afterward.
 
+The follow-on [real fence-timeout diagnostic](vulkan-backend-public-fence-timeout-android.md)
+uses no test-linker wrapper at the synchronization call. It observes an actual
+driver `VK_TIMEOUT` after real four-stage submission, performs production
+device-idle cleanup and verifies a fresh same-instance VkDevice on Mali ARM64
+and Adreno ARM64/ARMv7. That result is a deterministic unsignaled-fence timeout,
+not physical device loss or allocation exhaustion.
+
 Cryptographic HASHCAT SPIR-V kernels and the normal password-processing
 scheduler are still outside this diagnostic.
