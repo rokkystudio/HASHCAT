@@ -123,8 +123,13 @@ full Android `hashcat -I` results without enabling Vulkan hashing.
 The [controlled Vulkan cleanup and recovery tests](docs/vulkan-backend-public-fault-android.md)
 exercise 37 explicit resource checkpoints on Adreno ARM64/ARMv7 and
 Mali ARM64. Every simulated failure is followed by a real working
-four-stage Vulkan device under the same instance; ordinary HASHCAT
-information-mode execution and OpenCL discovery remain available.
+four-stage Vulkan device under the same instance. The follow-on
+[production API-boundary fault diagnostic](docs/vulkan-backend-public-api-fault-android.md)
+delivers test-only negative results at the executor's linked buffer,
+shader, pipeline, queue-submit and fence-wait calls, confirms real
+cleanup waits and recreates healthy four-stage devices on all three
+GPU/process configurations. Ordinary HASHCAT information-mode execution
+and OpenCL discovery remain available.
 
 ## Working on hashcat source
 

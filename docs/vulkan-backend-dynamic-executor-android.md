@@ -276,6 +276,13 @@ users. The [public resource-cleanup diagnostic](vulkan-backend-public-fault-andr
 exercises 37 controlled post-acquisition or submission-boundary faults
 against the same four-stage production executor, followed by new
 CPU-verified Compute sessions on the same live Vulkan instance.
-The injected failures are explicitly simulated, and actual Vulkan
-device loss, driver submit failure or memory-exhaustion behavior
-remains unverified.
+
+The [API-boundary fault diagnostic](vulkan-backend-public-api-fault-android.md)
+also links the unchanged executor through dedicated test-only wrappers
+for buffer, shader, pipeline, queue-submit and fence-wait calls. Negative
+VkResults are injected at those exact call sites, cleanup performs a real
+vkDeviceWaitIdle, and a fresh four-stage VkDevice then succeeds under the
+same instance on Mali ARM64 and Adreno ARM64/ARMv7. These returns remain
+synthetic test-linker results: actual physical device loss, real driver
+allocation failure and recovery of a genuinely lost VkDevice are still
+unverified.
