@@ -1,14 +1,14 @@
 <#
 .SYNOPSIS
-Compile SHA-1/2, BLAKE2s and Keccak-family Vulkan Compute modules for Android.
+Compile MD4/MD5, RIPEMD-160, SHA, BLAKE2s and Keccak on Android Vulkan.
 
 .DESCRIPTION
-Compiles SHA-1, SHA-224, SHA-384, SHA-512, BLAKE2s-256,
-SHA3-224/256/384/512 and Keccak-256 byte-message shaders into canonical
-Vulkan 1.0 SPIR-V 1.0. SHA-384/512 use paired 32-bit compression words;
-SHA3 and Keccak use exact rate, domain suffix and digest byte counts in
-one Keccak-f[1600] implementation. Every embedded module must match the
-tracked C header byte-for-byte.
+Compiles independently sized message-batch shaders for MD4, MD5, RIPEMD-160,
+SHA-1, SHA-224, SHA-256, SHA-384, SHA-512, BLAKE2s-256,
+SHA3-224/256/384/512 and Keccak-256 into Vulkan 1.0 SPIR-V. SHA-384/512
+use paired 32-bit words, and SHA3/Keccak use one shared Keccak-f[1600]
+source with exact rate, domain suffix and digest length. Every generated
+SPIR-V module must reproduce its tracked C header byte-for-byte.
 
 Compiles the common Vulkan program executor for Android ARM64 and ARMv7 with
 warnings treated as errors. Does not perform password candidate generation,
@@ -68,8 +68,9 @@ New-Item -Path $OutputDirectory -ItemType Directory -Force | Out-Null
 $directory = (Resolve-Path -LiteralPath $OutputDirectory).Path
 $generator = Join-Path $root 'tools\generate-vulkan-backend-hash-kernel.py'
 
-foreach ($algorithm in @('sha1', 'sha224', 'blake2s')) {
-    $source = Join-Path $root "tools\vulkan-backend-$algorithm.comp"
+foreach ($algorithm in @('md4', 'md5_batch', 'ripemd160', 'sha1', 'sha224', 'blake2s')) {
+    $shaderName = if ($algorithm -eq 'md5_batch') { 'md5-batch' } else { $algorithm }
+    $source = Join-Path $root "tools\vulkan-backend-$shaderName.comp"
     $header = Join-Path $root "source\include\backend_vulkan_$($algorithm)_spirv.h"
     $module = Join-Path $directory "vulkan-backend-$algorithm.spv"
     $expected = (Get-FileHash -LiteralPath $header -Algorithm SHA256).Hash
@@ -195,7 +196,7 @@ foreach ($target in @(
         throw "Common Vulkan hash API symbols missing for $($target.Abi)."
     }
 
-    Write-Output "PASS Android API $AndroidApi $($target.Abi) SHA-1/2 SHA3 Keccak-256 BLAKE2s-256 executor"
+    Write-Output "PASS Android API $AndroidApi $($target.Abi) MD4 MD5 RIPEMD-160 SHA-1/2 SHA3 Keccak-256 BLAKE2s-256 executor"
     Write-Output "HASH_CORE_ARTIFACT $($target.Abi) sha256=$((Get-FileHash -LiteralPath $object -Algorithm SHA256).Hash.ToLowerInvariant())"
 }
 

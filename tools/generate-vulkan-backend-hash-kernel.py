@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Embed Vulkan SHA, BLAKE2s and Keccak-family Compute modules in C headers.
+"""Embed Vulkan MD4/MD5, RIPEMD, SHA, BLAKE2s and Keccak Compute modules.
 
 The input is canonical SPIR-V 1.0 generated with glslangValidator for
 Vulkan 1.0. The output contains the exact original 32-bit shader words
 and algorithm-specific provenance in reproducible UTF-8 formatting.
-SHA3-224/256/384/512 and Keccak-256 use configured variants of the
-Keccak-f[1600] shader; SHA-384/512 use configured SHA-512 compression
-with uvec2-based 64-bit operations and no optional shaderInt64 feature.
+SHA3-224/256/384/512 and Keccak-256 use configured Keccak-f[1600]
+variants; SHA-384/512 use paired 32-bit words without shaderInt64.
+Independent MD4, MD5 and RIPEMD-160 shaders use the same byte-message layout.
 """
 
 from __future__ import annotations
@@ -17,6 +17,9 @@ import struct
 
 
 ALGORITHMS = {
+    "md4": ("MD4", None),
+    "md5_batch": ("MD5", None),
+    "ripemd160": ("RIPEMD-160", None),
     "sha1": ("SHA-1", None),
     "sha224": ("SHA-224", None),
     "sha384": ("SHA-384", None),
@@ -68,6 +71,8 @@ def embed_hash_spirv(
         source = "tools/vulkan-backend-keccak.comp"
     elif algorithm in ("sha384", "sha512"):
         source = "tools/vulkan-backend-sha512.comp"
+    elif algorithm == "md5_batch":
+        source = "tools/vulkan-backend-md5-batch.comp"
     else:
         source = f"tools/vulkan-backend-{algorithm}.comp"
 

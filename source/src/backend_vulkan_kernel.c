@@ -13,9 +13,9 @@
  * from declared counts and exact uniform or per-buffer ranges. The public
  * arithmetic programs verify one, two or four ordered stages; MD5 executes a
  * real 64-round compression stage over fixed public one-block messages; and
- * SHA-1/2, BLAKE2s-256 and SHA3/Keccak accept variable-length byte batches
- * through the same dynamic resource owner, including 64-bit SHA-384/512
- * compression built from pairs of unsigned 32-bit words.
+ * MD4, MD5, RIPEMD-160, SHA-1/2, BLAKE2s-256 and SHA3/Keccak accept
+ * arbitrary byte-message batches through the same dynamic resource owner. 64-bit
+ * SHA-384/512 uses paired 32-bit words without optional shaderInt64.
  *
  * Information-mode outputs are checked against host references before
  * temporary Vulkan and host resources are released. The cryptographic paths
@@ -28,6 +28,8 @@
 #include "backend_vulkan.h"
 #include "backend_vulkan_program.h"
 #include "backend_vulkan_md5_spirv.h"
+#include "backend_vulkan_md4_spirv.h"
+#include "backend_vulkan_md5_batch_spirv.h"
 #include "backend_vulkan_hash.h"
 #include "backend_vulkan_sha256.h"
 #include "backend_vulkan_blake2s_spirv.h"
@@ -43,6 +45,7 @@
 #include "backend_vulkan_sha512_spirv.h"
 #include "backend_vulkan_public_spirv.h"
 #include "backend_vulkan_public_stage2_spirv.h"
+#include "backend_vulkan_ripemd160_spirv.h"
 
 #include <inttypes.h>
 #include <stdint.h>
@@ -2473,21 +2476,22 @@ VkResult backend_vulkan_kernel_verify_md5 (
 }
 
 /**
- * Hash caller-owned bytes with SHA-1/2, SHA3/Keccak or BLAKE2s on Vulkan.
+ * Hash caller-owned messages with MD4/MD5, RIPEMD-160, SHA or BLAKE2s.
  *
- * Uses immutable SPIR-V 1.0 programs for 32-bit SHA-1/2, 64-bit
- * SHA-384/512 compression using paired uint32 words, Keccak-f[1600]
- * sponge domain separation or BLAKE2s byte counters/finalization.
- * Validates message spans, byte offsets, padded block addresses and
- * output sizes before constructing the one-stage heterogeneous program.
- * Every algorithm returns 20, 28, 32, 48 or 64 canonical digest bytes.
- * The caller owns all message spans and output bytes; the dynamic
- * executor owns each temporary Vulkan device, pipeline and buffer.
+ * Selects the exact immutable SPIR-V 1.0 module for the requested MD4/MD5,
+ * RIPEMD-160, SHA-1/2, SHA3/Keccak or BLAKE2s-256 compression algorithm.
+ * The SHA-384/512 and Keccak implementations use paired 32-bit words for
+ * 64-bit operations. All modules consume one packed metadata/payload input
+ * buffer and write fixed-length digests to a second storage buffer.
  *
- * The same dynamic backend_vulkan_program_t executor owns VkDevice,
- * descriptors, pipeline, command submission, fence and cleanup for all three
- * algorithms. Message bytes and digest storage remain caller-owned; no
- * HASHCAT candidate generation, target comparison or scheduling occurs.
+ * Validates input spans, padded block address bounds, output sizes and
+ * dispatch topology before constructing an explicitly sized one-stage
+ * backend_vulkan_program_t. The common executor owns VkDevice, buffers,
+ * descriptors, pipeline, command submission, fence and complete cleanup.
+ * Each algorithm produces 16, 20, 28, 32, 48 or 64 canonical digest bytes.
+ *
+ * The caller owns all messages and output memory. No HASHCAT password
+ * candidate generation, digest target comparison or attack scheduling occurs.
  */
 VkResult backend_vulkan_hash_batch (
   backend_ctx_t *backend_ctx,
@@ -2630,6 +2634,36 @@ VkResult backend_vulkan_hash_batch (
       tail_bytes = 144u;
       algorithm_name = "SHA512";
       stage_name = "sha512_byte_batch";
+      break;
+
+    case BACKEND_VULKAN_HASH_MD5:
+      spirv = backend_vulkan_md5_batch_spirv;
+      spirv_words =
+        sizeof (backend_vulkan_md5_batch_spirv) / sizeof (uint32_t);
+      digest_bytes = 16u;
+      little_endian = VK_TRUE;
+      algorithm_name = "MD5_BATCH";
+      stage_name = "md5_byte_batch";
+      break;
+
+    case BACKEND_VULKAN_HASH_RIPEMD160:
+      spirv = backend_vulkan_ripemd160_spirv;
+      spirv_words =
+        sizeof (backend_vulkan_ripemd160_spirv) / sizeof (uint32_t);
+      digest_bytes = 20u;
+      little_endian = VK_TRUE;
+      algorithm_name = "RIPEMD160";
+      stage_name = "ripemd160_byte_batch";
+      break;
+
+    case BACKEND_VULKAN_HASH_MD4:
+      spirv = backend_vulkan_md4_spirv;
+      spirv_words =
+        sizeof (backend_vulkan_md4_spirv) / sizeof (uint32_t);
+      digest_bytes = 16u;
+      little_endian = VK_TRUE;
+      algorithm_name = "MD4";
+      stage_name = "md4_byte_batch";
       break;
 
     default:

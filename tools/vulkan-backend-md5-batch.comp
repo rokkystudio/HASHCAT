@@ -1,0 +1,198 @@
+#version 450
+
+/*
+ * Compute MD5 digests for independently sized byte messages on Vulkan 1.0.
+ *
+ * Binding zero contains two uint32 metadata words per message (payload-
+ * relative byte offset and length), followed by packed little-endian bytes.
+ * Binding one receives four uint32 MD5 digest words per message in their
+ * canonical little-endian order. Each invocation processes all padded
+ * 512-bit blocks of one caller-owned byte message without reading HASHCAT
+ * candidates, target digests, salts or scheduler state.
+ */
+layout (local_size_x = 32, local_size_y = 1, local_size_z = 1) in;
+
+layout (set = 0, binding = 0, std430) readonly buffer InputBuffer
+{
+  uint words[];
+} input_data;
+
+layout (set = 0, binding = 1, std430) writeonly buffer OutputBuffer
+{
+  uint words[];
+} output_data;
+
+/* Read one byte from a densely packed metadata-prefixed message buffer. */
+uint read_payload_byte (uint message_count, uint byte_offset)
+{
+  const uint word_index = message_count * 2u + (byte_offset >> 2u);
+  const uint shift = (byte_offset & 3u) * 8u;
+
+  return (input_data.words[word_index] >> shift) & 0xffu;
+}
+
+/* Rotate a 32-bit MD5 state word left by a nonzero round distance. */
+uint rotate_left (uint value, uint amount)
+{
+  return (value << amount) | (value >> (32u - amount));
+}
+
+/*
+ * Hash one complete variable-length message using 64-round MD5 blocks.
+ *
+ * Forms each 512-bit message block on demand with MD5's 0x80 separator
+ * and little-endian 64-bit bit-length trailer. All four state words are
+ * carried between compression blocks and emitted only after the last
+ * block. Input sizes are uint32; 64-bit bit length uses two uint32 halves.
+ */
+void main ()
+{
+  const uint message_index = gl_GlobalInvocationID.x;
+  const uint message_count = uint (output_data.words.length ()) / 4u;
+
+  if (message_index >= message_count) return;
+
+  const uint message_offset = input_data.words[message_index * 2u];
+  const uint message_length = input_data.words[message_index * 2u + 1u];
+  const uint complete_blocks = message_length / 64u;
+  const uint remainder_bytes = message_length % 64u;
+  const uint block_count =
+    complete_blocks + (remainder_bytes < 56u ? 1u : 2u);
+  const uint padded_bytes = block_count * 64u;
+  const uint trailer_start = padded_bytes - 8u;
+  const uint bit_length_low = message_length << 3u;
+  const uint bit_length_high = message_length >> 29u;
+
+  const uint shifts[64] = uint[64](
+     7u, 12u, 17u, 22u,  7u, 12u, 17u, 22u,
+     7u, 12u, 17u, 22u,  7u, 12u, 17u, 22u,
+     5u,  9u, 14u, 20u,  5u,  9u, 14u, 20u,
+     5u,  9u, 14u, 20u,  5u,  9u, 14u, 20u,
+     4u, 11u, 16u, 23u,  4u, 11u, 16u, 23u,
+     4u, 11u, 16u, 23u,  4u, 11u, 16u, 23u,
+     6u, 10u, 15u, 21u,  6u, 10u, 15u, 21u,
+     6u, 10u, 15u, 21u,  6u, 10u, 15u, 21u
+  );
+
+  const uint constants[64] = uint[64](
+    0xd76aa478u, 0xe8c7b756u, 0x242070dbu, 0xc1bdceeeu,
+    0xf57c0fafu, 0x4787c62au, 0xa8304613u, 0xfd469501u,
+    0x698098d8u, 0x8b44f7afu, 0xffff5bb1u, 0x895cd7beu,
+    0x6b901122u, 0xfd987193u, 0xa679438eu, 0x49b40821u,
+    0xf61e2562u, 0xc040b340u, 0x265e5a51u, 0xe9b6c7aau,
+    0xd62f105du, 0x02441453u, 0xd8a1e681u, 0xe7d3fbc8u,
+    0x21e1cde6u, 0xc33707d6u, 0xf4d50d87u, 0x455a14edu,
+    0xa9e3e905u, 0xfcefa3f8u, 0x676f02d9u, 0x8d2a4c8au,
+    0xfffa3942u, 0x8771f681u, 0x6d9d6122u, 0xfde5380cu,
+    0xa4beea44u, 0x4bdecfa9u, 0xf6bb4b60u, 0xbebfbc70u,
+    0x289b7ec6u, 0xeaa127fau, 0xd4ef3085u, 0x04881d05u,
+    0xd9d4d039u, 0xe6db99e5u, 0x1fa27cf8u, 0xc4ac5665u,
+    0xf4292244u, 0x432aff97u, 0xab9423a7u, 0xfc93a039u,
+    0x655b59c3u, 0x8f0ccc92u, 0xffeff47du, 0x85845dd1u,
+    0x6fa87e4fu, 0xfe2ce6e0u, 0xa3014314u, 0x4e0811a1u,
+    0xf7537e82u, 0xbd3af235u, 0x2ad7d2bbu, 0xeb86d391u
+  );
+
+  uint state[4] = uint[4](
+    0x67452301u, 0xefcdab89u, 0x98badcfeu, 0x10325476u
+  );
+
+  for (uint block_index = 0u; block_index < block_count; block_index++)
+  {
+    uint message[16];
+
+    for (uint i = 0u; i < 16u; i++)
+    {
+      uint word = 0u;
+
+      for (uint j = 0u; j < 4u; j++)
+      {
+        const uint position = block_index * 64u + i * 4u + j;
+        uint value = 0u;
+
+        if (position < message_length)
+        {
+          value = read_payload_byte (
+            message_count, message_offset + position
+          );
+        }
+        else if (position == message_length)
+        {
+          value = 0x80u;
+        }
+        else if (position >= trailer_start)
+        {
+          const uint trailer_index = position - trailer_start;
+
+          if (trailer_index < 4u)
+          {
+            value = (bit_length_low >> (trailer_index * 8u)) & 0xffu;
+          }
+          else
+          {
+            value =
+              (bit_length_high >> ((trailer_index - 4u) * 8u))
+              & 0xffu;
+          }
+        }
+
+        word |= value << (j * 8u);
+      }
+
+      message[i] = word;
+    }
+
+    uint a = state[0];
+    uint b = state[1];
+    uint c = state[2];
+    uint d = state[3];
+
+    for (uint i = 0u; i < 64u; i++)
+    {
+      uint f;
+      uint g;
+
+      if (i < 16u)
+      {
+        f = (b & c) | ((~b) & d);
+        g = i;
+      }
+      else if (i < 32u)
+      {
+        f = (d & b) | ((~d) & c);
+        g = (5u * i + 1u) & 15u;
+      }
+      else if (i < 48u)
+      {
+        f = b ^ c ^ d;
+        g = (3u * i + 5u) & 15u;
+      }
+      else
+      {
+        f = c ^ (b | (~d));
+        g = (7u * i) & 15u;
+      }
+
+      const uint previous_d = d;
+
+      d = c;
+      c = b;
+      b += rotate_left (
+        a + f + constants[i] + message[g], shifts[i]
+      );
+      a = previous_d;
+    }
+
+    state[0] += a;
+    state[1] += b;
+    state[2] += c;
+    state[3] += d;
+  }
+
+  const uint output_index = message_index * 4u;
+
+  for (uint i = 0u; i < 4u; i++)
+  {
+    output_data.words[output_index + i] = state[i];
+  }
+}

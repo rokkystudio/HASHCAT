@@ -1,0 +1,179 @@
+#version 450
+
+/*
+ * Compute MD4 digests of independently sized caller-owned byte messages.
+ *
+ * Input binding zero holds two uint32 metadata words per message (offset
+ * relative to the payload, then exact byte length), followed by densely
+ * packed little-endian input data. Output binding one contains four uint32
+ * digest words in canonical MD4 little-endian byte order.
+ *
+ * One invocation processes all 512-bit padded message blocks and performs
+ * MD4's 48 compression operations per block. No HASHCAT password candidate,
+ * target digest, salt or attack scheduler data are accessed.
+ */
+layout (local_size_x = 32, local_size_y = 1, local_size_z = 1) in;
+
+layout (set = 0, binding = 0, std430) readonly buffer InputBuffer
+{
+  uint words[];
+} input_data;
+
+layout (set = 0, binding = 1, std430) writeonly buffer OutputBuffer
+{
+  uint words[];
+} output_data;
+
+/* Read one packed input byte following the complete message metadata table. */
+uint read_payload_byte (uint message_count, uint byte_offset)
+{
+  const uint index = message_count * 2u + (byte_offset >> 2u);
+  const uint shift = (byte_offset & 3u) * 8u;
+
+  return (input_data.words[index] >> shift) & 0xffu;
+}
+
+/* Rotate one 32-bit unsigned MD4 word left by an exact nonzero shift. */
+uint rotate_left (uint value, uint amount)
+{
+  return (value << amount) | (value >> (32u - amount));
+}
+
+/*
+ * Hash one independent message with 48-round MD4 block compression.
+ *
+ * Computes standard MD4 padding with a little-endian 64-bit bit length
+ * and handles the second padding block at the 56-byte boundary. Word
+ * permutations and rotation counts match HASHCAT's inc_hash_md4.cl.
+ * Each group of four operations rotates the (a, b, c, d) register view
+ * while applying one step of the relevant MD4 Boolean function.
+ */
+void main ()
+{
+  const uint message_index = gl_GlobalInvocationID.x;
+  const uint message_count = uint (output_data.words.length ()) / 4u;
+
+  if (message_index >= message_count) return;
+
+  const uint message_offset = input_data.words[message_index * 2u];
+  const uint message_length = input_data.words[message_index * 2u + 1u];
+  const uint complete_blocks = message_length / 64u;
+  const uint remainder_bytes = message_length % 64u;
+  const uint block_count =
+    complete_blocks + (remainder_bytes < 56u ? 1u : 2u);
+  const uint padded_bytes = block_count * 64u;
+  const uint trailer_start = padded_bytes - 8u;
+  const uint bit_length_low = message_length << 3u;
+  const uint bit_length_high = message_length >> 29u;
+
+  const uint word_index[48] = uint[48](
+    0u, 1u, 2u, 3u, 4u, 5u, 6u, 7u, 8u, 9u, 10u, 11u, 12u, 13u, 14u, 15u,
+    0u, 4u, 8u, 12u, 1u, 5u, 9u, 13u, 2u, 6u, 10u, 14u, 3u, 7u, 11u, 15u,
+    0u, 8u, 4u, 12u, 2u, 10u, 6u, 14u, 1u, 9u, 5u, 13u, 3u, 11u, 7u, 15u
+  );
+
+  const uint shifts[48] = uint[48](
+    3u, 7u, 11u, 19u, 3u, 7u, 11u, 19u, 3u, 7u, 11u, 19u, 3u, 7u, 11u, 19u,
+    3u, 5u, 9u, 13u, 3u, 5u, 9u, 13u, 3u, 5u, 9u, 13u, 3u, 5u, 9u, 13u,
+    3u, 9u, 11u, 15u, 3u, 9u, 11u, 15u, 3u, 9u, 11u, 15u, 3u, 9u, 11u, 15u
+  );
+
+  uint state[4] = uint[4](
+    0x67452301u, 0xefcdab89u, 0x98badcfeu, 0x10325476u
+  );
+
+  for (uint block_index = 0u; block_index < block_count; block_index++)
+  {
+    uint message[16];
+
+    for (uint i = 0u; i < 16u; i++)
+    {
+      uint word = 0u;
+
+      for (uint j = 0u; j < 4u; j++)
+      {
+        const uint position = block_index * 64u + i * 4u + j;
+        uint value = 0u;
+
+        if (position < message_length)
+        {
+          value = read_payload_byte (
+            message_count, message_offset + position
+          );
+        }
+        else if (position == message_length)
+        {
+          value = 0x80u;
+        }
+        else if (position >= trailer_start)
+        {
+          const uint trailer_index = position - trailer_start;
+
+          if (trailer_index < 4u)
+          {
+            value = (bit_length_low >> (trailer_index * 8u)) & 0xffu;
+          }
+          else
+          {
+            value =
+              (bit_length_high >> ((trailer_index - 4u) * 8u))
+              & 0xffu;
+          }
+        }
+
+        word |= value << (j * 8u);
+      }
+
+      message[i] = word;
+    }
+
+    uint a = state[0];
+    uint b = state[1];
+    uint c = state[2];
+    uint d = state[3];
+
+    for (uint round = 0u; round < 48u; round++)
+    {
+      uint function_word;
+      uint constant;
+
+      if (round < 16u)
+      {
+        function_word = (b & c) | ((~b) & d);
+        constant = 0u;
+      }
+      else if (round < 32u)
+      {
+        function_word = (b & c) | (b & d) | (c & d);
+        constant = 0x5a827999u;
+      }
+      else
+      {
+        function_word = b ^ c ^ d;
+        constant = 0x6ed9eba1u;
+      }
+
+      const uint next = rotate_left (
+        a + function_word + constant + message[word_index[round]],
+        shifts[round]
+      );
+
+      a = d;
+      d = c;
+      c = b;
+      b = next;
+    }
+
+    state[0] += a;
+    state[1] += b;
+    state[2] += c;
+    state[3] += d;
+  }
+
+  const uint output_index = message_index * 4u;
+
+  for (uint i = 0u; i < 4u; i++)
+  {
+    output_data.words[output_index + i] = state[i];
+  }
+}

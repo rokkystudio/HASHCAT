@@ -1,0 +1,238 @@
+#version 450
+
+/*
+ * Compute RIPEMD-160 digests of caller-owned arbitrary byte messages.
+ *
+ * Binding zero holds two uint32 metadata words (payload offset and byte
+ * length) per message, followed by densely packed little-endian bytes.
+ * Binding one receives five uint32 digest words in standard RIPEMD-160
+ * little-endian word order. One invocation executes both 80-round lanes
+ * over each padded 512-bit block and combines the resulting states.
+ *
+ * The message index identifies only an application-owned byte span.
+ * No HASHCAT candidates, target digests or attack scheduler are accessed.
+ */
+layout (local_size_x = 32, local_size_y = 1, local_size_z = 1) in;
+
+layout (set = 0, binding = 0, std430) readonly buffer InputBuffer
+{
+  uint words[];
+} input_data;
+
+layout (set = 0, binding = 1, std430) writeonly buffer OutputBuffer
+{
+  uint words[];
+} output_data;
+
+/* Read one byte from the packed payload following all metadata records. */
+uint read_payload_byte (uint message_count, uint byte_offset)
+{
+  const uint word_index = message_count * 2u + (byte_offset >> 2u);
+  const uint shift = (byte_offset & 3u) * 8u;
+
+  return (input_data.words[word_index] >> shift) & 0xffu;
+}
+
+/* Rotate one unsigned 32-bit RIPEMD state value left by a nonzero amount. */
+uint rotate_left (uint value, uint amount)
+{
+  return (value << amount) | (value >> (32u - amount));
+}
+
+/*
+ * Apply the exact RIPEMD-160 nonlinear function selected by round index.
+ *
+ * The right parallel compression lane passes 79 - round so that its
+ * nonlinear functions run in reverse sequence compared with the left lane.
+ */
+uint ripemd_function (uint round, uint x, uint y, uint z)
+{
+  if (round < 16u) return x ^ y ^ z;
+
+  if (round < 32u) return (x & y) | ((~x) & z);
+
+  if (round < 48u) return (x | (~y)) ^ z;
+
+  if (round < 64u) return (x & z) | (y & (~z));
+
+  return x ^ (y | (~z));
+}
+
+/*
+ * Hash one byte message through RIPEMD-160's dual compression lanes.
+ *
+ * Applies 0x80 message separation and the 64-bit little-endian bit-length
+ * trailer, including the second padding block at the 56-byte boundary.
+ * Standard message permutations and rotation counts come from HASHCAT's
+ * inc_hash_ripemd160.cl and inc_types.h; five feed-forward chaining words
+ * combine the left and right lanes after each full 80-round block.
+ */
+void main ()
+{
+  const uint message_index = gl_GlobalInvocationID.x;
+  const uint message_count = uint (output_data.words.length ()) / 5u;
+
+  if (message_index >= message_count) return;
+
+  const uint message_offset = input_data.words[message_index * 2u];
+  const uint message_length = input_data.words[message_index * 2u + 1u];
+  const uint complete_blocks = message_length / 64u;
+  const uint remainder_bytes = message_length % 64u;
+  const uint block_count =
+    complete_blocks + (remainder_bytes < 56u ? 1u : 2u);
+  const uint padded_bytes = block_count * 64u;
+  const uint trailer_start = padded_bytes - 8u;
+  const uint bit_length_low = message_length << 3u;
+  const uint bit_length_high = message_length >> 29u;
+
+  const uint left_index[80] = uint[80](
+     0u,  1u,  2u,  3u,  4u,  5u,  6u,  7u,  8u,  9u, 10u, 11u, 12u, 13u, 14u, 15u,
+     7u,  4u, 13u,  1u, 10u,  6u, 15u,  3u, 12u,  0u,  9u,  5u,  2u, 14u, 11u,  8u,
+     3u, 10u, 14u,  4u,  9u, 15u,  8u,  1u,  2u,  7u,  0u,  6u, 13u, 11u,  5u, 12u,
+     1u,  9u, 11u, 10u,  0u,  8u, 12u,  4u, 13u,  3u,  7u, 15u, 14u,  5u,  6u,  2u,
+     4u,  0u,  5u,  9u,  7u, 12u,  2u, 10u, 14u,  1u,  3u,  8u, 11u,  6u, 15u, 13u
+  );
+
+  const uint right_index[80] = uint[80](
+     5u, 14u,  7u,  0u,  9u,  2u, 11u,  4u, 13u,  6u, 15u,  8u,  1u, 10u,  3u, 12u,
+     6u, 11u,  3u,  7u,  0u, 13u,  5u, 10u, 14u, 15u,  8u, 12u,  4u,  9u,  1u,  2u,
+    15u,  5u,  1u,  3u,  7u, 14u,  6u,  9u, 11u,  8u, 12u,  2u, 10u,  0u,  4u, 13u,
+     8u,  6u,  4u,  1u,  3u, 11u, 15u,  0u,  5u, 12u,  2u, 13u,  9u,  7u, 10u, 14u,
+    12u, 15u, 10u,  4u,  1u,  5u,  8u,  7u,  6u,  2u, 13u, 14u,  0u,  3u,  9u, 11u
+  );
+
+  const uint left_shifts[80] = uint[80](
+    11u, 14u, 15u, 12u,  5u,  8u,  7u,  9u, 11u, 13u, 14u, 15u,  6u,  7u,  9u,  8u,
+     7u,  6u,  8u, 13u, 11u,  9u,  7u, 15u,  7u, 12u, 15u,  9u, 11u,  7u, 13u, 12u,
+    11u, 13u,  6u,  7u, 14u,  9u, 13u, 15u, 14u,  8u, 13u,  6u,  5u, 12u,  7u,  5u,
+    11u, 12u, 14u, 15u, 14u, 15u,  9u,  8u,  9u, 14u,  5u,  6u,  8u,  6u,  5u, 12u,
+     9u, 15u,  5u, 11u,  6u,  8u, 13u, 12u,  5u, 12u, 13u, 14u, 11u,  8u,  5u,  6u
+  );
+
+  const uint right_shifts[80] = uint[80](
+     8u,  9u,  9u, 11u, 13u, 15u, 15u,  5u,  7u,  7u,  8u, 11u, 14u, 14u, 12u,  6u,
+     9u, 13u, 15u,  7u, 12u,  8u,  9u, 11u,  7u,  7u, 12u,  7u,  6u, 15u, 13u, 11u,
+     9u,  7u, 15u, 11u,  8u,  6u,  6u, 14u, 12u, 13u,  5u, 14u, 13u, 13u,  7u,  5u,
+    15u,  5u,  8u, 11u, 14u, 14u,  6u, 14u,  6u,  9u, 12u,  9u, 12u,  5u, 15u,  8u,
+     8u,  5u, 12u,  9u, 12u,  5u, 14u,  6u,  8u, 13u,  6u,  5u, 15u, 13u, 11u, 11u
+  );
+
+  const uint left_constants[5] = uint[5](
+    0x00000000u, 0x5a827999u, 0x6ed9eba1u,
+    0x8f1bbcdcu, 0xa953fd4eu
+  );
+
+  const uint right_constants[5] = uint[5](
+    0x50a28be6u, 0x5c4dd124u, 0x6d703ef3u,
+    0x7a6d76e9u, 0x00000000u
+  );
+
+  uint state[5] = uint[5](
+    0x67452301u, 0xefcdab89u, 0x98badcfeu,
+    0x10325476u, 0xc3d2e1f0u
+  );
+
+  for (uint block_index = 0u; block_index < block_count; block_index++)
+  {
+    uint message[16];
+
+    for (uint i = 0u; i < 16u; i++)
+    {
+      uint word = 0u;
+
+      for (uint j = 0u; j < 4u; j++)
+      {
+        const uint position = block_index * 64u + i * 4u + j;
+        uint value = 0u;
+
+        if (position < message_length)
+        {
+          value = read_payload_byte (
+            message_count, message_offset + position
+          );
+        }
+        else if (position == message_length)
+        {
+          value = 0x80u;
+        }
+        else if (position >= trailer_start)
+        {
+          const uint trailer_index = position - trailer_start;
+
+          if (trailer_index < 4u)
+          {
+            value = (bit_length_low >> (trailer_index * 8u)) & 0xffu;
+          }
+          else
+          {
+            value =
+              (bit_length_high >> ((trailer_index - 4u) * 8u))
+              & 0xffu;
+          }
+        }
+
+        word |= value << (j * 8u);
+      }
+
+      message[i] = word;
+    }
+
+    uint a1 = state[0];
+    uint b1 = state[1];
+    uint c1 = state[2];
+    uint d1 = state[3];
+    uint e1 = state[4];
+
+    uint a2 = state[0];
+    uint b2 = state[1];
+    uint c2 = state[2];
+    uint d2 = state[3];
+    uint e2 = state[4];
+
+    for (uint round = 0u; round < 80u; round++)
+    {
+      const uint segment = round / 16u;
+
+      const uint left =
+        rotate_left (
+          a1 + ripemd_function (round, b1, c1, d1)
+          + message[left_index[round]] + left_constants[segment],
+          left_shifts[round]
+        ) + e1;
+
+      a1 = e1;
+      e1 = d1;
+      d1 = rotate_left (c1, 10u);
+      c1 = b1;
+      b1 = left;
+
+      const uint right =
+        rotate_left (
+          a2 + ripemd_function (79u - round, b2, c2, d2)
+          + message[right_index[round]] + right_constants[segment],
+          right_shifts[round]
+        ) + e2;
+
+      a2 = e2;
+      e2 = d2;
+      d2 = rotate_left (c2, 10u);
+      c2 = b2;
+      b2 = right;
+    }
+
+    const uint combined = state[1] + c1 + d2;
+
+    state[1] = state[2] + d1 + e2;
+    state[2] = state[3] + e1 + a2;
+    state[3] = state[4] + a1 + b2;
+    state[4] = state[0] + b1 + c2;
+    state[0] = combined;
+  }
+
+  const uint output_index = message_index * 5u;
+
+  for (uint i = 0u; i < 5u; i++)
+  {
+    output_data.words[output_index + i] = state[i];
+  }
+}
