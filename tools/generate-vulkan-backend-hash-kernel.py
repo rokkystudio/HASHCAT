@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
-"""Embed Vulkan MD4/MD5, RIPEMD, SHA, BLAKE2s and Keccak Compute modules.
+"""Embed Vulkan MD, RIPEMD, SHA, BLAKE2 and Keccak Compute modules.
 
 The input is canonical SPIR-V 1.0 generated with glslangValidator for
 Vulkan 1.0. The output contains the exact original 32-bit shader words
 and algorithm-specific provenance in reproducible UTF-8 formatting.
 SHA3-224/256/384/512 and Keccak-256 use configured Keccak-f[1600]
 variants; SHA-384/512 use paired 32-bit words without shaderInt64.
-Independent MD4, MD5 and RIPEMD-160 shaders use the same byte-message layout.
+BLAKE2b-256/384/512 share paired-32-bit BLAKE2b compression and select
+their digest parameter at compile time. All algorithms consume the same
+metadata-prefixed packed byte-message layout.
 """
 
 from __future__ import annotations
@@ -25,6 +27,9 @@ ALGORITHMS = {
     "sha384": ("SHA-384", None),
     "sha512": ("SHA-512", None),
     "blake2s": ("BLAKE2s-256", None),
+    "blake2b_256": ("BLAKE2b-256", None),
+    "blake2b_384": ("BLAKE2b-384", None),
+    "blake2b_512": ("BLAKE2b-512", None),
     "sha3_224": ("SHA3-224", (144, 6, 28)),
     "sha3_256": ("SHA3-256", (136, 6, 32)),
     "sha3_384": ("SHA3-384", (104, 6, 48)),
@@ -71,6 +76,8 @@ def embed_hash_spirv(
         source = "tools/vulkan-backend-keccak.comp"
     elif algorithm in ("sha384", "sha512"):
         source = "tools/vulkan-backend-sha512.comp"
+    elif algorithm.startswith("blake2b_"):
+        source = "tools/vulkan-backend-blake2b.comp"
     elif algorithm == "md5_batch":
         source = "tools/vulkan-backend-md5-batch.comp"
     else:
@@ -95,6 +102,12 @@ def embed_hash_spirv(
         lines.extend([
             f" * Build parameter: VULKAN_SHA512_DIGEST_BYTES={digest}.",
             " * SHA-512 operations use paired 32-bit state words.",
+        ])
+    elif algorithm.startswith("blake2b_"):
+        digest = int(algorithm.rsplit("_", 1)[1]) // 8
+        lines.extend([
+            f" * Build parameter: VULKAN_BLAKE2B_DIGEST_BYTES={digest}.",
+            " * BLAKE2b mixing uses pairs of unsigned 32-bit words.",
         ])
 
     lines.extend([

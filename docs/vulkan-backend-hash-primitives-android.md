@@ -5,7 +5,7 @@ Date: 2026-11-03
 ## Production scope
 
 The dynamic Android HASHCAT Vulkan Compute executor processes independent
-caller-owned byte messages with fourteen cryptographic digest algorithms:
+caller-owned byte messages with seventeen cryptographic digest algorithms:
 
 | Algorithm | Public enum | Rounds | Digest bytes | Byte order |
 | --- | --- | ---: | ---: | --- |
@@ -18,6 +18,9 @@ caller-owned byte messages with fourteen cryptographic digest algorithms:
 | SHA-384 | `BACKEND_VULKAN_HASH_SHA384` | 80 | 48 | Big-endian |
 | SHA-512 | `BACKEND_VULKAN_HASH_SHA512` | 80 | 64 | Big-endian |
 | BLAKE2s-256 | `BACKEND_VULKAN_HASH_BLAKE2S` | 10 | 32 | Little-endian |
+| BLAKE2b-256 | `BACKEND_VULKAN_HASH_BLAKE2B_256` | 12 | 32 | Little-endian |
+| BLAKE2b-384 | `BACKEND_VULKAN_HASH_BLAKE2B_384` | 12 | 48 | Little-endian |
+| BLAKE2b-512 | `BACKEND_VULKAN_HASH_BLAKE2B_512` | 12 | 64 | Little-endian |
 | SHA3-224 | `BACKEND_VULKAN_HASH_SHA3_224` | 24 | 28 | Little-endian |
 | SHA3-256 | `BACKEND_VULKAN_HASH_SHA3_256` | 24 | 32 | Little-endian |
 | SHA3-384 | `BACKEND_VULKAN_HASH_SHA3_384` | 24 | 48 | Little-endian |
@@ -29,7 +32,8 @@ per absorbed sponge block. SHA-1, SHA-224 and SHA-256 use 512-bit
 compression blocks; SHA-384 and SHA-512 use 1024-bit blocks and 80
 rounds per block. MD4 and MD5 use 48 and 64 rounds per 512-bit block;
 RIPEMD-160 runs two parallel 80-round lanes per 512-bit block.
-BLAKE2s uses ten rounds per 64-byte block.
+BLAKE2s uses ten rounds per 64-byte block. BLAKE2b uses twelve
+rounds per 128-byte block, with 64-bit mixing represented as uint32 pairs.
 
 Each algorithm has an immutable Vulkan 1.0 SPIR-V module and uses
 the same dynamically owned two-buffer Compute program graph.
@@ -74,7 +78,7 @@ Copies the input to binding zero. The buffer begins with two uint32 metadata
 words per message: payload-relative byte offset, then byte length.
 Unaligned messages are packed consecutively after the metadata table;
 the final allocation padding is initialized to zero. The layout is common
-to all fourteen hash algorithms.
+to all seventeen hash algorithms.
 
 ### `backend_vulkan_hash_batch_dispatch()`
 
@@ -84,9 +88,9 @@ descriptor set, and records a single `vkCmdDispatch`. A shader-write to
 host-read dependency and fence completion precede output invalidation.
 
 SHA-1 and SHA-2 serialize digest words in big-endian order. MD4, MD5,
-RIPEMD-160, BLAKE2s and SHA3/Keccak serialize little-endian state words
-to the canonical digest byte sequence. The number of output words is selected from the requested
-algorithm's digest byte count. No password workload is scheduled.
+RIPEMD-160, BLAKE2s, BLAKE2b and SHA3/Keccak serialize little-endian
+state words to the canonical digest byte sequence. The number of output
+words is selected from the requested algorithm's digest byte count. No password workload is scheduled.
 
 ## Shader contracts
 
@@ -112,6 +116,8 @@ one fixed-size digest per input.
   length trailer and 384-/512-bit digest extraction
 - `tools/vulkan-backend-blake2s.comp`: unkeyed 32-byte parameter block,
   ten-round sigma schedule, processed-byte counters and finalization flag
+- `tools/vulkan-backend-blake2b.comp`: unkeyed BLAKE2b with 256-/384-/512-bit
+  output parameters, 12-round schedule, 128-byte blocks and finalization
 - `tools/vulkan-backend-keccak.comp`: Keccak-f[1600] sponge absorption,
   24 theta/rho/pi/chi/iota rounds and fixed-length digest extraction
 
@@ -166,6 +172,33 @@ the optional Vulkan `shaderInt64` feature. Each output 64-bit word is
 stored as its high uint32 then low uint32 so the host's big-endian
 serialization emits canonical SHA-384/512 digest bytes.
 
+### BLAKE2b-256/384/512 variants
+
+BLAKE2b-256, BLAKE2b-384 and BLAKE2b-512 have distinct Vulkan 1.0
+SPIR-V modules compiled from `tools/vulkan-backend-blake2b.comp` using
+`VULKAN_BLAKE2B_DIGEST_BYTES=32`, `=48` and `=64`, respectively.
+The chosen digest length configures the RFC 7693 unkeyed parameter
+word `0x01010000 | digest_bytes`. Shorter digests are independently
+parameterized BLAKE2b outputs; they are not prefixes of BLAKE2b-512.
+
+The shader processes 128-byte message blocks with 12 rounds of BLAKE2b
+mixing and the standard 12-round sigma schedule. Every round performs
+eight G functions using the 32/24/16/63 right-rotation sequence.
+An empty input hashes one zero-filled final block. A complete final block
+receives its finalization flag directly, without an extra block. Partial
+final blocks are zero-filled, and the counter records the actual number
+of message bytes processed. The byte counter fits in a 32-bit low half
+because this API accepts uint32 input lengths.
+
+The 64-bit BLAKE2b lanes use `uvec2(low32, high32)` for modular addition,
+XOR and rotations, avoiding the optional Vulkan `shaderInt64` feature.
+The common executor serializes each low/high uint32 pair as little-endian
+digest bytes. The three variants return 32, 48 or 64 bytes, respectively.
+
+All exposed BLAKE2s/BLAKE2b variants are unkeyed. Explicit keyed operation,
+custom salt, personalization, tree hashing and arbitrary-length digest
+selection are not available through this API.
+
 ### Keccak-f[1600] variants
 
 Five immutable modules are compiled from the shared Keccak GLSL file with
@@ -192,13 +225,9 @@ The 64-bit Keccak lanes are represented as `uvec2` containing low/high
 feature. SHA3-256 and Keccak-256 differ in the domain suffix despite
 their equal rate and output length.
 
-The public BLAKE2s mode remains unkeyed with a fixed 256-bit digest;
-keyed operation, custom salt, personalization and variable-length
-BLAKE2s output are not exposed.
-
 ## Reproducible Android compilation
 
-Compile all thirteen tracked non-SHA-256 SPIR-V modules and the common
+Compile all sixteen tracked non-SHA-256 SPIR-V modules and the common
 executor for Android API 24 ARM64 and ARMv7:
 
 ```powershell
@@ -216,14 +245,14 @@ common executor with the existing SHA-256 diagnostic program.
 **Current verification boundary:** shader compilation, embedded SPIR-V
 reproducibility and ARM64/ARMv7 native compilation have passed. Hardware
 execution and digest-output validation for the new MD4, MD5 batch,
-RIPEMD-160, SHA-1, SHA-224, BLAKE2s-256, SHA-384/512,
-SHA3-224/256/384/512 and Keccak-256 paths are not
+RIPEMD-160, SHA-1, SHA-224, BLAKE2s-256, BLAKE2b-256/384/512,
+SHA-384/512, SHA3-224/256/384/512 and Keccak-256 paths are not
 confirmed by these compilation results. Earlier SHA-256 hardware
 validation remains documented separately.
 
 ## Integration boundary
 
-The fourteen-algorithm Vulkan batch API consumes application-owned byte
+The seventeen-algorithm Vulkan batch API consumes application-owned byte
 messages under an open Vulkan catalogue. It does not register a Vulkan
 HASHCAT hashing device or connect candidate generation, attack scheduling,
 digest matching or OpenCL `mXXXXX` hash modes to Vulkan.

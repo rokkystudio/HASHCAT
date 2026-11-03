@@ -1,0 +1,252 @@
+#version 450
+
+/*
+ * Compute unkeyed BLAKE2b digests for independent byte messages.
+ *
+ * VULKAN_BLAKE2B_DIGEST_BYTES selects a fixed output length of 32, 48 or
+ * 64 bytes. Every variant initializes the matching RFC 7693 parameter word;
+ * shorter digests are independently parameterized, not truncated versions
+ * of the BLAKE2b-512 digest.
+ *
+ * Binding zero stores two uint32 metadata words (offset, length) per
+ * message followed by tightly packed little-endian payload bytes. Binding
+ * one stores canonical little-endian BLAKE2b state words. All 64-bit lanes
+ * are uvec2(low32, high32) to support Vulkan 1.0 without shaderInt64.
+ * The shader does not generate candidates or compare target digests.
+ */
+#ifndef VULKAN_BLAKE2B_DIGEST_BYTES
+#define VULKAN_BLAKE2B_DIGEST_BYTES 64
+#endif
+
+layout (local_size_x = 32, local_size_y = 1, local_size_z = 1) in;
+
+layout (set = 0, binding = 0, std430) readonly buffer InputBuffer
+{
+  uint words[];
+} input_data;
+
+layout (set = 0, binding = 1, std430) writeonly buffer OutputBuffer
+{
+  uint words[];
+} output_data;
+
+/* Read one little-endian byte after all message metadata records. */
+uint read_payload_byte (uint message_count, uint byte_offset)
+{
+  const uint index = message_count * 2u + (byte_offset >> 2u);
+  const uint shift = (byte_offset & 3u) * 8u;
+
+  return (input_data.words[index] >> shift) & 0xffu;
+}
+
+/*
+ * Add two unsigned 64-bit lane values modulo 2^64.
+ *
+ * Propagates the carry from low to high uint32, wrapping the high word
+ * naturally when its sum exceeds 32 bits.
+ */
+uvec2 add_64 (uvec2 left, uvec2 right)
+{
+  const uint low = left.x + right.x;
+  const uint carry = uint (low < left.x);
+
+  return uvec2 (low, left.y + right.y + carry);
+}
+
+/*
+ * Rotate a 64-bit lane to the right by a standard BLAKE2b distance.
+ *
+ * Handles the exact swap at 32 and all remaining distances in 1..63
+ * using two 32-bit words, without undefined shift-by-32 operations.
+ */
+uvec2 rotate_right_64 (uvec2 lane, uint amount)
+{
+  if (amount == 32u) return uvec2 (lane.y, lane.x);
+
+  if (amount < 32u)
+  {
+    return uvec2 (
+      (lane.x >> amount) | (lane.y << (32u - amount)),
+      (lane.y >> amount) | (lane.x << (32u - amount))
+    );
+  }
+
+  const uint remaining = amount - 32u;
+
+  return uvec2 (
+    (lane.y >> remaining) | (lane.x << (32u - remaining)),
+    (lane.x >> remaining) | (lane.y << (32u - remaining))
+  );
+}
+
+/*
+ * Apply BLAKE2b's eight additive/XOR transformations to four lanes.
+ *
+ * x and y are successive 64-bit message words chosen by the current
+ * sigma permutation. Rotations use the BLAKE2b 32/24/16/63 schedule.
+ */
+void mix (
+  inout uvec2 v[16],
+  uint a, uint b, uint c, uint d,
+  uvec2 x, uvec2 y)
+{
+  v[a] = add_64 (add_64 (v[a], v[b]), x);
+  v[d] = rotate_right_64 (v[d] ^ v[a], 32u);
+  v[c] = add_64 (v[c], v[d]);
+  v[b] = rotate_right_64 (v[b] ^ v[c], 24u);
+  v[a] = add_64 (add_64 (v[a], v[b]), y);
+  v[d] = rotate_right_64 (v[d] ^ v[a], 16u);
+  v[c] = add_64 (v[c], v[d]);
+  v[b] = rotate_right_64 (v[b] ^ v[c], 63u);
+}
+
+/*
+ * Hash one message with all 12 rounds of BLAKE2b compression per block.
+ *
+ * The input is absorbed in 128-byte blocks. A final partial block is
+ * zero-filled, and an empty message hashes one zero-filled final block.
+ * The low 64-bit byte counter is derived from uint32 message length;
+ * high counter bits are zero. Only the last block flips the standard
+ * finalization flag. Unkeyed parameter blocks set fanout=1, depth=1
+ * and the selected digest size; no key, salt or personalization is used.
+ */
+void main ()
+{
+  const uint message_index = gl_GlobalInvocationID.x;
+  const uint digest_words = uint (VULKAN_BLAKE2B_DIGEST_BYTES) / 4u;
+  const uint message_count =
+    uint (output_data.words.length ()) / digest_words;
+
+  if (message_index >= message_count) return;
+
+  const uint message_offset = input_data.words[message_index * 2u];
+  const uint message_length = input_data.words[message_index * 2u + 1u];
+
+  const uvec2 iv[8] = uvec2[8](
+    uvec2 (0xf3bcc908u, 0x6a09e667u),
+    uvec2 (0x84caa73bu, 0xbb67ae85u),
+    uvec2 (0xfe94f82bu, 0x3c6ef372u),
+    uvec2 (0x5f1d36f1u, 0xa54ff53au),
+    uvec2 (0xade682d1u, 0x510e527fu),
+    uvec2 (0x2b3e6c1fu, 0x9b05688cu),
+    uvec2 (0xfb41bd6bu, 0x1f83d9abu),
+    uvec2 (0x137e2179u, 0x5be0cd19u)
+  );
+
+  const uint sigma[192] = uint[192](
+     0u,  1u,  2u,  3u,  4u,  5u,  6u,  7u,  8u,  9u, 10u, 11u, 12u, 13u, 14u, 15u,
+    14u, 10u,  4u,  8u,  9u, 15u, 13u,  6u,  1u, 12u,  0u,  2u, 11u,  7u,  5u,  3u,
+    11u,  8u, 12u,  0u,  5u,  2u, 15u, 13u, 10u, 14u,  3u,  6u,  7u,  1u,  9u,  4u,
+     7u,  9u,  3u,  1u, 13u, 12u, 11u, 14u,  2u,  6u,  5u, 10u,  4u,  0u, 15u,  8u,
+     9u,  0u,  5u,  7u,  2u,  4u, 10u, 15u, 14u,  1u, 11u, 12u,  6u,  8u,  3u, 13u,
+     2u, 12u,  6u, 10u,  0u, 11u,  8u,  3u,  4u, 13u,  7u,  5u, 15u, 14u,  1u,  9u,
+    12u,  5u,  1u, 15u, 14u, 13u,  4u, 10u,  0u,  7u,  6u,  3u,  9u,  2u,  8u, 11u,
+    13u, 11u,  7u, 14u, 12u,  1u,  3u,  9u,  5u,  0u, 15u,  4u,  8u,  6u,  2u, 10u,
+     6u, 15u, 14u,  9u, 11u,  3u,  0u,  8u, 12u,  2u, 13u,  7u,  1u,  4u, 10u,  5u,
+    10u,  2u,  8u,  4u,  7u,  6u,  1u,  5u, 15u, 11u,  9u, 14u,  3u, 12u, 13u,  0u,
+     0u,  1u,  2u,  3u,  4u,  5u,  6u,  7u,  8u,  9u, 10u, 11u, 12u, 13u, 14u, 15u,
+    14u, 10u,  4u,  8u,  9u, 15u, 13u,  6u,  1u, 12u,  0u,  2u, 11u,  7u,  5u,  3u
+  );
+
+  uvec2 h[8];
+
+  for (uint i = 0u; i < 8u; i++)
+  {
+    h[i] = iv[i];
+  }
+
+  h[0].x ^= 0x01010000u | uint (VULKAN_BLAKE2B_DIGEST_BYTES);
+
+  uint block_count =
+    message_length / 128u + (message_length % 128u != 0u ? 1u : 0u);
+
+  if (block_count == 0u) block_count = 1u;
+
+  for (uint block_index = 0u; block_index < block_count; block_index++)
+  {
+    const uint block_offset = block_index * 128u;
+    const uint valid_bytes = min (128u, message_length - block_offset);
+    const uint total_bytes = block_offset + valid_bytes;
+
+    uvec2 message[16];
+
+    for (uint i = 0u; i < 16u; i++)
+    {
+      uint low = 0u;
+      uint high = 0u;
+
+      for (uint j = 0u; j < 8u; j++)
+      {
+        const uint position = block_offset + i * 8u + j;
+
+        if (position < message_length)
+        {
+          const uint value = read_payload_byte (
+            message_count, message_offset + position
+          );
+
+          if (j < 4u)
+          {
+            low |= value << (j * 8u);
+          }
+          else
+          {
+            high |= value << ((j - 4u) * 8u);
+          }
+        }
+      }
+
+      message[i] = uvec2 (low, high);
+    }
+
+    uvec2 v[16];
+
+    for (uint i = 0u; i < 8u; i++)
+    {
+      v[i] = h[i];
+      v[i + 8u] = iv[i];
+    }
+
+    v[12].x ^= total_bytes;
+
+    if (block_index + 1u == block_count)
+    {
+      v[14] = ~v[14];
+    }
+
+    for (uint round = 0u; round < 12u; round++)
+    {
+      const uint offset = round * 16u;
+
+      mix (v, 0u, 4u, 8u, 12u,
+        message[sigma[offset + 0u]], message[sigma[offset + 1u]]);
+      mix (v, 1u, 5u, 9u, 13u,
+        message[sigma[offset + 2u]], message[sigma[offset + 3u]]);
+      mix (v, 2u, 6u, 10u, 14u,
+        message[sigma[offset + 4u]], message[sigma[offset + 5u]]);
+      mix (v, 3u, 7u, 11u, 15u,
+        message[sigma[offset + 6u]], message[sigma[offset + 7u]]);
+      mix (v, 0u, 5u, 10u, 15u,
+        message[sigma[offset + 8u]], message[sigma[offset + 9u]]);
+      mix (v, 1u, 6u, 11u, 12u,
+        message[sigma[offset + 10u]], message[sigma[offset + 11u]]);
+      mix (v, 2u, 7u, 8u, 13u,
+        message[sigma[offset + 12u]], message[sigma[offset + 13u]]);
+      mix (v, 3u, 4u, 9u, 14u,
+        message[sigma[offset + 14u]], message[sigma[offset + 15u]]);
+    }
+
+    for (uint i = 0u; i < 8u; i++)
+    {
+      h[i] ^= v[i] ^ v[i + 8u];
+    }
+  }
+
+  const uint output_index = message_index * digest_words;
+
+  for (uint i = 0u; i < digest_words / 2u; i++)
+  {
+    output_data.words[output_index + i * 2u] = h[i].x;
+    output_data.words[output_index + i * 2u + 1u] = h[i].y;
+  }
+}

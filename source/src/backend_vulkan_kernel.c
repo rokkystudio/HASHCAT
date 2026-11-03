@@ -13,9 +13,10 @@
  * from declared counts and exact uniform or per-buffer ranges. The public
  * arithmetic programs verify one, two or four ordered stages; MD5 executes a
  * real 64-round compression stage over fixed public one-block messages; and
- * MD4, MD5, RIPEMD-160, SHA-1/2, BLAKE2s-256 and SHA3/Keccak accept
- * arbitrary byte-message batches through the same dynamic resource owner. 64-bit
- * SHA-384/512 uses paired 32-bit words without optional shaderInt64.
+ * MD4, MD5, RIPEMD-160, SHA-1/2, BLAKE2s/BLAKE2b and SHA3/Keccak
+ * accept arbitrary byte-message batches through the dynamic resource owner.
+ * SHA-384/512, BLAKE2b and Keccak represent 64-bit words as paired 32-bit
+ * values without requiring the optional Vulkan shaderInt64 feature.
  *
  * Information-mode outputs are checked against host references before
  * temporary Vulkan and host resources are released. The cryptographic paths
@@ -32,6 +33,9 @@
 #include "backend_vulkan_md5_batch_spirv.h"
 #include "backend_vulkan_hash.h"
 #include "backend_vulkan_sha256.h"
+#include "backend_vulkan_blake2b_256_spirv.h"
+#include "backend_vulkan_blake2b_384_spirv.h"
+#include "backend_vulkan_blake2b_512_spirv.h"
 #include "backend_vulkan_blake2s_spirv.h"
 #include "backend_vulkan_keccak_256_spirv.h"
 #include "backend_vulkan_sha3_224_spirv.h"
@@ -2476,13 +2480,13 @@ VkResult backend_vulkan_kernel_verify_md5 (
 }
 
 /**
- * Hash caller-owned messages with MD4/MD5, RIPEMD-160, SHA or BLAKE2s.
+ * Hash caller-owned byte messages using MD4/MD5, RIPEMD, SHA or BLAKE2.
  *
- * Selects the exact immutable SPIR-V 1.0 module for the requested MD4/MD5,
- * RIPEMD-160, SHA-1/2, SHA3/Keccak or BLAKE2s-256 compression algorithm.
- * The SHA-384/512 and Keccak implementations use paired 32-bit words for
- * 64-bit operations. All modules consume one packed metadata/payload input
- * buffer and write fixed-length digests to a second storage buffer.
+ * Selects the immutable SPIR-V 1.0 module for the requested MD4/MD5,
+ * RIPEMD-160, SHA-1/2, SHA3/Keccak, BLAKE2s or BLAKE2b algorithm.
+ * SHA-384/512, Keccak and BLAKE2b use paired uint32 words for 64-bit
+ * operations. Every module consumes the same packed metadata/payload
+ * input buffer and writes fixed-length digests to a second storage buffer.
  *
  * Validates input spans, padded block address bounds, output sizes and
  * dispatch topology before constructing an explicitly sized one-stage
@@ -2559,6 +2563,39 @@ VkResult backend_vulkan_hash_batch (
       little_endian = VK_TRUE;
       algorithm_name = "BLAKE2S";
       stage_name = "blake2s_byte_batch";
+      break;
+
+    case BACKEND_VULKAN_HASH_BLAKE2B_256:
+      spirv = backend_vulkan_blake2b_256_spirv;
+      spirv_words =
+        sizeof (backend_vulkan_blake2b_256_spirv) / sizeof (uint32_t);
+      digest_bytes = 32u;
+      tail_bytes = 128u;
+      little_endian = VK_TRUE;
+      algorithm_name = "BLAKE2B_256";
+      stage_name = "blake2b_256_byte_batch";
+      break;
+
+    case BACKEND_VULKAN_HASH_BLAKE2B_384:
+      spirv = backend_vulkan_blake2b_384_spirv;
+      spirv_words =
+        sizeof (backend_vulkan_blake2b_384_spirv) / sizeof (uint32_t);
+      digest_bytes = 48u;
+      tail_bytes = 128u;
+      little_endian = VK_TRUE;
+      algorithm_name = "BLAKE2B_384";
+      stage_name = "blake2b_384_byte_batch";
+      break;
+
+    case BACKEND_VULKAN_HASH_BLAKE2B_512:
+      spirv = backend_vulkan_blake2b_512_spirv;
+      spirv_words =
+        sizeof (backend_vulkan_blake2b_512_spirv) / sizeof (uint32_t);
+      digest_bytes = 64u;
+      tail_bytes = 128u;
+      little_endian = VK_TRUE;
+      algorithm_name = "BLAKE2B_512";
+      stage_name = "blake2b_512_byte_batch";
       break;
 
     case BACKEND_VULKAN_HASH_SHA3_224:

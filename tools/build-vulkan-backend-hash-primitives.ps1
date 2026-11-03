@@ -1,14 +1,14 @@
 <#
 .SYNOPSIS
-Compile MD4/MD5, RIPEMD-160, SHA, BLAKE2s and Keccak on Android Vulkan.
+Compile MD4/MD5, RIPEMD-160, SHA, BLAKE2 and Keccak on Android Vulkan.
 
 .DESCRIPTION
 Compiles independently sized message-batch shaders for MD4, MD5, RIPEMD-160,
 SHA-1, SHA-224, SHA-256, SHA-384, SHA-512, BLAKE2s-256,
-SHA3-224/256/384/512 and Keccak-256 into Vulkan 1.0 SPIR-V. SHA-384/512
-use paired 32-bit words, and SHA3/Keccak use one shared Keccak-f[1600]
-source with exact rate, domain suffix and digest length. Every generated
-SPIR-V module must reproduce its tracked C header byte-for-byte.
+BLAKE2b-256/384/512, SHA3-224/256/384/512 and Keccak-256 into Vulkan 1.0
+SPIR-V. SHA-384/512 and BLAKE2b use paired 32-bit arithmetic, while
+SHA3/Keccak uses one Keccak-f[1600] source with exact rate, suffix and
+digest length. Every module must reproduce its tracked C header byte-for-byte.
 
 Compiles the common Vulkan program executor for Android ARM64 and ARMv7 with
 warnings treated as errors. Does not perform password candidate generation,
@@ -120,6 +120,36 @@ foreach ($variant in @(
     Write-Output "PASS reproducible Vulkan SPIR-V 1.0 $algorithm module"
 }
 
+$blake2bSource = Join-Path $root 'tools\vulkan-backend-blake2b.comp'
+
+foreach ($variant in @(
+    @{ Algorithm = 'blake2b_256'; Digest = 32 },
+    @{ Algorithm = 'blake2b_384'; Digest = 48 },
+    @{ Algorithm = 'blake2b_512'; Digest = 64 }
+)) {
+    $algorithm = $variant.Algorithm
+    $header = Join-Path $root "source\include\backend_vulkan_$($algorithm)_spirv.h"
+    $module = Join-Path $directory "vulkan-backend-$algorithm.spv"
+    $expected = (Get-FileHash -LiteralPath $header -Algorithm SHA256).Hash
+
+    & $glslang -V --target-env vulkan1.0 -S comp -e main `
+      "-DVULKAN_BLAKE2B_DIGEST_BYTES=$($variant.Digest)" `
+      -o $module $blake2bSource
+
+    if ($LASTEXITCODE -ne 0) {
+        throw "Vulkan 1.0 BLAKE2b shader compilation failed: $algorithm"
+    }
+
+    & python -B $generator --algorithm $algorithm --spirv $module --header $header
+
+    if ($LASTEXITCODE -ne 0 -or
+        (Get-FileHash -LiteralPath $header -Algorithm SHA256).Hash -ne $expected) {
+        throw "Embedded SPIR-V bytes differ from the compiled $algorithm module."
+    }
+
+    Write-Output "PASS reproducible Vulkan SPIR-V 1.0 $algorithm module"
+}
+
 $keccakSource = Join-Path $root 'tools\vulkan-backend-keccak.comp'
 
 $keccakVariants = @(
@@ -196,7 +226,7 @@ foreach ($target in @(
         throw "Common Vulkan hash API symbols missing for $($target.Abi)."
     }
 
-    Write-Output "PASS Android API $AndroidApi $($target.Abi) MD4 MD5 RIPEMD-160 SHA-1/2 SHA3 Keccak-256 BLAKE2s-256 executor"
+    Write-Output "PASS Android API $AndroidApi $($target.Abi) MD4 MD5 RIPEMD-160 SHA-1/2 SHA3 Keccak-256 BLAKE2s/b executor"
     Write-Output "HASH_CORE_ARTIFACT $($target.Abi) sha256=$((Get-FileHash -LiteralPath $object -Algorithm SHA256).Hash.ToLowerInvariant())"
 }
 

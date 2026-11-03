@@ -10,8 +10,8 @@
  * Hash independent byte strings through the common Vulkan 1.0 executor.
  *
  * The caller provides immutable message spans and receives canonical digest
- * bytes. MD4/MD5, RIPEMD-160, SHA-1/2, BLAKE2s-256 and SHA3/Keccak use
- * immutable SPIR-V modules with common input metadata, dynamic GPU
+ * bytes. MD4/MD5, RIPEMD-160, SHA-1/2, BLAKE2s/BLAKE2b and SHA3/Keccak
+ * use immutable SPIR-V modules with common input metadata, dynamic GPU
  * allocation, dispatch, fence, cache synchronization and cleanup.
  * No candidate generation, target hash comparison, salt processing or
  * HASHCAT attack scheduling is performed.
@@ -28,10 +28,10 @@
  *
  * Every algorithm accepts packed byte messages. MD4/MD5 and RIPEMD-160
  * use little-endian 512-bit block padding; SHA-1/2 use big-endian length
- * trailers, including 1024-bit SHA-384/512 blocks. BLAKE2s uses block
- * counters/finalization, while SHA3/Keccak uses Keccak-f[1600] with
- * explicit domain separation. The selected enum determines the module,
- * digest length, padding and output byte order.
+ * trailers, including 1024-bit SHA-384/512 blocks. BLAKE2s and BLAKE2b
+ * use message block counters, digest-size parameterization and finalization;
+ * SHA3/Keccak uses Keccak-f[1600] with explicit domain separation. The enum
+ * determines the shader module, digest length, padding and output byte order.
  */
 typedef enum backend_vulkan_hash_algorithm
 {
@@ -48,7 +48,10 @@ typedef enum backend_vulkan_hash_algorithm
   BACKEND_VULKAN_HASH_SHA512 = 11,
   BACKEND_VULKAN_HASH_MD5 = 12,
   BACKEND_VULKAN_HASH_RIPEMD160 = 13,
-  BACKEND_VULKAN_HASH_MD4 = 14
+  BACKEND_VULKAN_HASH_MD4 = 14,
+  BACKEND_VULKAN_HASH_BLAKE2B_256 = 15,
+  BACKEND_VULKAN_HASH_BLAKE2B_384 = 16,
+  BACKEND_VULKAN_HASH_BLAKE2B_512 = 17
 } backend_vulkan_hash_algorithm_t;
 
 /**
@@ -71,14 +74,15 @@ typedef struct backend_vulkan_hash_message
  * diagnostics. Every nonempty message requires non-NULL data. Output has
  * exactly message_count consecutive digests: 16 bytes for MD4/MD5, 20 bytes
  * for RIPEMD-160/SHA-1, 28 bytes for SHA-224/SHA3-224, 32 bytes for
- * SHA-256/SHA3-256/Keccak-256/BLAKE2s, 48 bytes for SHA-384/SHA3-384
- * or 64 bytes for SHA-512/SHA3-512.
+ * SHA-256/SHA3-256/Keccak-256/BLAKE2s/BLAKE2b-256, 48 bytes for
+ * SHA-384/SHA3-384/BLAKE2b-384 or 64 bytes for SHA-512/SHA3-512/
+ * BLAKE2b-512.
  *
  * The method packs lengths and byte offsets into one source storage buffer,
  * validates device limits and sizes, executes one real Compute dispatch and
  * serializes SHA-1/2 words in big-endian order and MD4/MD5/RIPEMD-160,
- * BLAKE2s/SHA3/Keccak words in little-endian order. Every input receives
- * algorithm-specific padding, domain separation or finalization and all
+ * BLAKE2s/BLAKE2b/SHA3/Keccak words in little-endian order. Every input
+ * receives algorithm-specific padding, domain separation or finalization and all
  * required compression or permutation blocks.
  *
  * VK_SUCCESS means GPU completion and complete Vulkan resource cleanup.

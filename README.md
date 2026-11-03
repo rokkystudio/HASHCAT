@@ -151,16 +151,16 @@ not consume HASHCAT scheduler candidates or register as a hashing
 device.
 
 The [common Vulkan hash batch API](docs/vulkan-backend-hash-primitives-android.md)
-now includes MD4, arbitrary-length MD5, RIPEMD-160, SHA-1, SHA-224,
-SHA-256, SHA-384, SHA-512, unkeyed BLAKE2s-256, SHA3-224/256/384/512
-and Keccak-256. All fourteen byte-message algorithms share the same
-dynamic Vulkan resource owner, explicit message lengths and canonical
-digest serialization. SHA-384/512 and Keccak-f[1600] represent 64-bit
-words as pairs of uint32 values, so no optional Vulkan shaderInt64
-feature is required. ARM64 and ARMv7 native compilation succeeds;
-hardware execution and digest equality for additional non-SHA-256
-algorithms have not yet been confirmed. The old fixed-vector MD5 stage
-remains independent from the arbitrary-length batch MD5 shader.
+includes MD4, variable-length MD5, RIPEMD-160, SHA-1, SHA-224,
+SHA-256, SHA-384, SHA-512, unkeyed BLAKE2s-256,
+BLAKE2b-256/384/512, SHA3-224/256/384/512 and Keccak-256. All seventeen
+algorithms share dynamic Vulkan resource ownership, exact message lengths
+and canonical digest serialization. SHA-384/512, BLAKE2b and Keccak-f[1600]
+use pairs of uint32 words for 64-bit operations without requiring the
+optional shaderInt64 feature. ARM64 and ARMv7 native compilation succeeds.
+Hardware execution and digest equality for the additional non-SHA-256
+algorithms have not been confirmed; the fixed-vector MD5 information-mode
+stage remains separate from arbitrary-length batch MD5.
 
 ## Working on hashcat source
 
