@@ -226,6 +226,21 @@ foreach ($target in @(
         throw "Common Vulkan hash API symbols missing for $($target.Abi)."
     }
 
+    $formatObject = Join-Path $directory "backend-vulkan-md5-format-$($target.Abi).o"
+
+    & $clang "--target=$($target.Triple)" $flags -fPIC -c (Join-Path $root 'source\src\backend_vulkan_md5_format.c') -o $formatObject
+
+    if ($LASTEXITCODE -ne 0) {
+        throw "Vulkan MD5 format compilation failed for $($target.Abi)."
+    }
+
+    $formatSymbols = @(& $readelf -W --symbols $formatObject)
+
+    if ($LASTEXITCODE -ne 0 -or -not ($formatSymbols -match 'backend_vulkan_md5_format_batch')) {
+        throw "Vulkan MD5 format API symbol missing for $($target.Abi)."
+    }
+
+    Write-Output "PASS Android API $AndroidApi $($target.Abi) MD5 message/salt format executor"
     Write-Output "PASS Android API $AndroidApi $($target.Abi) MD4 MD5 RIPEMD-160 SHA-1/2 SHA3 Keccak-256 BLAKE2s/b executor"
     Write-Output "HASH_CORE_ARTIFACT $($target.Abi) sha256=$((Get-FileHash -LiteralPath $object -Algorithm SHA256).Hash.ToLowerInvariant())"
 }
