@@ -870,6 +870,7 @@ typedef enum user_options_map
   IDX_BACKEND_IGNORE_HIP        = 0xff02,
   IDX_BACKEND_IGNORE_METAL      = 0xff03,
   IDX_BACKEND_IGNORE_OPENCL     = 0xff04,
+  IDX_BACKEND_IGNORE_VULKAN     = 0xff5a,
   IDX_BACKEND_INFO              = 'I',
   IDX_BACKEND_INFO_JSON         = 0xff17,
   IDX_BACKEND_VECTOR_WIDTH      = 0xff05,
@@ -2556,6 +2557,7 @@ typedef struct user_options
   bool         backend_ignore_hip;
   bool         backend_ignore_metal;
   bool         backend_ignore_opencl;
+  bool         backend_ignore_vulkan;
   bool         optimized_kernel;
   bool         multiply_accel;
   bool         outfile_autohex;

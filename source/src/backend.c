@@ -5522,25 +5522,34 @@ int backend_ctx_init (hashcat_ctx_t *hashcat_ctx)
    */
 
   #if defined (WITH_VULKAN_DISCOVERY)
-  const VkResult vulkan_result = backend_vulkan_catalog_open (
-    backend_ctx, VK_API_VERSION_1_0, stderr
-  );
+  /**
+   * --backend-ignore-vulkan keeps the catalogue closed, just like the other
+   * --backend-ignore-* flags skip their interface. The OpenCL path and device
+   * registration are unaffected, because the catalogue is independent of them.
+   */
 
-  if (vulkan_result != VK_SUCCESS)
+  if (user_options->backend_ignore_vulkan == false)
   {
-    event_log_warning (
-      hashcat_ctx,
-      "Vulkan 1.0 discovery failed with VkResult %d; Vulkan devices are not scheduled.",
-      vulkan_result
+    const VkResult vulkan_result = backend_vulkan_catalog_open (
+      backend_ctx, VK_API_VERSION_1_0, stderr
     );
-  }
-  else
-  {
-    event_log_info (
-      hashcat_ctx,
-      "Vulkan 1.0 discovery found %u physical device(s); Vulkan Compute scheduling is not enabled.",
-      backend_ctx->vulkan_devices_cnt
-    );
+
+    if (vulkan_result != VK_SUCCESS)
+    {
+      event_log_warning (
+        hashcat_ctx,
+        "Vulkan 1.0 discovery failed with VkResult %d; Vulkan devices are not scheduled.",
+        vulkan_result
+      );
+    }
+    else
+    {
+      event_log_info (
+        hashcat_ctx,
+        "Vulkan 1.0 discovery found %u physical device(s); Vulkan Compute scheduling is not enabled.",
+        backend_ctx->vulkan_devices_cnt
+      );
+    }
   }
   #endif
 

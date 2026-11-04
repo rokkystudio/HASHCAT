@@ -106,6 +106,7 @@ static const char *const USAGE_BIG_PRE_HASHMODES[] =
   "     --backend-ignore-hip       |      | Do not try to open HIP interface on startup          |",
   "     --backend-ignore-metal     |      | Do not try to open Metal interface on startup        |",
   "     --backend-ignore-opencl    |      | Do not try to open OpenCL interface on startup       |",
+  "     --backend-ignore-vulkan    |      | Do not try to open Vulkan interface on startup       |",
   " -I, --backend-info             |      | Show system/environment/backend API info             | -I or -II",
   "     --backend-info-json        |      | Show system/environment/backend info as JSON         |",
   " -d, --backend-devices          | Str  | Backend devices to use, separated with commas        | -d 1",

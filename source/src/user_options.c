@@ -44,6 +44,7 @@ static const struct option long_options[] =
   {"backend-ignore-metal",      no_argument,       NULL, IDX_BACKEND_IGNORE_METAL},
   #endif
   {"backend-ignore-opencl",     no_argument,       NULL, IDX_BACKEND_IGNORE_OPENCL},
+  {"backend-ignore-vulkan",     no_argument,       NULL, IDX_BACKEND_IGNORE_VULKAN},
   {"backend-info",              no_argument,       NULL, IDX_BACKEND_INFO},
   {"backend-info-json",         no_argument,       NULL, IDX_BACKEND_INFO_JSON},
   {"backend-vector-width",      required_argument, NULL, IDX_BACKEND_VECTOR_WIDTH},
@@ -535,6 +536,7 @@ int user_options_getopt (hashcat_ctx_t *hashcat_ctx, int argc, char **argv)
       case IDX_BACKEND_IGNORE_METAL:      user_options->backend_ignore_metal      = true;                            break;
       #endif
       case IDX_BACKEND_IGNORE_OPENCL:     user_options->backend_ignore_opencl     = true;                            break;
+      case IDX_BACKEND_IGNORE_VULKAN:     user_options->backend_ignore_vulkan     = true;                            break;
       case IDX_BACKEND_INFO:              user_options->backend_info++;                                              break;
       case IDX_BACKEND_INFO_JSON:         user_options->backend_info_json++;
                                           user_options->backend_info++;                                              break;
