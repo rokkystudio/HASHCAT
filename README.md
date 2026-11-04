@@ -1,184 +1,188 @@
 # HASHCAT
 
-This repository contains both the HASHCAT build wrapper and the hashcat source tree used to produce Android runtime binaries for `HASHCAT-APP`.
+Форк hashcat для Android. Из этого репозитория собирается рантайм, который
+упаковывается в приложение [HASHCAT-APP](https://github.com/rokkystudio/HASHCAT-APP):
+сам исполняемый файл, модули хеш-режимов, ядра OpenCL, правила и тюнинги.
 
-> **Это форк hashcat.** Синхронизация с upstream отключена, `source/` — наш код. Локальные патчи перечислены в [docs/FORK.md](docs/FORK.md). Скриптов обновления из upstream в репозитории нет.
+Отдельного репозитория с Android-исходниками нет: работа над hashcat ведётся
+прямо здесь, в `source/`. Скрипты в `scripts/` собирают и упаковывают рантайм
+из этого дерева.
 
-There is no separate Android source repository and no production build-time patch layer. Work on hashcat itself happens directly inside this repository under:
+**Это форк, а не зеркало.** Синхронизация с upstream отключена, локальные
+изменения перечислены в [docs/FORK.md](docs/FORK.md).
 
-```text
-source/
-```
+## Что собирается
 
-The wrapper scripts under `scripts/` build and package the runtime from that tracked source tree.
+Четыре Android-архива, по одному на ABI: `arm64-v8a`, `armeabi-v7a`, `x86`,
+`x86_64`. Версия задаётся `-VersionTag` (сейчас `v7.1.2`), имя архива —
+`hashcat-v7.1.2-android-<abi>.zip`, размер 95–100 МБ на ABI.
 
-## Layout
+Каждый архив содержит `hashcat`, `modules/`, `bridges/`, `OpenCL/`, `rules/`,
+`tunings/`, `hashcat.hcstat2` и `libc++_shared.so`. В приложении `hashcat`
+переименовывается в `libhashcat_exec.so` и запускается как обычный CLI-процесс.
 
-```text
-HASHCAT/
-  source/      tracked hashcat source used by our Android runtime
-  scripts/     build and clean scripts
-  build/       generated build outputs, ignored
-  release/     generated ZIP artifacts, ignored
-```
+## Требования
 
-## Common commands
+* Windows (сборка проверена на Windows 10/11);
+* MSYS2 с `bash`, `make`, `gcc`/`clang` — используется как среда сборки;
+* Android NDK (по умолчанию берётся из `D:\ANDROID\SDK\ndk\<версия>`, либо
+  задаётся параметром `-AndroidNdk`);
+* Git и PowerShell 5.1+.
 
-Build Android arm64 runtime:
+## Сборка
+
+Android arm64:
 
 ```powershell
 .\scripts\BUILD-ANDROID-ARM64.ps1
 ```
 
-Build all Android ABIs:
+Один произвольный ABI:
+
+```powershell
+.\scripts\BUILD-ANDROID.ps1 -Abi armeabi-v7a
+```
+
+Все четыре ABI:
 
 ```powershell
 .\scripts\BUILD-ANDROID.ps1 -Abi all
 ```
 
-Build the default target set:
+Все цели, включая десктопные:
 
 ```powershell
-.\scripts\BUILD.ps1
+.\scripts\BUILD-ALL.ps1
 ```
 
-Clean generated outputs:
+Полезные параметры: `-AndroidApi` (по умолчанию `26`), `-VersionTag`,
+`-Package:$false` (собрать без упаковки в ZIP), `-Clean`, `-MakeJobs`.
+
+Очистка:
 
 ```powershell
 .\scripts\CLEAN.ps1
 ```
 
-## Experimental Vulkan 1.0 device and Compute-session verification
+Результат: каталог сборки `build\<abi>\` и архив `release\hashcat-<версия>-android-<abi>.zip`.
 
-The native hashcat backend includes opt-in Vulkan 1.0 physical-device
-discovery and an isolated GPU session in `hashcat -I`. The session
-validates its queue with an empty fence-completed submission. It never
-schedules hashcat kernels on Vulkan or replaces CUDA, HIP, Metal or OpenCL.
+## CLI-контракт для приложения
 
-Build isolated Android API 24 ARM64/ARMv7 executables without publishing release packages:
+Помимо обычных ключей hashcat, форк добавляет машиночитаемое описание
+backend'ов и явный выбор backend'а:
 
 ```powershell
-.\scripts\BUILD.ps1 -Target android-arm64-v8a -AndroidApi 24 -EnableVulkanDiscovery -VulkanOutputName vulkan-hashcat-session-20261101 -Package:$false
-.\scripts\BUILD.ps1 -Target android-armeabi-v7a -AndroidApi 24 -EnableVulkanDiscovery -VulkanOutputName vulkan-hashcat-session-20261101 -Package:$false
+hashcat --backend-info-json        # JSON в stdout, код возврата 0
+hashcat --backend-ignore-vulkan    # не инициализировать Vulkan
+hashcat --backend-ignore-opencl    # не инициализировать OpenCL
 ```
 
-The full native HASHCAT frontend and its empty Vulkan Compute session
-passed `hashcat -I` on RedMagic ARM64, RedMagic ARMv7 and Pixel ARM64.
-Ownership, Android API24 build instructions, independent logs and
-limitations are in [the Vulkan Compute session report](docs/vulkan-backend-compute-session-android.md).
-The [initial physical-device discovery milestone](docs/vulkan-hashcat-frontend-android-verification.md)
-remains archived separately.
+Пример вывода:
 
-A [standalone Vulkan 1.0 public GPU-buffer transfer diagnostic](docs/vulkan-core10-transfer-buffer-portability.md)
-validates real host-visible memory, buffer copies, fences and noncoherent
-flush/invalidate on Adreno and Mali. This diagnostic is deliberately
-independent of the HASHCAT hashing backend. The
-[resource-acquisition fault verification](docs/vulkan-core10-transfer-fault-portability.md)
-also tests ten real Vulkan creation/cleanup interruption points on
-Android GPU hardware. The independent
-[fault-to-live-session recovery matrix](docs/vulkan-core10-transfer-recovery-portability.md)
-verifies two working VkDevices and fence-completed public data copies
-under the same VkInstance after each controlled acquisition failure.
-A [real Vulkan fence-status test](docs/vulkan-core10-transfer-fence-status-portability.md)
-verifies driver-returned `VK_NOT_READY` and `VK_TIMEOUT`, subsequent
-GPU copy completion, fence resets and noncoherent memory synchronization
-without causing or simulating GPU device loss. The independent
-[fail-closed Vulkan result policy](docs/vulkan-core10-result-gate-android.md)
-accepts real nonfatal fence statuses and verifies that an explicitly
-labeled, application-generated terminal result prevents further GPU
-submissions by callers consulting the policy. This is not an actual
-device-loss or HASHCAT production-backend recovery test. A separate
-[test-linked Vulkan API boundary matrix](docs/vulkan-core10-api-fault-boundary-android.md)
-returns controlled errors directly from intercepted `vkQueueSubmit` or
-`vkWaitForFences` calls to the existing transfer method; it verifies
-strict rejection of further GPU submissions and a fresh-device copy
-on real Adreno and Mali hardware, without inducing physical device loss.
-The [first production-owned Vulkan SPIR-V Compute kernel](docs/vulkan-backend-public-kernel-android.md)
-now runs inside the real Android `hashcat -I` process: it loads one
-noncryptographic shader, binds two storage buffers, dispatches 64 GPU
-threads and checks every public integer result against a CPU reference.
-Hashcat's password-processing kernels and scheduler remain separate.
-The [two-stage production Vulkan SPIR-V Compute chain](docs/vulkan-backend-public-chain-android.md)
-executes a second public kernel directly on the first kernel's GPU
-output after a shader-write-to-shader-read barrier, checks both
-intermediate and final buffers against CPU arithmetic, and verifies
-three complete Android `hashcat -I` processes on Adreno ARM64/ARMv7
-and Mali ARM64. Password-processing Vulkan kernels remain disabled. A
-[declarative Vulkan program graph contract](docs/vulkan-backend-program-graph.md)
-validates ordered SPIR-V stages, storage-buffer dependencies and exact
-Compute limits without a Vulkan driver call. The follow-on
-[program-declared executor](docs/vulkan-backend-program-executor-android.md)
-uses the same declarations for descriptor bindings, SPIR-V modules,
-dispatch counts and GPU barriers in a real Pixel Android `hashcat -I`
-process while HASHCAT hashing remains disconnected. The current
-[dynamic four-stage Vulkan Compute executor](docs/vulkan-backend-dynamic-executor-android.md)
-allocates buffers, descriptors, shader modules and pipelines from
-validated program counts, executes four ordered public SPIR-V stages
-on Adreno ARM64/ARMv7 and Mali ARM64, and verifies both standalone and
-full Android `hashcat -I` results without enabling Vulkan hashing.
-The [controlled Vulkan cleanup and recovery tests](docs/vulkan-backend-public-fault-android.md)
-exercise 37 explicit resource checkpoints on Adreno ARM64/ARMv7 and
-Mali ARM64. Every simulated failure is followed by a real working
-four-stage Vulkan device under the same instance. The follow-on
-[production API-boundary fault diagnostic](docs/vulkan-backend-public-api-fault-android.md)
-delivers test-only negative results at the executor's linked buffer,
-shader, pipeline, queue-submit and fence-wait calls, confirms real
-cleanup waits and recreates healthy four-stage devices on all three
-GPU/process configurations. A separate
-[real fence-timeout diagnostic](docs/vulkan-backend-public-fence-timeout-android.md)
-observes an actual driver VK_TIMEOUT after real four-stage submission,
-waits for device idle during production cleanup and then recreates a
-working device on Mali ARM64 and Adreno ARM64/ARMv7.
+```json
+{
+  "schema": 1,
+  "hashcat_version": "v7.1.2",
+  "backends": [
+    { "id": "opencl", "detected": true, "schedulable": true,
+      "devices": [ { "id": 1, "name": "QUALCOMM Adreno(TM)", "type": "GPU",
+                     "vendor_id": 2147483648, "backend": "opencl" } ] },
+    { "id": "vulkan", "detected": false, "schedulable": false, "devices": [] }
+  ],
+  "modes": {}
+}
+```
 
-The [first cryptographic Vulkan stage](docs/vulkan-backend-md5-android.md)
-executes the complete 64-round MD5 compression primitive through the
-same production dynamic executor. Four fixed public one-block messages
-match their standard 128-bit digests on Mali ARM64 and Adreno
-ARM64/ARMv7 for Vulkan 1.0 and 1.1.
+`detected` — интерфейс открылся и найдено хотя бы одно устройство;
+`schedulable` — на backend'е можно запускать задачи; `devices[].id` — то, что
+принимает `-d`. Полное описание полей и кодов возврата —
+[docs/backend-cli-contract.md](docs/backend-cli-contract.md).
 
-The [variable-length SHA-256 batch](docs/vulkan-backend-sha256-android.md)
-uses the same resource owner with exact per-buffer storage ranges. One
-caller-provided byte batch covers one- and two-block messages, performs
-complete SHA-256 padding/compression and returns canonical 32-byte
-digests. Mali ARM64 and Adreno ARMv7 hardware checks pass, and full
-Pixel ARM64 plus RedMagic ARMv7 `hashcat -I` processes execute MD5,
-SHA-256 and ordinary OpenCL discovery in sequence. Vulkan still does
-not consume HASHCAT scheduler candidates or register as a hashing
-device.
+## Особенности Android / Adreno
 
-The [common Vulkan hash batch API](docs/vulkan-backend-hash-primitives-android.md)
-includes MD4, variable-length MD5, RIPEMD-160, SHA-1, SHA-224,
-SHA-256, SHA-384, SHA-512, unkeyed BLAKE2s-256,
-BLAKE2b-256/384/512, SHA3-224/256/384/512 and Keccak-256. All seventeen
-algorithms share dynamic Vulkan resource ownership, exact message lengths
-and canonical digest serialization. SHA-384/512, BLAKE2b and Keccak-f[1600]
-use pairs of uint32 words for 64-bit operations without requiring the
-optional shaderInt64 feature. ARM64 and ARMv7 native compilation succeeds.
-Hardware execution and digest equality for the additional non-SHA-256
-algorithms have not been confirmed; the fixed-vector MD5 information-mode
-stage remains separate from arbitrary-length batch MD5.
+Компилятор OpenCL на Adreno не линкует pure-ядра ряда режимов и возвращает
+`CL_OUT_OF_HOST_MEMORY`, хотя optimized-вариант того же режима собирается и
+работает. Патч P3 предпочитает optimized-ядро на устройствах Qualcomm:
+режимы без optimized-варианта остаются на pure-ядре, ограничение длины пароля
+hashcat печатает сам.
 
-## Working on hashcat source
+Отключить поведение можно переменной окружения:
 
-Edit files directly under `source/`, then commit them in this repository:
+```powershell
+$env:HASHCAT_DISABLE_ADRENO_OPTIMIZED = '1'
+```
+
+Подробности и обязательные проверки — [docs/FORK.md](docs/FORK.md).
+
+## Vulkan
+
+В `source/` уже есть слой Vulkan 1.0: каталог физических устройств, память,
+дескрипторы, пайплайны, очереди, fences и 17 хеш-примитивов в SPIR-V. Хеширование
+через Vulkan **не включено**: устройства не регистрируются как вычислительные,
+задачи на них не планируются.
+
+Для диагностики собирается отдельный вариант с флагом
+`-EnableVulkanDiscovery` (только Android, только с `-Package:$false`): в режиме
+`hashcat -I` он открывает Vulkan-сессию и прогоняет публичные и криптографические
+цепочки ядер. Планы и текущее состояние — `docs/vulkan-backend-*.md`.
+
+## Регресс OpenCL
+
+Поведение OpenCL сравнивается с эталоном, чтобы любое изменение в нативной части
+можно было проверить:
+
+```powershell
+.\tools\check-opencl-regression.ps1 -HashcatExecutable build\windows-x64\hashcat.exe -Baseline docs\opencl-baseline.json
+```
+
+Эталон (`docs/opencl-baseline.json`) хранит список устройств и скорости трёх
+режимов для ПК и для Android. Переснять:
+
+```powershell
+.\tools\capture-opencl-baseline.ps1 -HashcatExecutable build\arm64-v8a -Transport adb -AdbSerial <serial> -HostName android -Label 'REDMAGIC 7S Pro, Android 13'
+```
+
+Коды возврата: `0` — совпадает, `1` — разошёлся состав устройств, `2` — падение
+скорости сверх порога, `3` — ошибка вызова.
+
+## Структура
+
+```text
+HASHCAT/
+  source/      исходники hashcat, которые мы собираем
+  scripts/     сборка и очистка
+  tools/       диагностика, эталоны, архив доказательств
+  tests/       артефакты прогонов по режимам
+  patches/     патчи, применяемые при сборке
+  third_party/ сторонние архивы
+  docs/        отчёты, контракты, эталоны
+  build/       результаты сборки (игнорируется)
+  release/     готовые архивы (игнорируется)
+```
+
+## Рабочий процесс
+
+1. Правка в `source/` (или в `scripts/`, `tools/`).
+2. Сборка нужных ABI и проверка на устройстве.
+3. Регресс-гейт OpenCL должен быть зелёным.
+4. Коммит в этот репозиторий.
+5. Архивы копируются в `HASHCAT-APP/hashcat/binaries`, обновляется
+   `SHA256SUMS.txt`, приложение пересобирается и получает новую версию.
 
 ```powershell
 cd D:\PROJECTS\HASHCAT
-# edit source\OpenCL\..., source\src\..., etc.
 git status
-git add source scripts README.md
+git add source scripts docs README.md
 git commit -m "..."
 git push origin master
 ```
 
-## Runtime artifacts
+## Версии
 
-The Android arm64 package is written to:
+`-VersionTag` управляет именами архивов и версией, которую получает makefile
+hashcat. Менять его осознанно: имя архива связано с константой `hashcatVersion`
+в `HASHCAT-APP/hashcat/build.gradle.kts`.
 
-```text
-release\hashcat-v7.1.2-android-arm64-v8a.zip
-```
+## Лицензия
 
-`VersionTag` still controls archive naming and the version passed to the hashcat makefile. Change it intentionally when the bundled runtime version changes.
-
-After producing a runtime ZIP, publish/copy it into `D:\PROJECTS\HASHCAT-APP`, rebuild the app, and bump the app version for app-side changes.
+Форк наследует лицензию hashcat (MIT). Авторы и условия — `source/docs/credits.txt`.
