@@ -1,0 +1,84 @@
+{
+  "schema": 1,
+  "generated_at": "2026-11-04T23:13:00+03:00",
+  "git_head": "f26fb3245a97d58c80e7cec599efe03f309b60a6",
+  "hashcat_version": "v7.1.2",
+  "hosts": {
+    "pc": {
+      "label": "Windows 10 x64 / NVIDIA GeForce RTX 3060 Ti",
+      "transport": "local",
+      "serial": null,
+      "capture_arguments": "--backend-ignore-cuda --backend-ignore-hip",
+      "devices": [
+        {
+          "id": 1,
+          "name": "NVIDIA GeForce RTX 3060 Ti",
+          "type": "GPU",
+          "vendor_id": 32,
+          "backend": "opencl"
+        }
+      ],
+      "benchmarks": [
+        {
+          "mode": 0,
+          "workload_profile": 2,
+          "device_id": 1,
+          "device_name": "NVIDIA GeForce RTX 3060 Ti",
+          "speed_khs": 14042200
+        },
+        {
+          "mode": 1000,
+          "workload_profile": 2,
+          "device_id": 1,
+          "device_name": "NVIDIA GeForce RTX 3060 Ti",
+          "speed_khs": 15367900
+        },
+        {
+          "mode": 22000,
+          "workload_profile": 2,
+          "device_id": 1,
+          "device_name": "NVIDIA GeForce RTX 3060 Ti",
+          "speed_khs": 459.2
+        }
+      ]
+    },
+    "android": {
+      "label": "REDMAGIC 7S Pro (NX709S), Android 13",
+      "transport": "adb",
+      "serial": "91809037",
+      "capture_arguments": "--backend-ignore-cuda --backend-ignore-hip",
+      "devices": [
+        {
+          "id": 1,
+          "name": "QUALCOMM Adreno(TM)",
+          "type": "GPU",
+          "vendor_id": 2147483648,
+          "backend": "opencl"
+        }
+      ],
+      "benchmarks": [
+        {
+          "mode": 0,
+          "workload_profile": 0,
+          "device_id": 1,
+          "device_name": "QUALCOMM Adreno(TM)",
+          "speed_khs": 2121300
+        },
+        {
+          "mode": 1000,
+          "workload_profile": 0,
+          "device_id": 1,
+          "device_name": "QUALCOMM Adreno(TM)",
+          "speed_khs": 3029800
+        },
+        {
+          "mode": 22000,
+          "workload_profile": 0,
+          "device_id": 1,
+          "device_name": "QUALCOMM Adreno(TM)",
+          "speed_khs": 0.757
+        }
+      ]
+    }
+  }
+}
