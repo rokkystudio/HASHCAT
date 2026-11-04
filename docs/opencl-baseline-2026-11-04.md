@@ -261,3 +261,24 @@ close to a threshold should be confirmed with several runs.
 - The Windows and Android binaries come from the same commit, but Android runs
   are recorded separately and are not compared to the PC automatically: the
   gate checks the host section selected by `-HostName`.
+
+## Повторный снимок 2026-11-05 (форк, патч P3)
+
+Снимок переснят на `0d29eec` после патча P3 (предпочтение optimized-ядра на
+Adreno). Числа Android практически не изменились, потому что `hashcat -b`
+и до патча использовал optimized-ядра: режим бенчмарка сам включает их, а
+отключает только явный `-w`.
+
+| Режим | 2026-11-04 | 2026-11-05 | Δ |
+|---|---|---|---|
+| 0 (MD5) | 2121.3 MH/s | 2120.0 MH/s | −0.06 % |
+| 1000 (NTLM) | 3029.8 MH/s | 3021.8 MH/s | −0.25 % |
+| 22000 (WPA) | 757 H/s | 692 H/s | −8.6 % |
+
+Расхождение по 22000 укладывается в разброс между замерами этого режима
+(наблюдался до 17 %), поэтому пороги гейта остаются параметрами.
+
+Отдельно: ранняя попытка снять `-b -m 0 -w 1` на этом Adreno падала с
+`CL_OUT_OF_HOST_MEMORY`, потому что `-w` отключает optimized-ядро в режиме
+бенчмарка. Обычная атака (`-a 0`) без патча P3 падала так же, то есть до
+патча режим 0 на этом устройстве не работал вообще.

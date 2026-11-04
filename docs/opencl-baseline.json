@@ -1,7 +1,7 @@
 {
   "schema": 1,
-  "generated_at": "2026-11-04T23:13:00+03:00",
-  "git_head": "f26fb3245a97d58c80e7cec599efe03f309b60a6",
+  "generated_at": "2026-11-05T00:32:00+03:00",
+  "git_head": "0d29eec22d123ad66331d8d914c5681abc43d4c3",
   "hashcat_version": "v7.1.2",
   "hosts": {
     "pc": {
@@ -62,21 +62,21 @@
           "workload_profile": 0,
           "device_id": 1,
           "device_name": "QUALCOMM Adreno(TM)",
-          "speed_khs": 2121300
+          "speed_khs": 2120000
         },
         {
           "mode": 1000,
           "workload_profile": 0,
           "device_id": 1,
           "device_name": "QUALCOMM Adreno(TM)",
-          "speed_khs": 3029800
+          "speed_khs": 3021800
         },
         {
           "mode": 22000,
           "workload_profile": 0,
           "device_id": 1,
           "device_name": "QUALCOMM Adreno(TM)",
-          "speed_khs": 0.757
+          "speed_khs": 0.692
         }
       ]
     }
