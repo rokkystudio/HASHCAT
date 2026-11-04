@@ -12,13 +12,15 @@
  * A real backend_ctx catalogue supplies the selected Vulkan GPU and
  * VkInstance. Each method selects an explicit backend_vulkan_program_t,
  * validates its SPIR-V headers, buffer graph and dispatch topology against
- * real VkPhysicalDeviceLimits, then creates temporary VkDevice resources.
- * The exported diagnostics verify one, two or four public arithmetic stages
- * and one cryptographic MD5 stage over fixed public known-answer vectors.
- * Host ownership arrays are sized from program stage/buffer counts, while
- * every stage declares its exact SPIR-V module, storage dependency and
- * dispatch topology. All temporary Vulkan resources are released before
- * returning.
+ * real VkPhysicalDeviceLimits, then borrows an active matching session or
+ * creates its own temporary VkDevice resources. The exported diagnostics
+ * verify one, two or four public arithmetic stages and one cryptographic
+ * MD5 stage over fixed public known-answer vectors. A separate explicit
+ * CPU-reference diagnostic verifies error handling after real GPU completion.
+ * Host ownership arrays are sized from program stage/buffer counts; stages
+ * declare exact SPIR-V modules, storage dependencies and dispatch topology.
+ * Job-owned Vulkan resources are released before returning, while borrowed
+ * pipeline, command, descriptor and storage objects remain session-owned.
  *
  * These methods run only in hashcat -I information mode. The MD5 diagnostic
  * uses immutable public messages; no HASHCAT candidates, target digests,
@@ -88,6 +90,61 @@ VkResult backend_vulkan_kernel_verify_chain (
  * never read or modified.
  */
 VkResult backend_vulkan_kernel_verify_chain4 (
+  backend_ctx_t *backend_ctx,
+  uint32_t device_index,
+  FILE *diagnostics);
+
+/**
+ * Verify post-fence CPU validation failure without poisoning a healthy GPU.
+ *
+ * Requires a healthy session-owned Vulkan Compute queue and diagnostic
+ * stream. Runs the public four-stage arithmetic program with one deliberately
+ * corrupted host-only reference word after the real GPU fence and cache
+ * synchronization. That CPU comparison must return the expected validation
+ * error while retaining a healthy, reusable command/fence and descriptor
+ * cache. Executes the same program again with an unchanged CPU reference
+ * and requires exact equality and clean session ownership.
+ *
+ * Returns VK_SUCCESS only when both GPU submissions finish, the injected
+ * comparison fails, the retry succeeds and no session recovery is needed.
+ * This is an explicit information-mode test and never accesses password
+ * candidates, target digests or production scheduling.
+ */
+VkResult backend_vulkan_kernel_verify_chain4_post_fence_cpu_error (
+  backend_ctx_t *backend_ctx,
+  uint32_t device_index,
+  FILE *diagnostics);
+
+/**
+ * Verify safe cleanup of a host abort after GPU queue submission.
+ *
+ * Requires a healthy session-owned Vulkan Compute queue. Submits the public
+ * four-stage arithmetic program, returns a simulated CPU failure before
+ * fence waiting, and uses the normal cleanup to wait on the true submitted
+ * fence, return descriptors and retain the healthy command/fence pair.
+ * Executes the same program again and requires real GPU completion, exact
+ * output equality and no command recovery. Returns VK_SUCCESS only if the
+ * original CPU error and the second healthy completion are observed.
+ * This diagnostic does not access production workload or backend selection.
+ */
+VkResult backend_vulkan_kernel_verify_chain4_post_submit_abort (
+  backend_ctx_t *backend_ctx,
+  uint32_t device_index,
+  FILE *diagnostics);
+
+/**
+ * Verify reuse of a successfully recorded but unsubmitted Compute command.
+ *
+ * Requires a healthy session-owned Vulkan Compute device. The public
+ * four-stage arithmetic program emits a simulated CPU error after command
+ * recording and before queue submission. Cleanup returns its descriptor
+ * and command leases without marking the unsubmitted GPU work as failed.
+ * A second ordinary four-stage GPU execution must submit, complete on its
+ * real fence, verify exact CPU output and retain a healthy session.
+ * VK_SUCCESS requires no command submission for the injected error,
+ * exactly one completed submission for the retry and no device recovery.
+ */
+VkResult backend_vulkan_kernel_verify_chain4_pre_submit_abort (
   backend_ctx_t *backend_ctx,
   uint32_t device_index,
   FILE *diagnostics);

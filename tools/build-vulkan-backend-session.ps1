@@ -4,11 +4,12 @@ Build hashcat backend-owned Vulkan Compute session probes for Android ARM.
 
 .DESCRIPTION
 Compiles the production backend.c with Vulkan discovery and session
-verification enabled. Links a standalone native Vulkan 1.0 device-session
-diagnostic against actual backend_vulkan.c, backend_vulkan_session.c and
-public device discovery sources. Tests a real empty Compute command-buffer
-submission, without shader or cryptographic execution. Targets Android
-API 24 for ARM64/ARMv7 and checks Vulkan 1.0-only loader imports.
+verification enabled. Links a standalone native Vulkan 1.0 device-session diagnostic against
+the production device-session owner and public Compute SPIR-V modules.
+Verifies real fence-completed queue submissions, retained storage,
+bidirectional staging copies, exact shader pipeline caching, exclusive
+command leases and full session cleanup. Targets Android API 24 for
+ARM64/ARMv7 and checks Vulkan 1.0 loader imports.
 
 The production build flag ENABLE_VULKAN_DISCOVERY=1 links the same
 components into a real hashcat backend, without adding a Vulkan

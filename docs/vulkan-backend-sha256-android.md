@@ -9,9 +9,10 @@ through the same dynamic executor used by the public Compute graphs and the MD5
 known-answer stage.
 
 `backend_vulkan_sha256_hash_batch()` accepts caller-owned byte spans with an
-independent length for every message, packs them into one storage buffer,
-executes the complete SHA-256 padding and compression algorithm in one Compute
-dispatch, and returns canonical 32-byte digests in input order.
+independent length for every message, packs them into a session-backed storage
+range when a shared Vulkan session is active, executes the complete SHA-256
+padding and compression algorithm in one Compute dispatch, and returns
+canonical 32-byte digests in input order.
 
 The Vulkan program does not generate password candidates, ingest target
 digests, compare hashes, process salts or register a hashing device with the
@@ -22,19 +23,21 @@ cryptographic backend verification step.
 
 SHA-256 does not own a parallel Vulkan resource implementation.
 
-The program runs through `backend_vulkan_kernel_verify_program()`, which owns
-the temporary:
+The program runs through `backend_vulkan_kernel_verify_program()`. With an
+active backend session it borrows the shared `VkDevice`, Compute queue and
+persistent storage slots. Direct-compatible slots expose the Compute memory
+mapping itself; other slots expose a separate CPU-visible transfer mapping.
+The program owns its descriptor set layout, descriptor pool and descriptor
+set, shader module and Compute pipeline, command pool and command buffer,
+fence, submission, transfer commands and host-cache synchronization. Staged
+inputs are uploaded before dispatch and staged digest output is downloaded
+before canonical serialization. Borrowed storage and the logical device remain
+valid after the call and are released by the session.
 
-- `VkDevice` and Compute queue;
-- storage buffers and mapped memory;
-- descriptor set layout, descriptor pool and descriptor set;
-- shader module and Compute pipeline;
-- command pool and command buffer;
-- fence;
-- submission, host-cache synchronization and cleanup.
-
-The parent `VkInstance` and selected `VkPhysicalDevice` remain owned by the
-backend Vulkan catalogue.
+Standalone diagnostics without a backend session retain the independent path
+that owns their temporary `VkDevice`, queue and storage allocations. The
+parent `VkInstance` and selected `VkPhysicalDevice` remain catalogue-owned
+in both paths.
 
 `source/src/backend_vulkan_sha256.c` is not part of the runtime object list.
 The public SHA-256 API is implemented by the common executor in

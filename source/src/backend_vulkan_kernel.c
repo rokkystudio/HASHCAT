@@ -8,7 +8,8 @@
  *
  * The backend catalogue supplies a real physical device and VkInstance.
  * Information mode validates explicit SPIR-V 1.0 programs against physical
- * GPU limits before opening a temporary VkDevice. Storage-buffer,
+ * GPU limits before borrowing the backend session device or opening a
+ * standalone VkDevice. Session-backed storage can be direct mapped or staged;
  * descriptor-set, shader-module and pipeline ownership arrays are allocated
  * from declared counts and exact uniform or per-buffer ranges. The public
  * arithmetic programs verify one, two or four ordered stages; MD5 executes a
@@ -206,12 +207,17 @@ static const backend_vulkan_program_t backend_vulkan_md5_program =
  * hash batch accepts caller-owned messages for SHA-1/2, SHA3/Keccak or
  * BLAKE2s-256 and returns canonical digest bytes. The execution contract
  * is selected explicitly, never inferred from shader or GPU identity.
+ * The CPU-reference fault applies only to the public four-stage arithmetic
+ * diagnostic after GPU completion, without modifying its GPU output.
  */
 typedef enum backend_vulkan_execution_kind
 {
   BACKEND_VULKAN_EXECUTION_PUBLIC_U32 = 0,
   BACKEND_VULKAN_EXECUTION_MD5 = 1,
-  BACKEND_VULKAN_EXECUTION_HASH_BATCH = 2
+  BACKEND_VULKAN_EXECUTION_HASH_BATCH = 2,
+  BACKEND_VULKAN_EXECUTION_PUBLIC_U32_CPU_FAULT = 3,
+  BACKEND_VULKAN_EXECUTION_PUBLIC_U32_POST_SUBMIT_ABORT = 4,
+  BACKEND_VULKAN_EXECUTION_PUBLIC_U32_PRE_SUBMIT_ABORT = 5
 } backend_vulkan_execution_kind_t;
 
 /**
@@ -236,18 +242,24 @@ typedef struct backend_vulkan_hash_batch_context
 } backend_vulkan_hash_batch_context_t;
 
 /**
- * Own one host-visible storage buffer and the exact Vulkan memory plan.
+ * Describe one Compute storage buffer and its CPU-visible access path.
  *
- * Each memory allocation uses the complete driver-provided size.
- * Noncoherent mappings are flushed or invalidated over VK_WHOLE_SIZE
- * using the physical device's nonCoherentAtomSize.
+ * Standalone jobs directly map their storage allocation. Session-backed jobs
+ * can borrow direct mapped storage or a device-memory buffer paired with a
+ * separate host transfer buffer. mapped always addresses host_memory, while
+ * buffer remains the descriptor-bound Compute buffer. Noncoherent host
+ * mappings synchronize over VK_WHOLE_SIZE.
  */
 typedef struct backend_vulkan_public_buffer
 {
   VkBuffer buffer;
   VkDeviceMemory memory;
+  VkBuffer host_buffer;
+  VkDeviceMemory host_memory;
   void *mapped;
   VkDeviceSize bytes;
+  VkBool32 borrowed;
+  VkBool32 staging;
   vulkan_auto_memory_plan_t plan;
 } backend_vulkan_public_buffer_t;
 
@@ -256,17 +268,40 @@ typedef struct backend_vulkan_public_buffer
  *
  * VkInstance and VkPhysicalDevice remain backend_ctx catalogue-owned.
  * Host arrays are allocated from program->buffer_count and stage_count.
- * The job owns every temporary storage buffer, descriptor set, shader,
- * pipeline, command object, fence and VkDevice until release.
+ * A standalone job owns descriptors, shaders, pipelines, command objects,
+ * its fence, storage buffers and VkDevice. A session-backed job borrows
+ * immutable cached pipelines, stage-count descriptor sets, layouts, a
+ * resettable command/fence pair, retained storage slots and the logical
+ * device. Submitted jobs record whether their own fence completed so
+ * cleanup can avoid waiting for unrelated GPU work. Host arrays are owned
+ * by the job and released after every program. diagnostic_cpu_fault
+ * corrupts one local CPU reference after GPU fence completion; it never
+ * changes the GPU output or shader dispatch. diagnostic_post_submit_abort
+ * simulates a CPU abort after a real queue submission, before fence waiting.
+ * command_recorded distinguishes a safely ended but unsubmitted command
+ * from a failed or incomplete Vulkan command recording.
  */
 typedef struct backend_vulkan_public_job
 {
   VkDevice device;
   VkQueue queue;
+  VkBool32 owns_device;
+  VkBool32 borrowed_pipeline;
+  VkBool32 borrowed_descriptors;
+  VkBool32 borrowed_command;
+  backend_ctx_t *session_owner;
+  uint32_t session_device_index;
   VkCommandPool command_pool;
   VkCommandBuffer command;
   VkFence fence;
   uint32_t submitted;
+  VkBool32 fence_completed;
+  VkBool32 command_recorded;
+  VkBool32 diagnostic_cpu_fault;
+  VkBool32 diagnostic_post_submit_abort;
+  VkBool32 diagnostic_pre_submit_abort;
+  uint32_t staging_uploads;
+  uint32_t staging_downloads;
   backend_vulkan_public_buffer_t *buffers;
   VkDescriptorSetLayout descriptor_layout;
   VkPipelineLayout pipeline_layout;
@@ -275,6 +310,7 @@ typedef struct backend_vulkan_public_job
   VkShaderModule *shader;
   VkPipeline *pipeline;
   const backend_vulkan_program_t *program;
+  FILE *diagnostics;
   struct backend_vulkan_public_fault *fault;
 } backend_vulkan_public_job_t;
 
@@ -300,8 +336,10 @@ typedef struct backend_vulkan_public_fault
  *
  * Resource counts describe non-null Vulkan handles and mapped allocations
  * passed through the normal ownership cleanup. completed records completion
- * of all cleanup calls and host-array releases. wait_result is the actual
- * vkDeviceWaitIdle result for an acquired VkDevice.
+ * of all cleanup calls and host-array releases. wait_result is the
+ * actual synchronization result: vkDeviceWaitIdle for standalone jobs
+ * and recovery cleanup, or VK_SUCCESS when a borrowed job's fence
+ * already completed and no device-wide idle wait is necessary.
  */
 typedef struct backend_vulkan_public_release_counts
 {
@@ -445,13 +483,23 @@ static VkResult backend_vulkan_public_prepare (
 /**
  * Release every acquired Vulkan and host object without touching VkInstance.
  *
- * Waits for VkDevice idle when a logical device exists, then releases every
- * pipeline, shader, descriptor object, command object and storage allocation
- * using exact program counts. Host arrays are freed even without VkDevice.
- * An optional counts output records the exact resources owned on entry,
- * the actual device-idle result and completion of the entire cleanup.
- * A null or partially initialized job is safe to release. The first
- * vkDeviceWaitIdle result survives cleanup.
+ * Completes a submitted session-backed job using its already-signaled
+ * queue fence, avoiding a redundant device-wide idle wait. If submission
+ * occurred without a completed fence, a borrowed job retires the actual
+ * pending session submission by waiting on its fence before releasing
+ * dependent resources. Standalone diagnostic jobs wait for device idle,
+ * preserving independent cleanup semantics.
+ * Releases job-owned descriptors, pipelines, commands and storage using
+ * exact program counts; borrowed descriptor and command leases return to
+ * the owning session after GPU completion. Host arrays are always freed.
+ * A null or partially initialized job is safe to release, and the first
+ * synchronization error survives resource cleanup. The session command
+ * lease is returned as completed when a real submission has a confirmed
+ * fence, or when a successfully recorded command has never been submitted.
+ * A CPU-side verification error after that fence
+ * does not poison a healthy Vulkan command pair; the caller still returns
+ * the original verification error. Incomplete submissions and driver
+ * synchronization failures remain unavailable for explicit recovery.
  */
 static VkResult backend_vulkan_public_release (
   backend_vulkan_public_job_t *job,
@@ -517,13 +565,58 @@ static VkResult backend_vulkan_public_release (
 
   if (job->device != VK_NULL_HANDLE)
   {
-    result = vkDeviceWaitIdle (job->device);
+    VkBool32 waited_idle = VK_FALSE;
+
+    if (job->borrowed_command == VK_TRUE)
+    {
+      if (job->submitted != 0u && job->fence_completed != VK_TRUE)
+      {
+        result = backend_vulkan_session_command_complete (
+          job->session_owner, job->session_device_index
+        );
+
+        if (result == VK_SUCCESS)
+        {
+          job->fence_completed = VK_TRUE;
+
+          fprintf (
+            job->diagnostics,
+            "BACKEND_VULKAN_MANAGED_ABORT_RETIRED"
+            " index=%" PRIu32
+            " submitted=1"
+            " fence_completed=1"
+            " wait_idle=0"
+            " result=0\n",
+            job->session_device_index
+          );
+        }
+      }
+
+      fprintf (
+        job->diagnostics,
+        "BACKEND_VULKAN_JOB_COMPLETION"
+        " index=%" PRIu32
+        " submitted=%" PRIu32
+        " fence_completed=%u"
+        " wait_idle=%u"
+        " result=%d\n",
+        job->session_device_index, job->submitted,
+        job->fence_completed, waited_idle, result
+      );
+    }
+    else
+    {
+      result = vkDeviceWaitIdle (job->device);
+
+      waited_idle = VK_TRUE;
+    }
 
     if (counts != NULL) counts->wait_result = result;
 
     for (uint32_t stage = 0u; stage < stage_count; stage++)
     {
-      if (job->pipeline != NULL
+      if (job->borrowed_pipeline == VK_FALSE
+       && job->pipeline != NULL
        && job->pipeline[stage] != VK_NULL_HANDLE)
       {
         vkDestroyPipeline (
@@ -531,7 +624,8 @@ static VkResult backend_vulkan_public_release (
         );
       }
 
-      if (job->shader != NULL
+      if (job->borrowed_pipeline == VK_FALSE
+       && job->shader != NULL
        && job->shader[stage] != VK_NULL_HANDLE)
       {
         vkDestroyShaderModule (
@@ -540,33 +634,38 @@ static VkResult backend_vulkan_public_release (
       }
     }
 
-    if (job->descriptor_pool != VK_NULL_HANDLE)
+    if (job->borrowed_descriptors == VK_FALSE
+     && job->descriptor_pool != VK_NULL_HANDLE)
     {
       vkDestroyDescriptorPool (
         job->device, job->descriptor_pool, NULL
       );
     }
 
-    if (job->pipeline_layout != VK_NULL_HANDLE)
+    if (job->borrowed_pipeline == VK_FALSE
+     && job->pipeline_layout != VK_NULL_HANDLE)
     {
       vkDestroyPipelineLayout (
         job->device, job->pipeline_layout, NULL
       );
     }
 
-    if (job->descriptor_layout != VK_NULL_HANDLE)
+    if (job->borrowed_pipeline == VK_FALSE
+     && job->descriptor_layout != VK_NULL_HANDLE)
     {
       vkDestroyDescriptorSetLayout (
         job->device, job->descriptor_layout, NULL
       );
     }
 
-    if (job->fence != VK_NULL_HANDLE)
+    if (job->borrowed_command == VK_FALSE
+     && job->fence != VK_NULL_HANDLE)
     {
       vkDestroyFence (job->device, job->fence, NULL);
     }
 
-    if (job->command != VK_NULL_HANDLE
+    if (job->borrowed_command == VK_FALSE
+     && job->command != VK_NULL_HANDLE
      && job->command_pool != VK_NULL_HANDLE)
     {
       vkFreeCommandBuffers (
@@ -574,7 +673,8 @@ static VkResult backend_vulkan_public_release (
       );
     }
 
-    if (job->command_pool != VK_NULL_HANDLE)
+    if (job->borrowed_command == VK_FALSE
+     && job->command_pool != VK_NULL_HANDLE)
     {
       vkDestroyCommandPool (
         job->device, job->command_pool, NULL
@@ -587,23 +687,54 @@ static VkResult backend_vulkan_public_release (
 
       backend_vulkan_public_buffer_t *buffer = &job->buffers[i];
 
-      if (buffer->mapped != NULL)
+      if (buffer->borrowed == VK_FALSE)
       {
-        vkUnmapMemory (job->device, buffer->memory);
-      }
+        if (buffer->mapped != NULL
+         && buffer->host_memory != VK_NULL_HANDLE)
+        {
+          vkUnmapMemory (job->device, buffer->host_memory);
+        }
 
-      if (buffer->buffer != VK_NULL_HANDLE)
-      {
-        vkDestroyBuffer (job->device, buffer->buffer, NULL);
-      }
+        if (buffer->buffer != VK_NULL_HANDLE)
+        {
+          vkDestroyBuffer (job->device, buffer->buffer, NULL);
+        }
 
-      if (buffer->memory != VK_NULL_HANDLE)
-      {
-        vkFreeMemory (job->device, buffer->memory, NULL);
+        if (buffer->memory != VK_NULL_HANDLE)
+        {
+          vkFreeMemory (job->device, buffer->memory, NULL);
+        }
       }
     }
 
-    vkDestroyDevice (job->device, NULL);
+    if (job->borrowed_descriptors == VK_TRUE)
+    {
+      const VkResult released = backend_vulkan_session_descriptors_release (
+        job->session_owner, job->session_device_index
+      );
+
+      if (result == VK_SUCCESS) result = released;
+    }
+
+    if (job->borrowed_command == VK_TRUE)
+    {
+      const VkResult released = backend_vulkan_session_command_release (
+        job->session_owner, job->session_device_index,
+        result == VK_SUCCESS
+        && ((job->submitted != 0u
+         && job->fence_completed == VK_TRUE)
+         || (job->submitted == 0u
+          && job->command_recorded == VK_TRUE))
+          ? VK_TRUE : VK_FALSE
+      );
+
+      if (result == VK_SUCCESS) result = released;
+    }
+
+    if (job->owns_device == VK_TRUE)
+    {
+      vkDestroyDevice (job->device, NULL);
+    }
   }
 
   free (job->pipeline);
@@ -725,8 +856,11 @@ static VkResult backend_vulkan_public_buffer_open (
 
   if (result != VK_SUCCESS) return result;
 
+  buffer->host_buffer = buffer->buffer;
+  buffer->host_memory = buffer->memory;
+
   result = vkMapMemory (
-    job->device, buffer->memory, 0u,
+    job->device, buffer->host_memory, 0u,
     VK_WHOLE_SIZE, 0u, &buffer->mapped
   );
 
@@ -736,15 +870,215 @@ static VkResult backend_vulkan_public_buffer_open (
 }
 
 /**
- * Create one descriptor set and Vulkan 1.0 Compute pipeline per program stage.
+ * Synchronize the CPU-visible allocation behind one program buffer.
  *
- * The validated program supplies immutable SPIR-V bytes, exact source and
- * destination buffer indices and stage count. Every stage uses one common
- * two-binding STORAGE_BUFFER layout. Descriptor sets are allocated one at a
- * time into host arrays sized by backend_vulkan_public_prepare.
- * Explicit diagnostic checkpoints follow layout, pool and per-stage
- * descriptor/shader/pipeline acquisitions. An injected initialization
- * error leaves all acquired objects owned by the standard job cleanup.
+ * Direct buffers synchronize their Compute memory. Staged buffers synchronize
+ * the separate host transfer allocation. The mapped range covers the complete
+ * driver allocation so noncoherent cache operations remain atom aligned.
+ */
+static VkResult backend_vulkan_public_sync_host (
+  backend_vulkan_public_job_t *job,
+  backend_vulkan_public_buffer_t *buffer,
+  VkBool32 invalidate)
+{
+  if (job == NULL || buffer == NULL
+   || buffer->host_memory == VK_NULL_HANDLE
+   || buffer->mapped == NULL)
+  {
+    return VK_ERROR_INITIALIZATION_FAILED;
+  }
+
+  return vulkan_auto_sync_mapped_memory (
+    job->device, buffer->host_memory,
+    &buffer->plan, invalidate
+  );
+}
+
+/**
+ * Record host-to-Compute visibility for one CPU-written storage range.
+ *
+ * Direct mode records the host-write dependency on the storage buffer.
+ * Staging mode copies the host transfer buffer into Compute storage and
+ * makes that transfer write visible to Compute shader access and a later
+ * transfer read of untouched bytes.
+ */
+static void backend_vulkan_public_record_upload (
+  backend_vulkan_public_job_t *job,
+  backend_vulkan_public_buffer_t *buffer,
+  VkAccessFlags shader_access)
+{
+  if (buffer->staging == VK_TRUE)
+  {
+    const VkBufferCopy copy =
+    {
+      .srcOffset = 0u,
+      .dstOffset = 0u,
+      .size = buffer->bytes
+    };
+
+    vkCmdCopyBuffer (
+      job->command,
+      buffer->host_buffer, buffer->buffer,
+      1u, &copy
+    );
+
+    job->staging_uploads++;
+
+    const VkBufferMemoryBarrier barrier =
+    {
+      .sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER,
+      .srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT,
+      .dstAccessMask = shader_access | VK_ACCESS_TRANSFER_READ_BIT,
+      .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+      .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+      .buffer = buffer->buffer,
+      .offset = 0u,
+      .size = buffer->bytes
+    };
+
+    vkCmdPipelineBarrier (
+      job->command,
+      VK_PIPELINE_STAGE_TRANSFER_BIT,
+      VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT
+        | VK_PIPELINE_STAGE_TRANSFER_BIT,
+      0u,
+      0u, NULL,
+      1u, &barrier,
+      0u, NULL
+    );
+  }
+  else
+  {
+    const VkBufferMemoryBarrier barrier =
+    {
+      .sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER,
+      .srcAccessMask = VK_ACCESS_HOST_WRITE_BIT,
+      .dstAccessMask = shader_access,
+      .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+      .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+      .buffer = buffer->buffer,
+      .offset = 0u,
+      .size = buffer->bytes
+    };
+
+    vkCmdPipelineBarrier (
+      job->command,
+      VK_PIPELINE_STAGE_HOST_BIT,
+      VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+      0u,
+      0u, NULL,
+      1u, &barrier,
+      0u, NULL
+    );
+  }
+}
+
+/**
+ * Record Compute-to-host visibility for one GPU-written storage range.
+ *
+ * Direct mode exposes shader writes to the host. Staging mode first exposes
+ * shader writes to transfer reads, copies the exact logical range to the
+ * host buffer, then exposes the transfer write to host reads.
+ */
+static void backend_vulkan_public_record_download (
+  backend_vulkan_public_job_t *job,
+  backend_vulkan_public_buffer_t *buffer)
+{
+  if (buffer->staging == VK_TRUE)
+  {
+    const VkBufferMemoryBarrier compute_barrier =
+    {
+      .sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER,
+      .srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT,
+      .dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT,
+      .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+      .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+      .buffer = buffer->buffer,
+      .offset = 0u,
+      .size = buffer->bytes
+    };
+
+    vkCmdPipelineBarrier (
+      job->command,
+      VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+      VK_PIPELINE_STAGE_TRANSFER_BIT,
+      0u,
+      0u, NULL,
+      1u, &compute_barrier,
+      0u, NULL
+    );
+
+    const VkBufferCopy copy =
+    {
+      .srcOffset = 0u,
+      .dstOffset = 0u,
+      .size = buffer->bytes
+    };
+
+    vkCmdCopyBuffer (
+      job->command,
+      buffer->buffer, buffer->host_buffer,
+      1u, &copy
+    );
+
+    job->staging_downloads++;
+
+    const VkBufferMemoryBarrier host_barrier =
+    {
+      .sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER,
+      .srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT,
+      .dstAccessMask = VK_ACCESS_HOST_READ_BIT,
+      .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+      .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+      .buffer = buffer->host_buffer,
+      .offset = 0u,
+      .size = buffer->bytes
+    };
+
+    vkCmdPipelineBarrier (
+      job->command,
+      VK_PIPELINE_STAGE_TRANSFER_BIT,
+      VK_PIPELINE_STAGE_HOST_BIT,
+      0u,
+      0u, NULL,
+      1u, &host_barrier,
+      0u, NULL
+    );
+  }
+  else
+  {
+    const VkBufferMemoryBarrier host_barrier =
+    {
+      .sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER,
+      .srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT,
+      .dstAccessMask = VK_ACCESS_HOST_READ_BIT,
+      .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+      .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+      .buffer = buffer->buffer,
+      .offset = 0u,
+      .size = buffer->bytes
+    };
+
+    vkCmdPipelineBarrier (
+      job->command,
+      VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+      VK_PIPELINE_STAGE_HOST_BIT,
+      0u,
+      0u, NULL,
+      1u, &host_barrier,
+      0u, NULL
+    );
+  }
+}
+
+/**
+ * Acquire declared Compute pipelines and bind their exact storage ranges.
+ *
+ * Session-backed jobs borrow immutable pipelines, common layouts and
+ * stage-count-cached descriptor sets. A descriptor lease covers every
+ * per-stage rebinding through GPU completion and is returned during cleanup.
+ * Standalone diagnostics create and own each shader, pipeline, descriptor
+ * pool and set with the unchanged deterministic fault checkpoints.
  */
 static VkResult backend_vulkan_public_pipeline_open (
   backend_vulkan_public_job_t *job)
@@ -757,6 +1091,99 @@ static VkResult backend_vulkan_public_pipeline_open (
    || job->buffers == NULL)
   {
     return VK_ERROR_INITIALIZATION_FAILED;
+  }
+
+  VkResult result = VK_SUCCESS;
+
+  if (job->session_owner != NULL)
+  {
+    for (uint32_t stage_index = 0u;
+         stage_index < job->program->stage_count;
+         stage_index++)
+    {
+      const backend_vulkan_program_stage_t *stage =
+        &job->program->stages[stage_index];
+
+      backend_vulkan_pipeline_view_t pipeline = { 0 };
+
+      result = backend_vulkan_session_pipeline_acquire (
+        job->session_owner, job->session_device_index,
+        stage->spirv, stage->spirv_words, &pipeline,
+        job->diagnostics
+      );
+
+      if (result != VK_SUCCESS) return result;
+
+      if (stage_index == 0u)
+      {
+        job->descriptor_layout = pipeline.descriptor_layout;
+        job->pipeline_layout = pipeline.pipeline_layout;
+        job->borrowed_pipeline = VK_TRUE;
+      }
+      else if (pipeline.descriptor_layout != job->descriptor_layout
+            || pipeline.pipeline_layout != job->pipeline_layout)
+      {
+        return VK_ERROR_INITIALIZATION_FAILED;
+      }
+
+      job->pipeline[stage_index] = pipeline.pipeline;
+    }
+
+    backend_vulkan_descriptor_binding_t *bindings =
+      (backend_vulkan_descriptor_binding_t *) calloc (
+        job->program->stage_count, sizeof (*bindings)
+      );
+
+    if (bindings == NULL) return VK_ERROR_OUT_OF_HOST_MEMORY;
+
+    for (uint32_t stage_index = 0u;
+         stage_index < job->program->stage_count;
+         stage_index++)
+    {
+      const backend_vulkan_program_stage_t *stage =
+        &job->program->stages[stage_index];
+
+      bindings[stage_index] = (backend_vulkan_descriptor_binding_t)
+      {
+        .source_buffer =
+          job->buffers[stage->source_buffer_index].buffer,
+        .destination_buffer =
+          job->buffers[stage->destination_buffer_index].buffer,
+        .source_bytes =
+          job->buffers[stage->source_buffer_index].bytes,
+        .destination_bytes =
+          job->buffers[stage->destination_buffer_index].bytes
+      };
+    }
+
+    backend_vulkan_descriptor_view_t descriptors = { 0 };
+
+    result = backend_vulkan_session_descriptors_acquire (
+      job->session_owner, job->session_device_index,
+      bindings, job->program->stage_count,
+      &descriptors, job->diagnostics
+    );
+
+    free (bindings);
+
+    if (result != VK_SUCCESS) return result;
+
+    job->borrowed_descriptors = VK_TRUE;
+
+    if (descriptors.sets == NULL
+     || descriptors.stage_count != job->program->stage_count)
+    {
+      return VK_ERROR_INITIALIZATION_FAILED;
+    }
+
+    for (uint32_t stage_index = 0u;
+         stage_index < job->program->stage_count;
+         stage_index++)
+    {
+      job->descriptor_set[stage_index] = descriptors.sets[stage_index];
+    }
+
+    return VK_SUCCESS;
   }
 
   const VkDescriptorSetLayoutBinding bindings[2] =
@@ -782,7 +1209,7 @@ static VkResult backend_vulkan_public_pipeline_open (
     .pBindings = bindings
   };
 
-  VkResult result = vkCreateDescriptorSetLayout (
+  result = vkCreateDescriptorSetLayout (
     job->device, &descriptor_info, NULL, &job->descriptor_layout
   );
 
@@ -895,7 +1322,6 @@ static VkResult backend_vulkan_public_pipeline_open (
     vkUpdateDescriptorSets (
       job->device, 2u, writes, 0u, NULL
     );
-
     const VkShaderModuleCreateInfo shader_info =
     {
       .sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
@@ -1056,16 +1482,14 @@ static VkResult backend_vulkan_md5_dispatch (
     output_words[i] = UINT32_C (0xa5a5a5a5);
   }
 
-  VkResult result = vulkan_auto_sync_mapped_memory (
-    job->device, input_buffer->memory,
-    &input_buffer->plan, VK_FALSE
+  VkResult result = backend_vulkan_public_sync_host (
+    job, input_buffer, VK_FALSE
   );
 
   if (result != VK_SUCCESS) return result;
 
-  result = vulkan_auto_sync_mapped_memory (
-    job->device, output_buffer->memory,
-    &output_buffer->plan, VK_FALSE
+  result = backend_vulkan_public_sync_host (
+    job, output_buffer, VK_FALSE
   );
 
   if (result != VK_SUCCESS) return result;
@@ -1079,6 +1503,13 @@ static VkResult backend_vulkan_md5_dispatch (
   result = vkBeginCommandBuffer (job->command, &begin);
 
   if (result != VK_SUCCESS) return result;
+
+  backend_vulkan_public_record_upload (
+    job, input_buffer, VK_ACCESS_SHADER_READ_BIT
+  );
+  backend_vulkan_public_record_upload (
+    job, output_buffer, VK_ACCESS_SHADER_WRITE_BIT
+  );
 
   vkCmdBindPipeline (
     job->command, VK_PIPELINE_BIND_POINT_COMPUTE,
@@ -1098,26 +1529,8 @@ static VkResult backend_vulkan_md5_dispatch (
     stage->group_count[2]
   );
 
-  const VkBufferMemoryBarrier host_barrier =
-  {
-    .sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER,
-    .srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT,
-    .dstAccessMask = VK_ACCESS_HOST_READ_BIT,
-    .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-    .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-    .buffer = output_buffer->buffer,
-    .offset = 0u,
-    .size = output_buffer->bytes
-  };
-
-  vkCmdPipelineBarrier (
-    job->command,
-    VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
-    VK_PIPELINE_STAGE_HOST_BIT,
-    0u,
-    0u, NULL,
-    1u, &host_barrier,
-    0u, NULL
+  backend_vulkan_public_record_download (
+    job, output_buffer
   );
 
   result = vkEndCommandBuffer (job->command);
@@ -1130,6 +1543,15 @@ static VkResult backend_vulkan_md5_dispatch (
     .commandBufferCount = 1u,
     .pCommandBuffers = &job->command
   };
+
+  if (job->borrowed_command == VK_TRUE)
+  {
+    result = vkResetFences (
+      job->device, 1u, &job->fence
+    );
+
+    if (result != VK_SUCCESS) return result;
+  }
 
   result = vkQueueSubmit (
     job->queue, 1u, &submit, job->fence
@@ -1145,9 +1567,10 @@ static VkResult backend_vulkan_md5_dispatch (
 
   if (result != VK_SUCCESS) return result;
 
-  result = vulkan_auto_sync_mapped_memory (
-    job->device, output_buffer->memory,
-    &output_buffer->plan, VK_TRUE
+  job->fence_completed = VK_TRUE;
+
+  result = backend_vulkan_public_sync_host (
+    job, output_buffer, VK_TRUE
   );
 
   if (result != VK_SUCCESS) return result;
@@ -1314,9 +1737,8 @@ static VkResult backend_vulkan_hash_batch_dispatch (
 
   if (result != VK_SUCCESS) return result;
 
-  result = vulkan_auto_sync_mapped_memory (
-    job->device, job->buffers[0].memory,
-    &job->buffers[0].plan, VK_FALSE
+  result = backend_vulkan_public_sync_host (
+    job, &job->buffers[0], VK_FALSE
   );
 
   if (result != VK_SUCCESS) return result;
@@ -1331,26 +1753,8 @@ static VkResult backend_vulkan_hash_batch_dispatch (
 
   if (result != VK_SUCCESS) return result;
 
-  const VkBufferMemoryBarrier input_barrier =
-  {
-    .sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER,
-    .srcAccessMask = VK_ACCESS_HOST_WRITE_BIT,
-    .dstAccessMask = VK_ACCESS_SHADER_READ_BIT,
-    .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-    .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-    .buffer = job->buffers[0].buffer,
-    .offset = 0u,
-    .size = job->buffers[0].bytes
-  };
-
-  vkCmdPipelineBarrier (
-    job->command,
-    VK_PIPELINE_STAGE_HOST_BIT,
-    VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
-    0u,
-    0u, NULL,
-    1u, &input_barrier,
-    0u, NULL
+  backend_vulkan_public_record_upload (
+    job, &job->buffers[0], VK_ACCESS_SHADER_READ_BIT
   );
 
   const backend_vulkan_program_stage_t *stage =
@@ -1374,26 +1778,8 @@ static VkResult backend_vulkan_hash_batch_dispatch (
     stage->group_count[2]
   );
 
-  const VkBufferMemoryBarrier output_barrier =
-  {
-    .sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER,
-    .srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT,
-    .dstAccessMask = VK_ACCESS_HOST_READ_BIT,
-    .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-    .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-    .buffer = job->buffers[1].buffer,
-    .offset = 0u,
-    .size = job->buffers[1].bytes
-  };
-
-  vkCmdPipelineBarrier (
-    job->command,
-    VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
-    VK_PIPELINE_STAGE_HOST_BIT,
-    0u,
-    0u, NULL,
-    1u, &output_barrier,
-    0u, NULL
+  backend_vulkan_public_record_download (
+    job, &job->buffers[1]
   );
 
   result = vkEndCommandBuffer (job->command);
@@ -1406,6 +1792,15 @@ static VkResult backend_vulkan_hash_batch_dispatch (
     .commandBufferCount = 1u,
     .pCommandBuffers = &job->command
   };
+
+  if (job->borrowed_command == VK_TRUE)
+  {
+    result = vkResetFences (
+      job->device, 1u, &job->fence
+    );
+
+    if (result != VK_SUCCESS) return result;
+  }
 
   result = vkQueueSubmit (
     job->queue, 1u, &submit, job->fence
@@ -1421,9 +1816,10 @@ static VkResult backend_vulkan_hash_batch_dispatch (
 
   if (result != VK_SUCCESS) return result;
 
-  result = vulkan_auto_sync_mapped_memory (
-    job->device, job->buffers[1].memory,
-    &job->buffers[1].plan, VK_TRUE
+  job->fence_completed = VK_TRUE;
+
+  result = backend_vulkan_public_sync_host (
+    job, &job->buffers[1], VK_TRUE
   );
 
   if (result != VK_SUCCESS) return result;
@@ -1492,19 +1888,37 @@ static VkResult backend_vulkan_hash_batch_dispatch (
  * Every later stage receives a COMPUTE_SHADER write-to-read barrier on its
  * declared source. Each pipeline/set and three-dimensional dispatch count
  * comes from the program declaration. Final shader-write-to-host-read
- * barriers cover every distinct destination buffer. A real fence completes
- * before noncoherent invalidation and CPU comparison of every stage output.
- * Controlled diagnostics can abort immediately before vkQueueSubmit or
- * immediately after a successful real submission; the latter is completed
- * by vkDeviceWaitIdle in the ordinary job cleanup. An explicit fence probe
- * submits the same commands without associating the fresh unsignaled fence,
- * then reads a real VK_TIMEOUT from a zero-duration vkWaitForFences call.
- * No failed Vulkan driver result or device-loss condition is synthesized.
+ * barriers cover every distinct destination buffer. Borrowed session
+ * commands use the owning session's submit API, then observe their
+ * exact fence with a zero-nanosecond wait. A real VK_TIMEOUT preserves
+ * the command and descriptor leases until unlimited completion succeeds;
+ * an already-signaled fence completes without another wait. Driver errors
+ * propagate without presenting pending output as valid. Standalone
+ * commands continue to submit and wait on their independently owned queue
+ * and fence. A real fence completes before noncoherent invalidation and CPU
+ * comparison of each stage output.
+ *
+ * Controlled standalone diagnostics can abort immediately before submission
+ * or after a successful real submission. Their cleanup waits for device
+ * idle before destroying resources. A session-backed diagnostic may
+ * return a simulated host error before submission after successful command
+ * recording; cleanup returns its leases without a fence or device-idle wait.
+ * A separate session-backed diagnostic returns a simulated host error
+ * immediately after submission; its cleanup retires the real Compute fence
+ * before returning descriptor and command leases. The standalone fence
+ * probe submits without
+ * associating its fresh unsignaled fence, then observes a real VK_TIMEOUT
+ * from vkWaitForFences with a zero-duration wait. No driver failure or
+ * device-loss condition is synthesized.
  *
  * Stage zero uses the public_u32_transform CPU reference. Every following
  * stage uses the public_u32_rotate reference, matching the immutable public
- * SPIR-V module reused by the four-stage diagnostic program. No HASHCAT
- * candidate, digest, salt or scheduling data participates in verification.
+ * SPIR-V module reused by the four-stage diagnostic program. An explicitly
+ * selected CPU-reference fault flips only one host-side reference word after
+ * real fence completion and memory synchronization, so existing mismatch
+ * handling returns an error without altering valid GPU results or poisoning
+ * the completed command. No password candidate, digest target, salt or
+ * scheduling data participates in verification.
  */
 static VkResult backend_vulkan_public_dispatch (
   backend_vulkan_public_job_t *job,
@@ -1537,9 +1951,8 @@ static VkResult backend_vulkan_public_dispatch (
     input_buffer->mapped, input, sizeof (input)
   );
 
-  VkResult result = vulkan_auto_sync_mapped_memory (
-    job->device, input_buffer->memory,
-    &input_buffer->plan, VK_FALSE
+  VkResult result = backend_vulkan_public_sync_host (
+    job, input_buffer, VK_FALSE
   );
 
   if (result != VK_SUCCESS) return result;
@@ -1553,6 +1966,10 @@ static VkResult backend_vulkan_public_dispatch (
   result = vkBeginCommandBuffer (job->command, &begin);
 
   if (result != VK_SUCCESS) return result;
+
+  backend_vulkan_public_record_upload (
+    job, input_buffer, VK_ACCESS_SHADER_READ_BIT
+  );
 
   for (uint32_t stage_index = 0u;
        stage_index < job->program->stage_count;
@@ -1609,29 +2026,11 @@ static VkResult backend_vulkan_public_dispatch (
        stage_index < job->program->stage_count;
        stage_index++)
   {
-    const backend_vulkan_program_stage_t *stage =
-      &job->program->stages[stage_index];
+    const uint32_t output_index =
+      job->program->stages[stage_index].destination_buffer_index;
 
-    const VkBufferMemoryBarrier host_barrier =
-    {
-      .sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER,
-      .srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT,
-      .dstAccessMask = VK_ACCESS_HOST_READ_BIT,
-      .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-      .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-      .buffer = job->buffers[stage->destination_buffer_index].buffer,
-      .offset = 0u,
-      .size = job->program->buffer_bytes
-    };
-
-    vkCmdPipelineBarrier (
-      job->command,
-      VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
-      VK_PIPELINE_STAGE_HOST_BIT,
-      0u,
-      0u, NULL,
-      1u, &host_barrier,
-      0u, NULL
+    backend_vulkan_public_record_download (
+      job, &job->buffers[output_index]
     );
   }
 
@@ -1639,27 +2038,68 @@ static VkResult backend_vulkan_public_dispatch (
 
   if (result != VK_SUCCESS) return result;
 
+  job->command_recorded = VK_TRUE;
+
+  if (job->diagnostic_pre_submit_abort == VK_TRUE)
+  {
+    fprintf (
+      diagnostics,
+      "BACKEND_VULKAN_PUBLIC_PRE_SUBMIT_ABORT"
+      " index=%" PRIu32
+      " recorded=1"
+      " submitted=0"
+      " simulated=1 scheduled=0\n",
+      job->session_device_index
+    );
+
+    return VK_ERROR_INITIALIZATION_FAILED;
+  }
+
   result = backend_vulkan_public_checkpoint (job, "before_submit");
 
   if (result != VK_SUCCESS) return result;
 
-  const VkSubmitInfo submit =
+  if (job->borrowed_command == VK_TRUE)
   {
-    .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
-    .commandBufferCount = 1u,
-    .pCommandBuffers = &job->command
-  };
+    result = backend_vulkan_session_command_submit (
+      job->session_owner, job->session_device_index
+    );
+  }
+  else
+  {
+    const VkSubmitInfo submit =
+    {
+      .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+      .commandBufferCount = 1u,
+      .pCommandBuffers = &job->command
+    };
 
-  result = vkQueueSubmit (
-    job->queue, 1u, &submit,
-    probe_unsignaled_fence == VK_TRUE ? VK_NULL_HANDLE : job->fence
-  );
+    result = vkQueueSubmit (
+      job->queue, 1u, &submit,
+      probe_unsignaled_fence == VK_TRUE ? VK_NULL_HANDLE : job->fence
+    );
+  }
 
   if (result != VK_SUCCESS) return result;
 
   job->submitted = 1u;
 
   if (job->fault != NULL) job->fault->submitted = 1u;
+
+  if (job->diagnostic_post_submit_abort == VK_TRUE)
+  {
+    fprintf (
+      diagnostics,
+      "BACKEND_VULKAN_PUBLIC_POST_SUBMIT_ABORT"
+      " index=%" PRIu32
+      " submitted=1"
+      " fence_completed=%u"
+      " simulated=1 scheduled=0\n",
+      job->session_device_index, job->fence_completed
+    );
+
+    return VK_ERROR_INITIALIZATION_FAILED;
+  }
 
   if (probe_unsignaled_fence == VK_TRUE)
   {
@@ -1687,11 +2127,43 @@ static VkResult backend_vulkan_public_dispatch (
 
   if (result != VK_SUCCESS) return result;
 
-  result = vkWaitForFences (
-    job->device, 1u, &job->fence, VK_TRUE, UINT64_MAX
-  );
+  if (job->borrowed_command == VK_TRUE)
+  {
+    result = backend_vulkan_session_command_complete_timeout (
+      job->session_owner, job->session_device_index, 0u
+    );
+
+    fprintf (
+      diagnostics,
+      "BACKEND_VULKAN_PUBLIC_MANAGED_FENCE_POLL"
+      " index=%" PRIu32
+      " stages=%" PRIu32
+      " timeout_ns=0"
+      " result=%d"
+      " pending=%u"
+      " scheduled=0\n",
+      job->session_device_index,
+      job->program->stage_count,
+      result, result == VK_TIMEOUT
+    );
+
+    if (result == VK_TIMEOUT)
+    {
+      result = backend_vulkan_session_command_complete (
+        job->session_owner, job->session_device_index
+      );
+    }
+  }
+  else
+  {
+    result = vkWaitForFences (
+      job->device, 1u, &job->fence, VK_TRUE, UINT64_MAX
+    );
+  }
 
   if (result != VK_SUCCESS) return result;
+
+  job->fence_completed = VK_TRUE;
 
   for (uint32_t stage_index = 0u;
        stage_index < job->program->stage_count;
@@ -1700,9 +2172,8 @@ static VkResult backend_vulkan_public_dispatch (
     const uint32_t output_index =
       job->program->stages[stage_index].destination_buffer_index;
 
-    result = vulkan_auto_sync_mapped_memory (
-      job->device, job->buffers[output_index].memory,
-      &job->buffers[output_index].plan, VK_TRUE
+    result = backend_vulkan_public_sync_host (
+      job, &job->buffers[output_index], VK_TRUE
     );
 
     if (result != VK_SUCCESS) return result;
@@ -1711,6 +2182,21 @@ static VkResult backend_vulkan_public_dispatch (
   uint32_t expected[BACKEND_VULKAN_PUBLIC_WORDS] = { 0 };
 
   memcpy (expected, input, sizeof (expected));
+
+  if (job->diagnostic_cpu_fault == VK_TRUE)
+  {
+    expected[0] ^= UINT32_C (1);
+
+    fprintf (
+      diagnostics,
+      "BACKEND_VULKAN_PUBLIC_CPU_REFERENCE_FAULT"
+      " stages=%" PRIu32
+      " index=0"
+      " gpu_fence_completed=%u"
+      " simulated=1 scheduled=0\n",
+      job->program->stage_count, job->fence_completed
+    );
+  }
 
   for (uint32_t stage_index = 0u;
        stage_index < job->program->stage_count;
@@ -1851,9 +2337,18 @@ static VkResult backend_vulkan_public_dispatch (
  * Run one declared Vulkan 1.0 program using backend device discovery.
  *
  * Obtains real physical-device properties from the backend catalogue,
- * validates the complete graph, allocates ownership arrays from program
- * counts and creates one temporary VkDevice. execution_kind explicitly
- * selects public arithmetic, fixed-vector MD5 or a caller-owned hash batch.
+ * validates the complete graph and allocates ownership arrays from program
+ * counts. An active matching backend session supplies a borrowed VkDevice,
+ * queue, reusable storage slots, SPIR-V-keyed pipelines and a leased
+ * command/fence pair. Storage slots use direct mapping or explicit staging
+ * copies according to actual memory compatibility. The
+ * HASHCAT_VULKAN_FORCE_STAGING=1 diagnostic control requests staging without
+ * altering the immutable shader or declared dispatch topology. Without a
+ * session, the job owns an independent device, pipeline and command objects.
+ * execution_kind explicitly selects public arithmetic, fixed-vector MD5,
+ * a caller-owned hash batch, a diagnostic CPU-reference fault after
+ * completion or a simulated host abort before or after submission of the
+ * public four-stage arithmetic program.
  * execution_context is required only by the hash batch path. No shader
  * identity or device-name inference is used.
  *
@@ -1877,7 +2372,7 @@ static VkResult backend_vulkan_kernel_verify_program (
    || backend_ctx->vulkan_catalog == NULL
    || device_index >= backend_ctx->vulkan_devices_cnt
    || program == NULL || program->stage_count == 0u
-   || execution_kind > BACKEND_VULKAN_EXECUTION_HASH_BATCH
+   || execution_kind > BACKEND_VULKAN_EXECUTION_PUBLIC_U32_PRE_SUBMIT_ABORT
    || controlled_fault_point > 37u
    || (execution_kind != BACKEND_VULKAN_EXECUTION_HASH_BATCH
     && execution_context != NULL)
@@ -1886,6 +2381,12 @@ static VkResult backend_vulkan_kernel_verify_program (
      || controlled_fault_point != 0u || probe_unsignaled_fence == VK_TRUE))
    || (execution_kind == BACKEND_VULKAN_EXECUTION_MD5
     && (controlled_fault_point != 0u || probe_unsignaled_fence == VK_TRUE))
+   || ((execution_kind == BACKEND_VULKAN_EXECUTION_PUBLIC_U32_CPU_FAULT
+     || execution_kind == BACKEND_VULKAN_EXECUTION_PUBLIC_U32_POST_SUBMIT_ABORT
+     || execution_kind == BACKEND_VULKAN_EXECUTION_PUBLIC_U32_PRE_SUBMIT_ABORT)
+    && (program != &backend_vulkan_public_chain4
+     || controlled_fault_point != 0u || probe_unsignaled_fence == VK_TRUE
+     || backend_ctx->vulkan_session == NULL))
    || (probe_unsignaled_fence == VK_TRUE
     && (execution_kind != BACKEND_VULKAN_EXECUTION_PUBLIC_U32
      || controlled_fault_point != 0u || program->stage_count != 4u)))
@@ -1932,6 +2433,14 @@ static VkResult backend_vulkan_kernel_verify_program (
 
   if (result != VK_SUCCESS) return result;
 
+  const char *force_staging_value =
+    getenv ("HASHCAT_VULKAN_FORCE_STAGING");
+
+  const VkBool32 force_staging =
+    force_staging_value != NULL
+    && strcmp (force_staging_value, "1") == 0
+      ? VK_TRUE : VK_FALSE;
+
   backend_vulkan_public_job_t job = { 0 };
 
   backend_vulkan_public_fault_t fault =
@@ -1944,115 +2453,255 @@ static VkResult backend_vulkan_kernel_verify_program (
 
   if (result != VK_SUCCESS) return result;
 
+  job.diagnostics = diagnostics;
+  job.diagnostic_cpu_fault =
+    execution_kind == BACKEND_VULKAN_EXECUTION_PUBLIC_U32_CPU_FAULT
+      ? VK_TRUE : VK_FALSE;
+  job.diagnostic_post_submit_abort =
+    execution_kind == BACKEND_VULKAN_EXECUTION_PUBLIC_U32_POST_SUBMIT_ABORT
+      ? VK_TRUE : VK_FALSE;
+  job.diagnostic_pre_submit_abort =
+    execution_kind == BACKEND_VULKAN_EXECUTION_PUBLIC_U32_PRE_SUBMIT_ABORT
+      ? VK_TRUE : VK_FALSE;
+
   if (controlled_fault_point != 0u) job.fault = &fault;
 
   result = backend_vulkan_public_checkpoint (&job, "host_arrays");
 
   if (result != VK_SUCCESS) goto cleanup;
 
-  const float priority = 1.0f;
-
-  const VkDeviceQueueCreateInfo queue_info =
+  if (backend_ctx->vulkan_session != NULL
+   && controlled_fault_point == 0u
+   && probe_unsignaled_fence == VK_FALSE)
   {
-    .sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
-    .queueFamilyIndex = selected.compute_queue_family,
-    .queueCount = 1u,
-    .pQueuePriorities = &priority
-  };
+    backend_vulkan_device_view_t view = { 0 };
 
-  const VkDeviceCreateInfo device_info =
-  {
-    .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
-    .queueCreateInfoCount = 1u,
-    .pQueueCreateInfos = &queue_info,
-    .enabledLayerCount = 0u,
-    .enabledExtensionCount = 0u,
-    .pEnabledFeatures = NULL
-  };
-
-  result = vkCreateDevice (
-    selected.physical, &device_info, NULL, &job.device
-  );
-
-  if (result != VK_SUCCESS) goto cleanup;
-
-  result = backend_vulkan_public_checkpoint (&job, "device");
-
-  if (result != VK_SUCCESS) goto cleanup;
-
-  vkGetDeviceQueue (
-    job.device, selected.compute_queue_family, 0u, &job.queue
-  );
-
-  if (job.queue == VK_NULL_HANDLE)
-  {
-    result = VK_ERROR_INITIALIZATION_FAILED;
-
-    goto cleanup;
-  }
-
-  for (uint32_t i = 0u; i < program->buffer_count; i++)
-  {
-    result = backend_vulkan_public_buffer_open (
-      &job, &selected, i
+    result = backend_vulkan_session_device (
+      backend_ctx, device_index, &view
     );
 
     if (result != VK_SUCCESS) goto cleanup;
+
+    if (view.queue_family != selected.compute_queue_family
+     || view.effective_api != effective_api)
+    {
+      result = VK_ERROR_INITIALIZATION_FAILED;
+
+      goto cleanup;
+    }
+
+    job.device = view.device;
+    job.queue = view.queue;
+    job.session_owner = backend_ctx;
+    job.session_device_index = device_index;
+
+    fprintf (
+      diagnostics,
+      "BACKEND_VULKAN_EXECUTOR_SESSION_REUSE"
+      " index=%" PRIu32
+      " queue_family=%" PRIu32
+      " api=%" PRIu32 ".%" PRIu32
+      " owns_device=0 scheduled=0\n",
+      device_index, view.queue_family,
+      VK_API_VERSION_MAJOR (view.effective_api),
+      VK_API_VERSION_MINOR (view.effective_api)
+    );
+  }
+  else
+  {
+    const float priority = 1.0f;
+
+    const VkDeviceQueueCreateInfo queue_info =
+    {
+      .sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
+      .queueFamilyIndex = selected.compute_queue_family,
+      .queueCount = 1u,
+      .pQueuePriorities = &priority
+    };
+
+    const VkDeviceCreateInfo device_info =
+    {
+      .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
+      .queueCreateInfoCount = 1u,
+      .pQueueCreateInfos = &queue_info,
+      .enabledLayerCount = 0u,
+      .enabledExtensionCount = 0u,
+      .pEnabledFeatures = NULL
+    };
+
+    result = vkCreateDevice (
+      selected.physical, &device_info, NULL, &job.device
+    );
+
+    if (result != VK_SUCCESS) goto cleanup;
+
+    job.owns_device = VK_TRUE;
+
+    result = backend_vulkan_public_checkpoint (&job, "device");
+
+    if (result != VK_SUCCESS) goto cleanup;
+
+    vkGetDeviceQueue (
+      job.device, selected.compute_queue_family, 0u, &job.queue
+    );
+
+    if (job.queue == VK_NULL_HANDLE)
+    {
+      result = VK_ERROR_INITIALIZATION_FAILED;
+
+      goto cleanup;
+    }
+  }
+
+  if (job.owns_device == VK_FALSE)
+  {
+    VkDeviceSize *buffer_bytes = (VkDeviceSize *) calloc (
+      program->buffer_count, sizeof (*buffer_bytes)
+    );
+    backend_vulkan_storage_view_t *views =
+      (backend_vulkan_storage_view_t *) calloc (
+        program->buffer_count, sizeof (*views)
+      );
+
+    if (buffer_bytes == NULL || views == NULL)
+    {
+      free (views);
+      free (buffer_bytes);
+
+      result = VK_ERROR_OUT_OF_HOST_MEMORY;
+
+      goto cleanup;
+    }
+
+    for (uint32_t i = 0u; i < program->buffer_count; i++)
+    {
+      buffer_bytes[i] = backend_vulkan_program_buffer_bytes (
+        program, i
+      );
+
+      if (buffer_bytes[i] == 0u)
+      {
+        result = VK_ERROR_INITIALIZATION_FAILED;
+
+        break;
+      }
+    }
+
+    if (result == VK_SUCCESS)
+    {
+      result = backend_vulkan_session_storage_reserve (
+        backend_ctx, device_index, &selected,
+        program->buffer_count, buffer_bytes,
+        force_staging, views, diagnostics
+      );
+    }
+
+    if (result == VK_SUCCESS)
+    {
+      for (uint32_t i = 0u; i < program->buffer_count; i++)
+      {
+        job.buffers[i] = (backend_vulkan_public_buffer_t)
+        {
+          .buffer = views[i].buffer,
+          .memory = views[i].memory,
+          .host_buffer = views[i].host_buffer,
+          .host_memory = views[i].host_memory,
+          .mapped = views[i].mapped,
+          .bytes = views[i].bytes,
+          .borrowed = VK_TRUE,
+          .staging = views[i].staging,
+          .plan = views[i].plan
+        };
+      }
+    }
+
+    free (views);
+    free (buffer_bytes);
+
+    if (result != VK_SUCCESS) goto cleanup;
+  }
+  else
+  {
+    for (uint32_t i = 0u; i < program->buffer_count; i++)
+    {
+      result = backend_vulkan_public_buffer_open (
+        &job, &selected, i
+      );
+
+      if (result != VK_SUCCESS) goto cleanup;
+    }
   }
 
   result = backend_vulkan_public_pipeline_open (&job);
 
   if (result != VK_SUCCESS) goto cleanup;
 
-  const VkCommandPoolCreateInfo pool_info =
+  if (job.session_owner != NULL)
   {
-    .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
-    .queueFamilyIndex = selected.compute_queue_family,
-    .flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT
-  };
+    backend_vulkan_command_view_t command = { 0 };
 
-  result = vkCreateCommandPool (
-    job.device, &pool_info, NULL, &job.command_pool
-  );
+    result = backend_vulkan_session_command_acquire (
+      backend_ctx, device_index, &command, diagnostics
+    );
 
-  if (result != VK_SUCCESS) goto cleanup;
+    if (result != VK_SUCCESS) goto cleanup;
 
-  result = backend_vulkan_public_checkpoint (&job, "command_pool");
-
-  if (result != VK_SUCCESS) goto cleanup;
-
-  const VkCommandBufferAllocateInfo command_info =
+    job.command = command.command;
+    job.fence = command.fence;
+    job.borrowed_command = VK_TRUE;
+  }
+  else
   {
-    .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-    .commandPool = job.command_pool,
-    .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-    .commandBufferCount = 1u
-  };
+    const VkCommandPoolCreateInfo pool_info =
+    {
+      .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
+      .queueFamilyIndex = selected.compute_queue_family,
+      .flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT
+    };
 
-  result = vkAllocateCommandBuffers (
-    job.device, &command_info, &job.command
-  );
+    result = vkCreateCommandPool (
+      job.device, &pool_info, NULL, &job.command_pool
+    );
 
-  if (result != VK_SUCCESS) goto cleanup;
+    if (result != VK_SUCCESS) goto cleanup;
 
-  result = backend_vulkan_public_checkpoint (&job, "command_buffer");
+    result = backend_vulkan_public_checkpoint (&job, "command_pool");
 
-  if (result != VK_SUCCESS) goto cleanup;
+    if (result != VK_SUCCESS) goto cleanup;
 
-  const VkFenceCreateInfo fence_info =
-  {
-    .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO
-  };
+    const VkCommandBufferAllocateInfo command_info =
+    {
+      .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+      .commandPool = job.command_pool,
+      .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+      .commandBufferCount = 1u
+    };
 
-  result = vkCreateFence (
-    job.device, &fence_info, NULL, &job.fence
-  );
+    result = vkAllocateCommandBuffers (
+      job.device, &command_info, &job.command
+    );
 
-  if (result != VK_SUCCESS) goto cleanup;
+    if (result != VK_SUCCESS) goto cleanup;
 
-  result = backend_vulkan_public_checkpoint (&job, "fence");
+    result = backend_vulkan_public_checkpoint (&job, "command_buffer");
 
-  if (result != VK_SUCCESS) goto cleanup;
+    if (result != VK_SUCCESS) goto cleanup;
+
+    const VkFenceCreateInfo fence_info =
+    {
+      .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO
+    };
+
+    result = vkCreateFence (
+      job.device, &fence_info, NULL, &job.fence
+    );
+
+    if (result != VK_SUCCESS) goto cleanup;
+
+    result = backend_vulkan_public_checkpoint (&job, "fence");
+
+    if (result != VK_SUCCESS) goto cleanup;
+  }
 
   if (execution_kind == BACKEND_VULKAN_EXECUTION_HASH_BATCH)
   {
@@ -2205,6 +2854,25 @@ static VkResult backend_vulkan_kernel_verify_program (
   {
     result = backend_vulkan_public_dispatch (
       &job, diagnostics, probe_unsignaled_fence
+    );
+  }
+
+  if (result == VK_SUCCESS
+   && (job.staging_uploads != 0u || job.staging_downloads != 0u))
+  {
+    fprintf (
+      diagnostics,
+      "BACKEND_VULKAN_STAGING_PASS"
+      " stages=%" PRIu32
+      " buffers=%" PRIu32
+      " uploads=%" PRIu32
+      " downloads=%" PRIu32
+      " forced=%u scheduled=0\n",
+      program->stage_count,
+      program->buffer_count,
+      job.staging_uploads,
+      job.staging_downloads,
+      force_staging
     );
   }
 
@@ -2450,6 +3118,413 @@ VkResult backend_vulkan_kernel_verify_chain4 (
     BACKEND_VULKAN_EXECUTION_PUBLIC_U32, NULL,
     0u, VK_FALSE
   );
+}
+
+/**
+ * Verify CPU-reference failure handling after a completed public GPU job.
+ *
+ * Requires one healthy session-owned Vulkan Compute queue. Executes the
+ * four-stage public arithmetic graph using its real command and fence, but
+ * changes one local CPU reference word only after the GPU result has been
+ * synchronized to host memory. The resulting expected validation error
+ * must not poison the command pair or leave descriptors leased. Exact
+ * managed submission/completion counters must advance by one.
+ *
+ * Runs the same four-stage graph normally on retained command, pipeline
+ * and storage resources and verifies subsequent completion and ownership
+ * counters. Returns VK_SUCCESS only when the injected CPU mismatch is
+ * observed and a healthy new GPU job succeeds without recovery.
+ * No password material, digest targets or scheduler state are accessed.
+ * This diagnostic is selected explicitly by information-mode testing.
+ */
+VkResult backend_vulkan_kernel_verify_chain4_post_fence_cpu_error (
+  backend_ctx_t *backend_ctx,
+  uint32_t device_index,
+  FILE *diagnostics)
+{
+  if (backend_ctx == NULL || diagnostics == NULL)
+  {
+    return VK_ERROR_INITIALIZATION_FAILED;
+  }
+
+  backend_vulkan_session_status_t before = { 0 };
+
+  VkResult result = backend_vulkan_session_status (
+    backend_ctx, device_index, &before
+  );
+
+  if (result != VK_SUCCESS) return result;
+
+  if (before.compute_leased == VK_TRUE
+   || before.compute_pending == VK_TRUE
+   || before.compute_failed == VK_TRUE
+   || before.descriptors_leased == VK_TRUE
+   || before.transfer_pending == VK_TRUE
+   || before.transfer_failed == VK_TRUE
+   || before.compute_submissions > UINT32_MAX - 2u
+   || before.compute_completions > UINT32_MAX - 2u)
+  {
+    return VK_ERROR_INITIALIZATION_FAILED;
+  }
+
+  const VkResult injected = backend_vulkan_kernel_verify_program (
+    backend_ctx, device_index, diagnostics,
+    &backend_vulkan_public_chain4,
+    BACKEND_VULKAN_EXECUTION_PUBLIC_U32_CPU_FAULT, NULL,
+    0u, VK_FALSE
+  );
+
+  backend_vulkan_session_status_t after_failure = { 0 };
+
+  result = backend_vulkan_session_status (
+    backend_ctx, device_index, &after_failure
+  );
+
+  if (result != VK_SUCCESS) return result;
+
+  if (injected != VK_ERROR_INITIALIZATION_FAILED
+   || after_failure.compute_submissions != before.compute_submissions + 1u
+   || after_failure.compute_completions != before.compute_completions + 1u
+   || after_failure.compute_cancellations != before.compute_cancellations
+   || after_failure.compute_leased == VK_TRUE
+   || after_failure.compute_pending == VK_TRUE
+   || after_failure.compute_failed == VK_TRUE
+   || after_failure.descriptors_leased == VK_TRUE
+   || after_failure.transfer_pending == VK_TRUE
+   || after_failure.transfer_failed == VK_TRUE)
+  {
+    fprintf (
+      diagnostics,
+      "BACKEND_VULKAN_PUBLIC_POST_FENCE_CPU_TEST_FAILED"
+      " index=%" PRIu32
+      " injected_result=%d"
+      " submitted=%" PRIu32
+      " completed=%" PRIu32
+      " poisoned=%u"
+      " descriptors_leased=%u\n",
+      device_index, injected,
+      after_failure.compute_submissions,
+      after_failure.compute_completions,
+      after_failure.compute_failed,
+      after_failure.descriptors_leased
+    );
+
+    return VK_ERROR_INITIALIZATION_FAILED;
+  }
+
+  result = backend_vulkan_kernel_verify_program (
+    backend_ctx, device_index, diagnostics,
+    &backend_vulkan_public_chain4,
+    BACKEND_VULKAN_EXECUTION_PUBLIC_U32, NULL,
+    0u, VK_FALSE
+  );
+
+  if (result != VK_SUCCESS) return result;
+
+  backend_vulkan_session_status_t after_retry = { 0 };
+
+  result = backend_vulkan_session_status (
+    backend_ctx, device_index, &after_retry
+  );
+
+  if (result != VK_SUCCESS) return result;
+
+  if (after_retry.compute_submissions != before.compute_submissions + 2u
+   || after_retry.compute_completions != before.compute_completions + 2u
+   || after_retry.compute_cancellations != before.compute_cancellations
+   || after_retry.compute_leased == VK_TRUE
+   || after_retry.compute_pending == VK_TRUE
+   || after_retry.compute_failed == VK_TRUE
+   || after_retry.descriptors_leased == VK_TRUE
+   || after_retry.transfer_pending == VK_TRUE
+   || after_retry.transfer_failed == VK_TRUE)
+  {
+    return VK_ERROR_INITIALIZATION_FAILED;
+  }
+
+  fprintf (
+    diagnostics,
+    "BACKEND_VULKAN_PUBLIC_POST_FENCE_CPU_TEST_PASS"
+    " index=%" PRIu32
+    " injected_result=%d"
+    " gpu_fence_completions=2"
+    " command_recovery=0"
+    " retry=1"
+    " scheduled=0\n",
+    device_index, injected
+  );
+
+  return VK_SUCCESS;
+}
+
+/**
+ * Verify a host abort immediately after a real session Compute submission.
+ *
+ * Requires one healthy session-owned Vulkan queue. Submits the public
+ * four-stage arithmetic program and returns a simulated CPU-side failure
+ * before a fence poll or GPU output readback. The common cleanup waits for
+ * the actual submission fence, releases descriptors and the command lease,
+ * and retains the original CPU error without poisoning the session.
+ *
+ * Replays the four-stage program normally on retained resources. Both
+ * submissions must have been confirmed by real GPU fences, and the final
+ * session must have no pending, canceled or poisoned Compute work. Returns
+ * VK_SUCCESS only after observing the original simulated error and a
+ * subsequent successful GPU retry without command recovery.
+ */
+VkResult backend_vulkan_kernel_verify_chain4_post_submit_abort (
+  backend_ctx_t *backend_ctx,
+  uint32_t device_index,
+  FILE *diagnostics)
+{
+  if (backend_ctx == NULL || diagnostics == NULL)
+  {
+    return VK_ERROR_INITIALIZATION_FAILED;
+  }
+
+  backend_vulkan_session_status_t before = { 0 };
+
+  VkResult result = backend_vulkan_session_status (
+    backend_ctx, device_index, &before
+  );
+
+  if (result != VK_SUCCESS) return result;
+
+  if (before.compute_leased == VK_TRUE
+   || before.compute_pending == VK_TRUE
+   || before.compute_failed == VK_TRUE
+   || before.descriptors_leased == VK_TRUE
+   || before.transfer_pending == VK_TRUE
+   || before.transfer_failed == VK_TRUE
+   || before.compute_submissions > UINT32_MAX - 2u
+   || before.compute_completions > UINT32_MAX - 2u)
+  {
+    return VK_ERROR_INITIALIZATION_FAILED;
+  }
+
+  const VkResult injected = backend_vulkan_kernel_verify_program (
+    backend_ctx, device_index, diagnostics,
+    &backend_vulkan_public_chain4,
+    BACKEND_VULKAN_EXECUTION_PUBLIC_U32_POST_SUBMIT_ABORT, NULL,
+    0u, VK_FALSE
+  );
+
+  backend_vulkan_session_status_t after_abort = { 0 };
+
+  result = backend_vulkan_session_status (
+    backend_ctx, device_index, &after_abort
+  );
+
+  if (result != VK_SUCCESS) return result;
+
+  if (injected != VK_ERROR_INITIALIZATION_FAILED
+   || after_abort.compute_submissions != before.compute_submissions + 1u
+   || after_abort.compute_completions != before.compute_completions + 1u
+   || after_abort.compute_cancellations != before.compute_cancellations
+   || after_abort.compute_leased == VK_TRUE
+   || after_abort.compute_pending == VK_TRUE
+   || after_abort.compute_failed == VK_TRUE
+   || after_abort.descriptors_leased == VK_TRUE
+   || after_abort.transfer_pending == VK_TRUE
+   || after_abort.transfer_failed == VK_TRUE)
+  {
+    fprintf (
+      diagnostics,
+      "BACKEND_VULKAN_PUBLIC_POST_SUBMIT_TEST_FAILED"
+      " index=%" PRIu32
+      " injected_result=%d"
+      " submitted=%" PRIu32
+      " completed=%" PRIu32
+      " poisoned=%u"
+      " descriptors_leased=%u\n",
+      device_index, injected,
+      after_abort.compute_submissions,
+      after_abort.compute_completions,
+      after_abort.compute_failed,
+      after_abort.descriptors_leased
+    );
+
+    return VK_ERROR_INITIALIZATION_FAILED;
+  }
+
+  result = backend_vulkan_kernel_verify_program (
+    backend_ctx, device_index, diagnostics,
+    &backend_vulkan_public_chain4,
+    BACKEND_VULKAN_EXECUTION_PUBLIC_U32, NULL,
+    0u, VK_FALSE
+  );
+
+  if (result != VK_SUCCESS) return result;
+
+  backend_vulkan_session_status_t after_retry = { 0 };
+
+  result = backend_vulkan_session_status (
+    backend_ctx, device_index, &after_retry
+  );
+
+  if (result != VK_SUCCESS) return result;
+
+  if (after_retry.compute_submissions != before.compute_submissions + 2u
+   || after_retry.compute_completions != before.compute_completions + 2u
+   || after_retry.compute_cancellations != before.compute_cancellations
+   || after_retry.compute_leased == VK_TRUE
+   || after_retry.compute_pending == VK_TRUE
+   || after_retry.compute_failed == VK_TRUE
+   || after_retry.descriptors_leased == VK_TRUE
+   || after_retry.transfer_pending == VK_TRUE
+   || after_retry.transfer_failed == VK_TRUE)
+  {
+    return VK_ERROR_INITIALIZATION_FAILED;
+  }
+
+  fprintf (
+    diagnostics,
+    "BACKEND_VULKAN_PUBLIC_POST_SUBMIT_TEST_PASS"
+    " index=%" PRIu32
+    " injected_result=%d"
+    " retired_fences=2"
+    " command_recovery=0"
+    " retry=1"
+    " scheduled=0\n",
+    device_index, injected
+  );
+
+  return VK_SUCCESS;
+}
+
+/**
+ * Verify reuse of an ended but unsubmitted public Compute command.
+ *
+ * Requires a healthy session-owned Vulkan device and exclusive host access.
+ * Records the four-stage arithmetic command successfully, then emits one
+ * deliberate CPU error immediately before queue submission. Cleanup releases
+ * the unsubmitted command and its descriptor lease without poisoning the
+ * command pair or waiting for device idle. Host counters must show that no
+ * Compute submission or completion occurred during the simulated error.
+ *
+ * Runs the same public four-stage graph through a real GPU queue submit
+ * and fence, verifies its output and checks clean ownership. Returns
+ * VK_SUCCESS only when the injected CPU error and healthy retry both
+ * match their exact expected session states.
+ */
+VkResult backend_vulkan_kernel_verify_chain4_pre_submit_abort (
+  backend_ctx_t *backend_ctx,
+  uint32_t device_index,
+  FILE *diagnostics)
+{
+  if (backend_ctx == NULL || diagnostics == NULL)
+  {
+    return VK_ERROR_INITIALIZATION_FAILED;
+  }
+
+  backend_vulkan_session_status_t before = { 0 };
+
+  VkResult result = backend_vulkan_session_status (
+    backend_ctx, device_index, &before
+  );
+
+  if (result != VK_SUCCESS) return result;
+
+  if (before.compute_leased == VK_TRUE
+   || before.compute_pending == VK_TRUE
+   || before.compute_failed == VK_TRUE
+   || before.descriptors_leased == VK_TRUE
+   || before.transfer_pending == VK_TRUE
+   || before.transfer_failed == VK_TRUE
+   || before.compute_submissions == UINT32_MAX
+   || before.compute_completions == UINT32_MAX)
+  {
+    return VK_ERROR_INITIALIZATION_FAILED;
+  }
+
+  const VkResult injected = backend_vulkan_kernel_verify_program (
+    backend_ctx, device_index, diagnostics,
+    &backend_vulkan_public_chain4,
+    BACKEND_VULKAN_EXECUTION_PUBLIC_U32_PRE_SUBMIT_ABORT, NULL,
+    0u, VK_FALSE
+  );
+
+  backend_vulkan_session_status_t after_abort = { 0 };
+
+  result = backend_vulkan_session_status (
+    backend_ctx, device_index, &after_abort
+  );
+
+  if (result != VK_SUCCESS) return result;
+
+  if (injected != VK_ERROR_INITIALIZATION_FAILED
+   || after_abort.compute_submissions != before.compute_submissions
+   || after_abort.compute_completions != before.compute_completions
+   || after_abort.compute_cancellations != before.compute_cancellations
+   || after_abort.compute_leased == VK_TRUE
+   || after_abort.compute_pending == VK_TRUE
+   || after_abort.compute_failed == VK_TRUE
+   || after_abort.descriptors_leased == VK_TRUE
+   || after_abort.transfer_pending == VK_TRUE
+   || after_abort.transfer_failed == VK_TRUE)
+  {
+    fprintf (
+      diagnostics,
+      "BACKEND_VULKAN_PUBLIC_PRE_SUBMIT_TEST_FAILED"
+      " index=%" PRIu32
+      " injected_result=%d"
+      " submitted=%" PRIu32
+      " completed=%" PRIu32
+      " poisoned=%u"
+      " descriptors_leased=%u\n",
+      device_index, injected,
+      after_abort.compute_submissions,
+      after_abort.compute_completions,
+      after_abort.compute_failed,
+      after_abort.descriptors_leased
+    );
+
+    return VK_ERROR_INITIALIZATION_FAILED;
+  }
+
+  result = backend_vulkan_kernel_verify_program (
+    backend_ctx, device_index, diagnostics,
+    &backend_vulkan_public_chain4,
+    BACKEND_VULKAN_EXECUTION_PUBLIC_U32, NULL,
+    0u, VK_FALSE
+  );
+
+  if (result != VK_SUCCESS) return result;
+
+  backend_vulkan_session_status_t after_retry = { 0 };
+
+  result = backend_vulkan_session_status (
+    backend_ctx, device_index, &after_retry
+  );
+
+  if (result != VK_SUCCESS) return result;
+
+  if (after_retry.compute_submissions != before.compute_submissions + 1u
+   || after_retry.compute_completions != before.compute_completions + 1u
+   || after_retry.compute_cancellations != before.compute_cancellations
+   || after_retry.compute_leased == VK_TRUE
+   || after_retry.compute_pending == VK_TRUE
+   || after_retry.compute_failed == VK_TRUE
+   || after_retry.descriptors_leased == VK_TRUE
+   || after_retry.transfer_pending == VK_TRUE
+   || after_retry.transfer_failed == VK_TRUE)
+  {
+    return VK_ERROR_INITIALIZATION_FAILED;
+  }
+
+  fprintf (
+    diagnostics,
+    "BACKEND_VULKAN_PUBLIC_PRE_SUBMIT_TEST_PASS"
+    " index=%" PRIu32
+    " injected_result=%d"
+    " queued_before_retry=0"
+    " retry=1"
+    " command_recovery=0"
+    " scheduled=0\n",
+    device_index, injected
+  );
+
+  return VK_SUCCESS;
 }
 
 /**

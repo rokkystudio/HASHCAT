@@ -6,6 +6,51 @@ The archived standalone catalogue evidence belongs to the initial opt-in
 backend discovery milestone. Its manifest identifies the captured build
 commit separately from current-source SHA-256 regression identities.
 
+## Vulkan-only backend-information integration (2026-11-03)
+
+When `ENABLE_VULKAN_DISCOVERY=1` is selected for Android, the native
+`backend_ctx_init()` opens the Vulkan catalogue independently of ordinary
+CUDA/HIP/Metal/OpenCL initialization. The Vulkan-only backend-information
+path is permitted when at least one Vulkan physical device is enumerated;
+ordinary password-processing mode still requires an existing scheduled
+compute backend.
+
+`backend_ctx_devices_init()` calls
+`backend_ctx_devices_init_vulkan_info()` before ordinary device-count
+requirements block a Vulkan-only information session. The function performs
+the existing empty queue submission, one-/two-/four-stage public Compute
+programs and MD5/SHA-256 known-answer diagnostics. It does not add entries
+to `devices_param` or change `backend_devices_active`. Vulkan-only
+information mode returns to the frontend without configuring nonexistent
+scheduled devices, and `backend_ctx_devices_destroy()` closes the Vulkan
+session before the catalogue is destroyed.
+
+Reproduce the complete ARM64/ARMv7 builds with
+`scripts/BUILD.ps1 -EnableVulkanDiscovery -Package:$false` and the
+requested Android target, using `-VulkanOutputName vulkan-hashcat-preview`.
+Run a physical-device information session with:
+
+```powershell
+.\tools\run-vulkan-hashcat-info.ps1 -Serial $DeviceSerial -Abi arm64-v8a -ReportPrefix device-arm64 -Mode vulkan-only
+```
+
+The runner passes `-I --backend-ignore-opencl --backend-ignore-cuda
+--backend-ignore-hip`, verifies actual Vulkan Compute completion and zero
+native process exit, writes a local diagnostic log and cleans the isolated
+ADB runtime. Mixed mode retains the ordinary compute runtimes.
+
+The 2026-11-03 integrated build passed real Vulkan-only `hashcat -I`
+tests on Pixel 9 Pro XL / Mali-G715 ARM64, RedMagic / Adreno 730 ARM64
+and RedMagic / Adreno 730 ARMv7. Pixel ARM64 also passed mixed Vulkan/OpenCL
+information mode. All four tests returned native exit zero; the Vulkan-only
+logs contain the public Compute and cryptographic diagnostic passes without
+an OpenCL device listing. The test logs are retained under
+`build/diagnostic-multimode/vulkan-integration-runs/`.
+
+This is an information-mode integration milestone. Vulkan hash-mode
+scheduling, candidate generation, target digest matching, worker execution
+and the release APK remain separate work.
+
 ## Scope
 
 HASHCAT now has an **opt-in Android Vulkan device-discovery path** in the
@@ -115,11 +160,15 @@ backend_ctx_destroy also closes any active session as a backstop before
 it closes VkInstance. A failed optional Vulkan session is reported with
 the actual VkResult without registering a hashing device.
 
-The ordinary hashcat initialization still requires at least one existing
-supported runtime to activate the production backend. On a Vulkan-only
-device without any working CUDA/HIP/Metal/OpenCL backend, the current
-production startup does not yet provide a usable compute device; this
-experimental path does not bypass that condition.
+Ordinary password-processing initialization requires at least one
+scheduled CUDA/HIP/Metal/OpenCL backend. With `WITH_VULKAN_DISCOVERY`,
+the diagnostic `hashcat -I` path opens its Vulkan catalogue before that
+runtime requirement. If a physical Vulkan device exists, the information
+session runs its Vulkan Compute diagnostics even when the ordinary
+backend-device count is zero. The Vulkan-only information path does not
+register a hashing device, advertise password-processing support or
+enter the normal task scheduler. An ordinary attack still requires an
+existing supported compute runtime.
 
 Source and ownership are intentionally unambiguous: backend_ctx_t owns
 the catalogue; vulkan_core10_device_catalog_t owns VkInstance; the

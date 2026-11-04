@@ -4838,6 +4838,15 @@ int run_cracker (hashcat_ctx_t *hashcat_ctx, hc_device_param_t *device_param, co
   return 0;
 }
 
+/**
+ * Initialize available GPU runtime libraries and the optional Vulkan catalogue.
+ *
+ * Allocates the ordinary device table, initializes CUDA/HIP/Metal/OpenCL, and
+ * discovers Vulkan physical devices when the Android Vulkan build is enabled.
+ * Backend-information mode accepts a Vulkan-only system for independent
+ * Compute diagnostics. Normal workloads still require an ordinary scheduled
+ * GPU runtime, and the backend context owns all retained Vulkan resources.
+ */
 int backend_ctx_init (hashcat_ctx_t *hashcat_ctx)
 {
   backend_ctx_t  *backend_ctx  = hashcat_ctx->backend_ctx;
@@ -5508,10 +5517,45 @@ int backend_ctx_init (hashcat_ctx_t *hashcat_ctx)
   }
 
   /**
+   * Discover Vulkan independently of the CUDA/HIP/Metal/OpenCL loaders.
+   * Vulkan-only execution remains available only in backend-information mode.
+   */
+
+  #if defined (WITH_VULKAN_DISCOVERY)
+  const VkResult vulkan_result = backend_vulkan_catalog_open (
+    backend_ctx, VK_API_VERSION_1_0, stderr
+  );
+
+  if (vulkan_result != VK_SUCCESS)
+  {
+    event_log_warning (
+      hashcat_ctx,
+      "Vulkan 1.0 discovery failed with VkResult %d; Vulkan devices are not scheduled.",
+      vulkan_result
+    );
+  }
+  else
+  {
+    event_log_info (
+      hashcat_ctx,
+      "Vulkan 1.0 discovery found %u physical device(s); Vulkan Compute scheduling is not enabled.",
+      backend_ctx->vulkan_devices_cnt
+    );
+  }
+  #endif
+
+  bool allow_vulkan_information_only = false;
+
+  #if defined (WITH_VULKAN_DISCOVERY)
+  allow_vulkan_information_only =
+    user_options->backend_info > 0 && backend_ctx->vulkan_devices_cnt > 0;
+  #endif
+
+  /**
    * Final checks
    */
 
-  if ((backend_ctx->cuda == NULL) && (backend_ctx->hip == NULL) && (backend_ctx->ocl == NULL) && (backend_ctx->mtl == NULL))
+  if ((backend_ctx->cuda == NULL) && (backend_ctx->hip == NULL) && (backend_ctx->ocl == NULL) && (backend_ctx->mtl == NULL) && allow_vulkan_information_only == false)
   {
     #if defined (__APPLE__)
     event_log_error (hashcat_ctx, "ATTENTION! No OpenCL, Metal, HIP or CUDA compatible platform found.");
@@ -5540,35 +5584,21 @@ int backend_ctx_init (hashcat_ctx_t *hashcat_ctx)
     event_log_warning (hashcat_ctx, "  \"NVIDIA CUDA Toolkit\" (both runtime and driver included)");
     event_log_warning (hashcat_ctx, NULL);
 
+    #if defined (WITH_VULKAN_DISCOVERY)
+    const VkResult vulkan_close_result = backend_vulkan_catalog_close (backend_ctx);
+
+    if (vulkan_close_result != VK_SUCCESS)
+    {
+      event_log_warning (hashcat_ctx, "Vulkan catalogue close failed with VkResult %d.", vulkan_close_result);
+    }
+    #endif
+
     hcfree (backend_ctx->devices_param);
 
     return -1;
   }
 
   backend_ctx->enabled = true;
-
-  #if defined (WITH_VULKAN_DISCOVERY)
-  const VkResult vulkan_result = backend_vulkan_catalog_open (
-    backend_ctx, VK_API_VERSION_1_0, stderr
-  );
-
-  if (vulkan_result != VK_SUCCESS)
-  {
-    event_log_warning (
-      hashcat_ctx,
-      "Vulkan 1.0 discovery failed with VkResult %d; Vulkan devices are not scheduled.",
-      vulkan_result
-    );
-  }
-  else
-  {
-    event_log_info (
-      hashcat_ctx,
-      "Vulkan 1.0 discovery found %u physical device(s); Vulkan Compute scheduling is not enabled.",
-      backend_ctx->vulkan_devices_cnt
-    );
-  }
-  #endif
 
   return 0;
 }
@@ -8438,6 +8468,252 @@ static void backend_ctx_devices_init_opencl (hashcat_ctx_t *hashcat_ctx, int *vi
   backend_ctx->opencl_devices_active  = opencl_devices_active;
 }
 
+#if defined (WITH_VULKAN_DISCOVERY)
+/**
+ * Verify the optional Vulkan Compute session and declared diagnostic programs.
+ *
+ * Executes the information-mode Vulkan session, synthetic Compute graphs,
+ * MD5 known-answer vectors and SHA-256 byte-message vectors on the first
+ * discovered physical device. Exact diagnostic environment settings
+ * independently run a CPU-reference mismatch after a completed GPU fence
+ * or a host abort immediately after a real GPU submission. Both diagnostics
+ * require a healthy subsequent four-stage retry on retained Vulkan resources.
+ * Each failure is reported without registering a hashing device, changing
+ * ordinary GPU backend arrays or scheduling any production workload.
+ */
+static void backend_ctx_devices_init_vulkan_info (hashcat_ctx_t *hashcat_ctx)
+{
+  backend_ctx_t  *backend_ctx  = hashcat_ctx->backend_ctx;
+  user_options_t *user_options = hashcat_ctx->user_options;
+
+  if (user_options->backend_info > 0 && backend_ctx->vulkan_catalog != NULL)
+  {
+    const vulkan_auto_compute_requirements_t workload =
+    {
+      .local_size = { 1u, 1u, 1u },
+      .group_count = { 1u, 1u, 1u },
+      .storage_buffer_count = 1u,
+      .largest_storage_buffer_bytes = 4u,
+      .shared_memory_bytes = 0u
+    };
+
+    const VkResult session_result = backend_vulkan_session_open (
+      backend_ctx, 0u, &workload, stderr
+    );
+
+    if (session_result != VK_SUCCESS)
+    {
+      event_log_warning (
+        hashcat_ctx,
+        "Vulkan 1.0 Compute session verification failed with VkResult %d; Vulkan devices remain unscheduled.",
+        session_result
+      );
+    }
+    else
+    {
+      event_log_info (
+        hashcat_ctx,
+        "Vulkan 1.0 Compute device session verified with an empty queue submission; Vulkan hashing remains disabled."
+      );
+
+      const VkResult kernel_result = backend_vulkan_kernel_verify (
+        backend_ctx, 0u, stderr
+      );
+
+      if (kernel_result != VK_SUCCESS)
+      {
+        event_log_warning (
+          hashcat_ctx,
+          "Vulkan 1.0 public SPIR-V Compute kernel verification failed with VkResult %d; hashing remains disabled.",
+          kernel_result
+        );
+      }
+      else
+      {
+        event_log_info (
+          hashcat_ctx,
+          "Vulkan 1.0 public SPIR-V Compute kernel dispatched and verified; hashing remains disabled."
+        );
+
+        const VkResult chain_result = backend_vulkan_kernel_verify_chain (
+          backend_ctx, 0u, stderr
+        );
+
+        if (chain_result != VK_SUCCESS)
+        {
+          event_log_warning (
+            hashcat_ctx,
+            "Vulkan 1.0 public two-stage SPIR-V chain failed with VkResult %d; hashing remains disabled.",
+            chain_result
+          );
+        }
+        else
+        {
+          event_log_info (
+            hashcat_ctx,
+            "Vulkan 1.0 public two-stage SPIR-V Compute chain dispatched and verified; hashing remains disabled."
+          );
+
+          const VkResult chain4_result = backend_vulkan_kernel_verify_chain4 (
+            backend_ctx, 0u, stderr
+          );
+
+          if (chain4_result != VK_SUCCESS)
+          {
+            event_log_warning (
+              hashcat_ctx,
+              "Vulkan 1.0 public four-stage SPIR-V chain failed with VkResult %d; hashing remains disabled.",
+              chain4_result
+            );
+          }
+          else
+          {
+            event_log_info (
+              hashcat_ctx,
+              "Vulkan 1.0 public four-stage SPIR-V Compute chain dispatched and verified; hashing remains disabled."
+            );
+
+            const char *cpu_reference_test =
+              getenv ("HASHCAT_VULKAN_CPU_REFERENCE_TEST");
+
+            if (cpu_reference_test != NULL
+             && strcmp (cpu_reference_test, "1") == 0)
+            {
+              const VkResult cpu_test_result =
+                backend_vulkan_kernel_verify_chain4_post_fence_cpu_error (
+                  backend_ctx, 0u, stderr
+                );
+
+              if (cpu_test_result != VK_SUCCESS)
+              {
+                event_log_warning (
+                  hashcat_ctx,
+                  "Vulkan post-fence CPU-reference failure diagnostic failed with VkResult %d; no GPU backend was changed.",
+                  cpu_test_result
+                );
+
+                return;
+              }
+
+              event_log_info (
+                hashcat_ctx,
+                "Vulkan post-fence CPU-reference diagnostic passed with a retained healthy Compute session."
+              );
+            }
+
+            const char *post_submit_abort_test =
+              getenv ("HASHCAT_VULKAN_POST_SUBMIT_ABORT_TEST");
+
+            if (post_submit_abort_test != NULL
+             && strcmp (post_submit_abort_test, "1") == 0)
+            {
+              const VkResult abort_test_result =
+                backend_vulkan_kernel_verify_chain4_post_submit_abort (
+                  backend_ctx, 0u, stderr
+                );
+
+              if (abort_test_result != VK_SUCCESS)
+              {
+                event_log_warning (
+                  hashcat_ctx,
+                  "Vulkan post-submit host-abort diagnostic failed with VkResult %d; no other GPU backend was changed.",
+                  abort_test_result
+                );
+
+                return;
+              }
+
+              event_log_info (
+                hashcat_ctx,
+                "Vulkan post-submit host-abort diagnostic passed after fence-verified resource reuse."
+              );
+            }
+
+            const char *pre_submit_abort_test =
+              getenv ("HASHCAT_VULKAN_PRE_SUBMIT_ABORT_TEST");
+
+            if (pre_submit_abort_test != NULL
+             && strcmp (pre_submit_abort_test, "1") == 0)
+            {
+              const VkResult pre_submit_result =
+                backend_vulkan_kernel_verify_chain4_pre_submit_abort (
+                  backend_ctx, 0u, stderr
+                );
+
+              if (pre_submit_result != VK_SUCCESS)
+              {
+                event_log_warning (
+                  hashcat_ctx,
+                  "Vulkan pre-submit host-abort diagnostic failed with VkResult %d; no other GPU backend was changed.",
+                  pre_submit_result
+                );
+
+                return;
+              }
+
+              event_log_info (
+                hashcat_ctx,
+                "Vulkan pre-submit host-abort diagnostic passed with a retained healthy Compute session."
+              );
+            }
+
+            const VkResult md5_result = backend_vulkan_kernel_verify_md5 (
+              backend_ctx, 0u, stderr
+            );
+
+            if (md5_result != VK_SUCCESS)
+            {
+              event_log_warning (
+                hashcat_ctx,
+                "Vulkan 1.0 MD5 SPIR-V known-answer verification failed with VkResult %d; hashing remains disabled.",
+                md5_result
+              );
+            }
+            else
+            {
+              event_log_info (
+                hashcat_ctx,
+                "Vulkan 1.0 MD5 SPIR-V known-answer vectors dispatched and verified; hashing remains disabled."
+              );
+
+              const VkResult sha256_result =
+                backend_vulkan_sha256_verify_known_answers (
+                  backend_ctx, 0u, stderr
+                );
+
+              if (sha256_result != VK_SUCCESS)
+              {
+                event_log_warning (
+                  hashcat_ctx,
+                  "Vulkan 1.0 SHA-256 SPIR-V byte-message batch verification failed with VkResult %d; hashing remains disabled.",
+                  sha256_result
+                );
+              }
+              else
+              {
+                event_log_info (
+                  hashcat_ctx,
+                  "Vulkan 1.0 SHA-256 SPIR-V variable-length batch dispatched and verified; hashing remains disabled."
+                );
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+#endif
+
+/**
+ * Initialize scheduled devices and optional Vulkan information-mode programs.
+ *
+ * Collects and configures ordinary CUDA/HIP/Metal/OpenCL devices, while
+ * independently running Vulkan diagnostic programs in backend-information mode.
+ * A Vulkan-only information session keeps the scheduled device count at zero
+ * and returns before normal kernel-device configuration. Ordinary workloads
+ * still require at least one active scheduled device.
+ */
 int backend_ctx_devices_init (hashcat_ctx_t *hashcat_ctx, const int comptime)
 {
   backend_ctx_t *backend_ctx = hashcat_ctx->backend_ctx;
@@ -8549,6 +8825,17 @@ int backend_ctx_devices_init (hashcat_ctx_t *hashcat_ctx, const int comptime)
 
   if (backend_ctx->backend_devices_active == 0)
   {
+    #if defined (WITH_VULKAN_DISCOVERY)
+    if (user_options->backend_info > 0 && backend_ctx->vulkan_devices_cnt > 0)
+    {
+      backend_ctx->comptime = comptime;
+
+      backend_ctx_devices_init_vulkan_info (hashcat_ctx);
+
+      return 0;
+    }
+    #endif
+
     event_log_error (hashcat_ctx, "No devices found/left.");
 
     return -1;
@@ -9082,6 +9369,17 @@ int backend_ctx_devices_init (hashcat_ctx_t *hashcat_ctx, const int comptime)
   // check again to catch error on OpenCL/Metal
   if (backend_ctx->backend_devices_active == 0)
   {
+    #if defined (WITH_VULKAN_DISCOVERY)
+    if (user_options->backend_info > 0 && backend_ctx->vulkan_devices_cnt > 0)
+    {
+      backend_ctx->comptime = comptime;
+
+      backend_ctx_devices_init_vulkan_info (hashcat_ctx);
+
+      return 0;
+    }
+    #endif
+
     event_log_error (hashcat_ctx, "No devices found/left.");
 
     return -1;
@@ -9092,140 +9390,7 @@ int backend_ctx_devices_init (hashcat_ctx_t *hashcat_ctx, const int comptime)
   backend_ctx->comptime = comptime;
 
   #if defined (WITH_VULKAN_DISCOVERY)
-  // Information mode verifies public Compute graphs and cryptographic Vulkan stages.
-
-  if (user_options->backend_info > 0 && backend_ctx->vulkan_catalog != NULL)
-  {
-    const vulkan_auto_compute_requirements_t workload =
-    {
-      .local_size = { 1u, 1u, 1u },
-      .group_count = { 1u, 1u, 1u },
-      .storage_buffer_count = 1u,
-      .largest_storage_buffer_bytes = 4u,
-      .shared_memory_bytes = 0u
-    };
-
-    const VkResult session_result = backend_vulkan_session_open (
-      backend_ctx, 0u, &workload, stderr
-    );
-
-    if (session_result != VK_SUCCESS)
-    {
-      event_log_warning (
-        hashcat_ctx,
-        "Vulkan 1.0 Compute session verification failed with VkResult %d; Vulkan devices remain unscheduled.",
-        session_result
-      );
-    }
-    else
-    {
-      event_log_info (
-        hashcat_ctx,
-        "Vulkan 1.0 Compute device session verified with an empty queue submission; Vulkan hashing remains disabled."
-      );
-
-      const VkResult kernel_result = backend_vulkan_kernel_verify (
-        backend_ctx, 0u, stderr
-      );
-
-      if (kernel_result != VK_SUCCESS)
-      {
-        event_log_warning (
-          hashcat_ctx,
-          "Vulkan 1.0 public SPIR-V Compute kernel verification failed with VkResult %d; hashing remains disabled.",
-          kernel_result
-        );
-      }
-      else
-      {
-        event_log_info (
-          hashcat_ctx,
-          "Vulkan 1.0 public SPIR-V Compute kernel dispatched and verified; hashing remains disabled."
-        );
-
-        const VkResult chain_result = backend_vulkan_kernel_verify_chain (
-          backend_ctx, 0u, stderr
-        );
-
-        if (chain_result != VK_SUCCESS)
-        {
-          event_log_warning (
-            hashcat_ctx,
-            "Vulkan 1.0 public two-stage SPIR-V chain failed with VkResult %d; hashing remains disabled.",
-            chain_result
-          );
-        }
-        else
-        {
-          event_log_info (
-            hashcat_ctx,
-            "Vulkan 1.0 public two-stage SPIR-V Compute chain dispatched and verified; hashing remains disabled."
-          );
-
-          const VkResult chain4_result = backend_vulkan_kernel_verify_chain4 (
-            backend_ctx, 0u, stderr
-          );
-
-          if (chain4_result != VK_SUCCESS)
-          {
-            event_log_warning (
-              hashcat_ctx,
-              "Vulkan 1.0 public four-stage SPIR-V chain failed with VkResult %d; hashing remains disabled.",
-              chain4_result
-            );
-          }
-          else
-          {
-            event_log_info (
-              hashcat_ctx,
-              "Vulkan 1.0 public four-stage SPIR-V Compute chain dispatched and verified; hashing remains disabled."
-            );
-
-            const VkResult md5_result = backend_vulkan_kernel_verify_md5 (
-              backend_ctx, 0u, stderr
-            );
-
-            if (md5_result != VK_SUCCESS)
-            {
-              event_log_warning (
-                hashcat_ctx,
-                "Vulkan 1.0 MD5 SPIR-V known-answer verification failed with VkResult %d; hashing remains disabled.",
-                md5_result
-              );
-            }
-            else
-            {
-              event_log_info (
-                hashcat_ctx,
-                "Vulkan 1.0 MD5 SPIR-V known-answer vectors dispatched and verified; hashing remains disabled."
-              );
-
-              const VkResult sha256_result =
-                backend_vulkan_sha256_verify_known_answers (
-                  backend_ctx, 0u, stderr
-                );
-
-              if (sha256_result != VK_SUCCESS)
-              {
-                event_log_warning (
-                  hashcat_ctx,
-                  "Vulkan 1.0 SHA-256 SPIR-V byte-message batch verification failed with VkResult %d; hashing remains disabled.",
-                  sha256_result
-                );
-              }
-              else
-              {
-                event_log_info (
-                  hashcat_ctx,
-                  "Vulkan 1.0 SHA-256 SPIR-V variable-length batch dispatched and verified; hashing remains disabled."
-                );
-              }
-            }
-          }
-        }
-      }
-    }
-  }
+  backend_ctx_devices_init_vulkan_info (hashcat_ctx);
   #endif
 
   return 0;
