@@ -369,9 +369,47 @@ int hashconfig_init (hashcat_ctx_t *hashcat_ctx)
 
     hashconfig->has_optimized_kernel = hc_path_read (source_file);
 
+    /**
+     * Fork patch: the Adreno OpenCL compiler cannot link several pure kernels and
+     * returns CL_OUT_OF_HOST_MEMORY from clLinkProgram, while the matching
+     * optimized kernels build and run on the same driver. Prefer the optimized
+     * kernel on Qualcomm devices unless the caller opted out. Modes without an
+     * optimized kernel keep their pure kernel through the existing fallback.
+     */
+
+    bool adreno_prefers_optimized = false;
+
+    if (hashconfig->has_optimized_kernel == true)
+    {
+      const char *adreno_optout = getenv ("HASHCAT_DISABLE_ADRENO_OPTIMIZED");
+
+      if ((adreno_optout == NULL) || (strcmp (adreno_optout, "1") != 0))
+      {
+        for (int device_idx = 0; device_idx < hashcat_ctx->backend_ctx->backend_devices_cnt; device_idx++)
+        {
+          hc_device_param_t *device_param = &hashcat_ctx->backend_ctx->devices_param[device_idx];
+
+          if (device_param->is_opencl   == false) continue;
+          if (device_param->device_name == NULL)  continue;
+          if (strstr (device_param->device_name, "Adreno") == NULL) continue;
+
+          adreno_prefers_optimized = true;
+
+          if (user_options->quiet == false)
+          {
+            event_log_warning (hashcat_ctx, "Adreno OpenCL compiler detected: using the optimized kernel");
+            event_log_warning (hashcat_ctx, "Pure kernels of several modes fail to link on this driver (CL_OUT_OF_HOST_MEMORY)");
+            event_log_warning (hashcat_ctx, NULL);
+          }
+
+          break;
+        }
+      }
+    }
+
     if (user_options->hash_info == 0 || user_options->hash_info > 1)
     {
-      if (user_options->optimized_kernel == true)
+      if ((user_options->optimized_kernel == true) || (adreno_prefers_optimized == true))
       {
         if (hashconfig->has_optimized_kernel == false)
         {

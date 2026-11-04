@@ -1,3 +1,12 @@
+<#
+.SYNOPSIS
+Verifies the local hashcat source tree and reports build metadata.
+
+.DESCRIPTION
+No upstream synchronisation is performed: this repository is a fork and source/ is
+the tracked working tree. The script only checks required paths, optionally confirms
+that HEAD matches a given ref, prints counts and git status, and can chain a build.
+#>
 param(
     [string]$SourceRef = '',
     [bool]$BuildAfterUpdate = $false,

@@ -2,6 +2,8 @@
 
 This repository contains both the HASHCAT build wrapper and the hashcat source tree used to produce Android runtime binaries for `HASHCAT-APP`.
 
+> **Это форк hashcat.** Синхронизация с upstream отключена, `source/` — наш код. Локальные патчи перечислены в [docs/FORK.md](docs/FORK.md). `scripts/UPDATE.ps1` проверяет целостность дерева и не обновляет его из upstream.
+
 There is no separate Android source repository and no production build-time patch layer. Work on hashcat itself happens directly inside this repository under:
 
 ```text
@@ -22,7 +24,7 @@ HASHCAT/
 
 ## Common commands
 
-Verify the source tree and show build metadata:
+Verify the local source tree and show build metadata (no upstream synchronisation):
 
 ```powershell
 .\scripts\UPDATE.ps1
