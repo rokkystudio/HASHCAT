@@ -635,6 +635,7 @@ function Build-WindowsX64([string]$SourceDir, [string]$BuildRoot)
         $makeCommand = @(
             'set -e',
             "cd $(Quote-Bash $sourceForMsys)",
+            'mkdir -p obj obj/contrib/minizip modules bridges bridges/subs',
             'export PATH=/mingw64/bin:/usr/bin:$PATH',
             $cleanCommand,
             'set +e',
