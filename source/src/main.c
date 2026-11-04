@@ -15,6 +15,7 @@
 #include "memory.h"
 #include "hashcat.h"
 #include "terminal.h"
+#include "backend_info_json.h"
 #include "thread.h"
 #include "status.h"
 #include "shared.h"
@@ -1437,7 +1438,12 @@ int main (int argc, char **argv)
 
   // init a hashcat session; this initializes backend devices, hwmon, etc
 
-  welcome_screen (hashcat_ctx, VERSION_TAG);
+  // --backend-info-json keeps stdout valid JSON, so the human banners are skipped
+
+  if (user_options->backend_info_json == 0)
+  {
+    welcome_screen (hashcat_ctx, VERSION_TAG);
+  }
 
   int rc_final = -1;
 
@@ -1452,6 +1458,14 @@ int main (int argc, char **argv)
     else if (user_options->hash_info > 0)
     {
       hash_info (hashcat_ctx);
+
+      rc_final = 0;
+    }
+    else if (user_options->backend_info_json > 0)
+    {
+      // machine readable backend information, no cracking session is executed
+
+      backend_info_json (hashcat_ctx, VERSION_TAG);
 
       rc_final = 0;
     }
@@ -1483,7 +1497,10 @@ int main (int argc, char **argv)
 
   const time_t proc_stop = time (NULL);
 
-  goodbye_screen (hashcat_ctx, proc_start, proc_stop);
+  if (user_options->backend_info_json == 0)
+  {
+    goodbye_screen (hashcat_ctx, proc_start, proc_stop);
+  }
 
   hashcat_destroy (hashcat_ctx);
 

@@ -45,6 +45,7 @@ static const struct option long_options[] =
   #endif
   {"backend-ignore-opencl",     no_argument,       NULL, IDX_BACKEND_IGNORE_OPENCL},
   {"backend-info",              no_argument,       NULL, IDX_BACKEND_INFO},
+  {"backend-info-json",         no_argument,       NULL, IDX_BACKEND_INFO_JSON},
   {"backend-vector-width",      required_argument, NULL, IDX_BACKEND_VECTOR_WIDTH},
   {"bypass-delay",              required_argument, NULL, IDX_BYPASS_DELAY},
   {"bypass-threshold",          required_argument, NULL, IDX_BYPASS_THRESHOLD},
@@ -535,6 +536,8 @@ int user_options_getopt (hashcat_ctx_t *hashcat_ctx, int argc, char **argv)
       #endif
       case IDX_BACKEND_IGNORE_OPENCL:     user_options->backend_ignore_opencl     = true;                            break;
       case IDX_BACKEND_INFO:              user_options->backend_info++;                                              break;
+      case IDX_BACKEND_INFO_JSON:         user_options->backend_info_json++;
+                                          user_options->backend_info++;                                              break;
       case IDX_BACKEND_DEVICES:           user_options->backend_devices           = optarg;                          break;
       case IDX_BACKEND_DEVICES_VIRTMULTI: user_options->backend_devices_virtmulti = hc_strtoul (optarg, NULL, 10);   break;
       case IDX_BACKEND_DEVICES_VIRTHOST:  user_options->backend_devices_virthost  = hc_strtoul (optarg, NULL, 10);   break;

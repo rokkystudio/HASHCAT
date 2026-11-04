@@ -871,6 +871,7 @@ typedef enum user_options_map
   IDX_BACKEND_IGNORE_METAL      = 0xff03,
   IDX_BACKEND_IGNORE_OPENCL     = 0xff04,
   IDX_BACKEND_INFO              = 'I',
+  IDX_BACKEND_INFO_JSON         = 0xff17,
   IDX_BACKEND_VECTOR_WIDTH      = 0xff05,
   IDX_BENCHMARK_ALL             = 0xff06,
   IDX_BENCHMARK_MAX             = 0xff56,
@@ -2621,6 +2622,7 @@ typedef struct user_options
   u32          backend_devices_virthost;
   u32          backend_devices_keepfree;
   u32          backend_info;
+  u32          backend_info_json;
   u32          benchmark_max;
   u32          benchmark_min;
   u32          bitmap_max;

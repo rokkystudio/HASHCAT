@@ -107,6 +107,7 @@ static const char *const USAGE_BIG_PRE_HASHMODES[] =
   "     --backend-ignore-metal     |      | Do not try to open Metal interface on startup        |",
   "     --backend-ignore-opencl    |      | Do not try to open OpenCL interface on startup       |",
   " -I, --backend-info             |      | Show system/environment/backend API info             | -I or -II",
+  "     --backend-info-json        |      | Show system/environment/backend info as JSON         |",
   " -d, --backend-devices          | Str  | Backend devices to use, separated with commas        | -d 1",
   " -Y, --backend-devices-virtmulti| Num  | Spawn X virtual instances on a real device           | -Y 8",
   " -R, --backend-devices-virthost | Num  | Sets the real device to create virtual instances     | -R 1",
