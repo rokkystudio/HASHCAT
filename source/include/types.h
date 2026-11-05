@@ -2028,6 +2028,11 @@ typedef struct hc_device_param
   cl_mem            opencl_d_st_esalts_buf;
   cl_mem            opencl_d_kernel_param;
 
+  // API: vulkan
+
+  bool                     is_vulkan;
+  struct hc_vulkan_device *vulkan;
+
 } hc_device_param_t;
 
 typedef struct backend_ctx
@@ -2141,6 +2146,9 @@ typedef struct backend_ctx
   struct backend_vulkan_compute_session *vulkan_session;
   u32                 vulkan_devices_cnt;
   int                 rc_vulkan_init;
+
+  int                 vulkan_devices_active;
+  int                 backend_device_from_vulkan[DEVICES_MAX];
 
 } backend_ctx_t;
 
