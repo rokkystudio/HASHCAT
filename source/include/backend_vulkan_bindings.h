@@ -36,6 +36,13 @@
  * constant range. A program whose push-constant block does not fit is
  * rejected instead of silently falling back to a different layout.
  *
+ * Dispatch splitting convention: the last four bytes of the push-constant
+ * block hold the base workgroup of the current vkCmdDispatch chunk. The host
+ * overwrites that word before every chunk, because a split dispatch restarts
+ * gl_GlobalInvocationID at zero. Programs that can exceed
+ * maxComputeWorkGroupCount[0] therefore must declare at least four bytes of
+ * push constants and add the base to their invocation index.
+ *
  * Changing any entry, count or kind requires a new VK_BINDINGS_VERSION.
  */
 

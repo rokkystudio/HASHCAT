@@ -126,13 +126,13 @@ still requiring `"schedulable": false`. The OpenCL regression gate
 Vulkan discovery; a Vulkan-enabled binary intentionally exposes one extra
 device, so compare OpenCL behavior on the non-Vulkan build.
 
-## M2 debt (mandatory first item)
+## M2 debt (resolved)
 
-The Vulkan metadata (type, vendor id, vendor name, version) currently lives in
-the reused `opencl_device_*` slots of `hc_device_param_t`. Any code that reads
-those fields without checking `is_opencl` will see Vulkan data. Moving this
-metadata into `hc_vulkan_device` is the mandatory first item of M2, not an
-optional cleanup. Until that move, every reader must test `is_vulkan` first.
+M1 stored the Vulkan metadata (type, vendor id, vendor name, version) in the
+reused `opencl_device_*` slots of `hc_device_param_t`. M2 moved it into
+`hc_vulkan_device`; see `docs/vulkan-backend-runtime.md`. No reader touches
+`opencl_device_*` for a Vulkan device any more, and `device_param->vulkan` is
+populated for every registered entry.
 
 ## Still not implemented
 

@@ -69,7 +69,9 @@ static const char *json_device_type (const hc_device_param_t *device_param)
 {
   if (device_param->is_vulkan == true)
   {
+    #if defined (WITH_VULKAN_DISCOVERY)
     if ((device_param->vulkan != NULL) && (device_param->vulkan->device_type == VK_PHYSICAL_DEVICE_TYPE_CPU)) return "CPU";
+    #endif
 
     return "GPU";
   }
@@ -97,7 +99,11 @@ static u32 json_device_vendor_id (const hc_device_param_t *device_param)
 {
   if (device_param->is_vulkan == true)
   {
+    #if defined (WITH_VULKAN_DISCOVERY)
     return (device_param->vulkan != NULL) ? device_param->vulkan->vendor_id : 0;
+    #else
+    return 0;
+    #endif
   }
 
   if (device_param->is_opencl == true)

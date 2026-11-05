@@ -35,6 +35,7 @@
 | P2 | `--backend-ignore-vulkan`: пятый флаг исключения backend'а | `src/user_options.c`, `src/usage.c`, `include/types.h`, `src/backend.c` | Явный выбор backend'а в приложении, без неявного отката | Низкий: аддитивно, поведение OpenCL не меняется |
 | P3 | Adreno: предпочтение optimized-ядра | `src/interface.c` | Компилятор Adreno не линкует pure-ядра ряда режимов (`CL_OUT_OF_HOST_MEMORY`), optimized-вариант того же режима собирается и работает | Средний: optimized-ядро ограничивает длину пароля (для режима 0 — 0–31 байт); отключается переменной `HASHCAT_DISABLE_ADRENO_OPTIMIZED=1` |
 | P4 | Vulkan-устройства в таблице устройств: `-I`, `-d`, `--backend-info-json` | `include/types.h`, `include/backend_vulkan_device.h`, `src/backend_vulkan_device.c`, `src/backend.c`, `src/backend_info_json.c`, `src/terminal.c`, `src/Makefile` | Vulkan должен быть виден как устройство до включения хеширования | Низкий: устройства помечены skipped, идентификаторы OpenCL не меняются, запуск задачи на Vulkan отклоняется |
+| P5 | Vulkan device runtime M2: память, ABI дескрипторов, SPIR-V pipeline, диспетчеризация, readback, проверка данных | `include/backend_vulkan_device.h`, `include/backend_vulkan_bindings.h`, `include/backend_vulkan_check_spirv.h`, `src/backend_vulkan_device.c`, `src/backend.c`, `src/terminal.c`, `src/backend_info_json.c`, `tools/vulkan-hashcat-check.comp`, `tools/generate-vulkan-check-kernel.py`, `tools/run-vulkan-runtime-check.ps1`, `tools/test-vulkan-runtime-check.py`, `docs/vulkan-backend-runtime.md` | Vulkan-устройство должно пройти полный путь init → buffers → pipeline → dispatch → readback → CPU-сверка до M3 | Средний: только диагностический путь `-I`, Vulkan остаётся `schedulable: false`; OpenCL и `-I` для OpenCL не затрагиваются |
 
 ### P3 подробнее
 
@@ -70,4 +71,5 @@ m22000 -a 0:        работает без изменений (optimized-вар
 
 * `docs/backend-cli-contract.md` — контракт CLI и JSON для приложения.
 * `docs/opencl-baseline.json` — эталон для регресс-гейта.
+* `docs/vulkan-backend-runtime.md` — M2: владелец устройства, политика памяти, ABI v1, диспетчеризация и проверка на Adreno/Mali.
 * `README.md` — сборка и публикация рантаймов.

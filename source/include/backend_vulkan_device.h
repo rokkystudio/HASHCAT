@@ -295,6 +295,38 @@ const struct vk_program *backend_vulkan_program_by_name (const char *name);
 
 int backend_vulkan_device_program_prepare (hashcat_ctx_t *hashcat_ctx, hc_device_param_t *device_param, const struct vk_program *program);
 
+/**
+ * Dispatch one program over group_count workgroups.
+ *
+ * group_count is the total workgroup count (kernel_power divided by the
+ * registry local size). Counts above maxComputeWorkGroupCount[0] are split
+ * into several vkCmdDispatch calls inside one command buffer with a
+ * Compute-to-Compute barrier between chunks. One fence covers the whole
+ * submission and is waited on with a fixed timeout. Optional push constants
+ * are taken from the caller and must not exceed the program block.
+ */
+
+int backend_vulkan_device_dispatch (hashcat_ctx_t *hashcat_ctx, hc_device_param_t *device_param, const struct vk_program *program, const u64 group_count, const void *push_constants, const u32 push_constant_bytes);
+
+/**
+ * Download the complete result buffer after a dispatch.
+ */
+
+int backend_vulkan_device_readback_result (hashcat_ctx_t *hashcat_ctx, hc_device_param_t *device_param, void *destination, const VkDeviceSize bytes);
+
+/**
+ * Run the M2 data-path check and compare every workgroup with a CPU
+ * reference.
+ *
+ * Fills pws_buf through the normal upload path, dispatches the registered
+ * check program with more than 65535 workgroups (diagnostic layout), reads
+ * the result buffer back and verifies per-group sums and processed-element
+ * counts. Returns zero only when the GPU output matches the reference
+ * exactly and every input element was processed once.
+ */
+
+int backend_vulkan_device_run_check (hashcat_ctx_t *hashcat_ctx, hc_device_param_t *device_param);
+
 #endif // WITH_VULKAN_DISCOVERY
 
 #endif // HC_BACKEND_VULKAN_DEVICE_H

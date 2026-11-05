@@ -1543,6 +1543,17 @@ static int backend_vulkan_buffer_sizes (hashcat_ctx_t *hashcat_ctx, hc_device_pa
     sizes[HC_VK_BUFFER_ST_ESALTS]     = device_param->size_st_esalts;
     sizes[HC_VK_BUFFER_KERNEL_PARAM]  = device_param->size_kernel_params;
 
+    /**
+     * Optional slots (esalts, short-term buffers) are zero when the selected
+     * mode does not use them. A zero-size VkBuffer is invalid, so the fixed
+     * v1 descriptor set keeps them as one word each.
+     */
+
+    for (u32 buffer_idx = 0; buffer_idx < HC_VK_BUFFER_COUNT; buffer_idx++)
+    {
+      if (sizes[buffer_idx] == 0) sizes[buffer_idx] = sizeof (u32);
+    }
+
     return 0;
   }
 

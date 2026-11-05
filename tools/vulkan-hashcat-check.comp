@@ -12,7 +12,9 @@
  *
  * The program registry declares local_size_x = 1. With 131072 elements this
  * produces 131072 workgroups, which exceeds the 65535 group limit reported by
- * Adreno and forces the multi-submit path.
+ * Adreno and forces the multi-submit path. base_group is written by the host
+ * before every vkCmdDispatch chunk because a split dispatch restarts
+ * gl_GlobalInvocationID at zero.
  */
 
 layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
@@ -22,7 +24,7 @@ layout (push_constant) uniform CheckParameters
   uint total_elements;
   uint stride;
   uint seed;
-  uint reserved;
+  uint base_group;
 } parameters;
 
 layout (set = 0, binding = 1, std430) readonly buffer PwsBuffer
@@ -37,12 +39,12 @@ layout (set = 0, binding = 7, std430) writeonly buffer ResultBuffer
 
 void main ()
 {
-  const uint invocation = gl_GlobalInvocationID.x;
+  const uint group = parameters.base_group + gl_GlobalInvocationID.x;
 
   uint sum   = 0u;
   uint count = 0u;
 
-  for (uint index = invocation; index < parameters.total_elements; index += parameters.stride)
+  for (uint index = group; index < parameters.total_elements; index += parameters.stride)
   {
     const uint value = pws.words[index];
 
@@ -51,6 +53,6 @@ void main ()
     count++;
   }
 
-  result.words[invocation * 2u + 0u] = sum;
-  result.words[invocation * 2u + 1u] = count;
+  result.words[group * 2u + 0u] = sum;
+  result.words[group * 2u + 1u] = count;
 }
