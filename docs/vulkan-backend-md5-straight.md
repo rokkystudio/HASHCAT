@@ -202,6 +202,51 @@ Refusals, all `RC=255`, no crash:
 | `-O` | `Vulkan backend: -O / --optimized-kernel is not implemented.` |
 | 56-byte candidate | `Vulkan mode 0 straight supports candidates of 1..55 bytes; candidate 0 is 56 bytes.` |
 
+The 56-byte refusal comes from `backend_vulkan_validate_workload()` and is a
+hard `RC=255`. A Vulkan-only session no longer reaches it for wordlist input:
+see the next section.
+
+## Password-length contract
+
+The mode 0 straight program hashes one 512-bit MD5 block, so the candidate
+range is 0..`VK_MD5_STRAIGHT_MAX_LEN` (55) bytes. That limit is published
+through `hashconfig->pw_max` in `source/src/interface.c`, at the end of
+`hashconfig_init()`:
+
+```text
+Kernel.Feature...: Pure Kernel (password length 0-55 bytes)
+```
+
+Three constraints shaped the placement:
+
+* `hashconfig_init()` writes `pw_max` from `default_pw_max()` and then from
+  `module_pw_max()`, so any earlier assignment in the same function is
+  overwritten. The clamp has to be the last writer.
+* `backend_vulkan_devices_activate()` runs before `hashconfig_init()`, when
+  `hashconfig->pw_max` is still `0`; a diagnostic build confirmed
+  `before=0 after=0`. Publishing the limit there cannot work.
+* `hashconfig` is global. The clamp is therefore applied only when every
+  selected, non-skipped device is a Vulkan device. A mixed Vulkan + OpenCL
+  session keeps the OpenCL limits, and the Vulkan program still refuses
+  oversized candidates through `backend_vulkan_validate_workload()`.
+
+Measured effect on the RedMagic Adreno 730 with
+`-m 0 -a 0 --backend-ignore-opencl` and a wordlist holding a 60-byte candidate
+plus `hashcat`:
+
+```text
+Status...........: Cracked
+Kernel.Feature...: Pure Kernel (password length 0-55 bytes)
+Recovered........: 1/1 (100.00%) Digests (total), 1/1 (100.00%) Digests (new)
+Rejected.........: 1/2 (50.00%)
+```
+
+The 60-byte candidate is now counted as `Rejected` by the wordlist reader and
+the run continues, instead of aborting the whole session with `RC=255` on the
+first oversized candidate. The same binary on an Adreno OpenCL-only session
+still reports `Optimized Kernel (password length 0-31 bytes)`, so the clamp
+does not leak into OpenCL.
+
 ### Pixel 9 Pro XL (Mali-G715, Android 16, arm64-v8a)
 
 The same arm64-v8a production binary was pushed to the Pixel and produced the
@@ -217,17 +262,37 @@ Status...........: Cracked
 
 Not yet verified at the time this document was written:
 
-* `-d <vulkan-id>` with OpenCL present: the Adreno fork patch P3 forces the
-  optimized kernel bit before a Vulkan run; the refusal now keys on the user
-  `-O` option and the activation hook clears the derived bit, but the rebuilt
-  binary was not re-run on device before the report.
 * `--increment`, `-b` and the 1 MiB wordlist coverage counter.
 * Speed comparison and the OpenCL regression gate.
 
+`-d <vulkan-id>` with OpenCL present is verified: P3 leaves the derived
+optimized-kernel bit unset for a Vulkan-only selection, so `-d 2` runs the
+Vulkan device and reports `Status: Cracked`. `--backend-ignore-opencl` and
+`-d 2` produce the same result.
+
 ## OpenCL regression
 
-The OpenCL regression gate was not run in this pass. All Vulkan work is
-guarded by `WITH_VULKAN_DISCOVERY`/`is_vulkan`; the OpenCL-only changes are
-limited to the derived optimized-kernel bit reset for an active Vulkan device
-(no OpenCL device is active in that configuration). The gate must be run
-before the branch is considered green.
+The gate was run on this tree and is green:
+
+```text
+powershell -File tools/check-opencl-regression.ps1 `
+    -HashcatExecutable build\windows-x64\hashcat.exe `
+    -Baseline docs\opencl-baseline.json
+
+Devices: 1 match the baseline
+OK: -m 0 device #1: 13,270,800.0 kH/s vs 14,042,200.0 kH/s baseline (-5.5%)
+OK: -m 1000 device #1: 15,582,300.0 kH/s vs 15,367,900.0 kH/s baseline (+1.4%)
+OK: -m 22000 device #1: 496.6 kH/s vs 459.2 kH/s baseline (+8.1%)
+```
+
+The `windows-x64` build carries every shared-source change of this branch. The
+Vulkan objects are absent from it by construction: `source/src/Makefile` builds
+`VULKAN_OBJECTS` only for the Android target and rejects `ENABLE_VULKAN=1`
+elsewhere (lines 490-516), so the desktop binary is an OpenCL-only probe of the
+same `backend.c` / `interface.c` / module tree.
+
+Interpretation: the device list is identical to the baseline and all three
+benchmarks stay inside the warn threshold of 10 %. The two OpenCL-only changes
+are the Adreno optimized-kernel preference and the removal of the
+`M22000_NOINLINE` attribute from `hmac_sha1_run_V`, both of which only apply to
+a selected Adreno OpenCL device.

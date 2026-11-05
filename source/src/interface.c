@@ -13,6 +13,10 @@
 #include "dynloader.h"
 #include "interface.h"
 
+#if defined (WITH_VULKAN_DISCOVERY)
+#include "backend_vulkan_bindings.h"
+#endif
+
 /**
  * parsing
  */
@@ -386,7 +390,6 @@ int hashconfig_init (hashcat_ctx_t *hashcat_ctx)
       if ((adreno_optout == NULL) || (strcmp (adreno_optout, "1") != 0))
       {
         bool adreno_selected  = false;
-        bool opencl_selected  = false;
         bool vulkan_selected  = false;
 
         for (int device_idx = 0; device_idx < hashcat_ctx->backend_ctx->backend_devices_cnt; device_idx++)
@@ -404,8 +407,6 @@ int hashconfig_init (hashcat_ctx_t *hashcat_ctx)
           }
 
           if (device_param->is_opencl   == false) continue;
-
-          opencl_selected = true;
           if (device_param->device_name == NULL)  continue;
           if (strstr (device_param->device_name, "Adreno") == NULL) continue;
 
@@ -413,22 +414,10 @@ int hashconfig_init (hashcat_ctx_t *hashcat_ctx)
         }
 
         /**
-         * The Vulkan backend has no optimized program and inherits the mode
-         * limits of the derived bit, so the preference is only applied when no
+         * The Vulkan backend ships no optimized program and owns the mode
+         * limits of its own program, so the preference is only applied when no
          * Vulkan device takes part in this session.
          */
-
-        if ((vulkan_selected == true) && (opencl_selected == false))
-        {
-          /**
-           * The mode 0 Vulkan program hashes one MD5 block, so it accepts at
-           * most 55 bytes. Clamping the mode limit keeps the reported kernel
-           * feature honest and rejects longer candidates instead of silently
-           * truncating them.
-           */
-
-          hashconfig->pw_max = 55;
-        }
 
         if ((adreno_selected == true) && (vulkan_selected == false))
         {
@@ -555,6 +544,55 @@ int hashconfig_init (hashcat_ctx_t *hashcat_ctx)
   if (module_ctx->module_kernel_threads_max != MODULE_DEFAULT) hashconfig->kernel_threads_max = module_ctx->module_kernel_threads_max (hashconfig, user_options, user_options_extra);
   if (module_ctx->module_bridge_name        != MODULE_DEFAULT) hashconfig->bridge_name        = module_ctx->module_bridge_name        (hashconfig, user_options, user_options_extra);
   if (module_ctx->module_bridge_type        != MODULE_DEFAULT) hashconfig->bridge_type        = module_ctx->module_bridge_type        (hashconfig, user_options, user_options_extra);
+
+  #if defined (WITH_VULKAN_DISCOVERY)
+  /**
+   * Fork patch: publish the password-length limit of the Vulkan program.
+   *
+   * The mode 0 straight Vulkan program hashes exactly one 512-bit MD5 block, so
+   * the longest candidate it accepts is VK_MD5_STRAIGHT_MAX_LEN bytes. The
+   * limit belongs here because this is the last code that writes
+   * hashconfig->pw_max: every earlier assignment is overwritten by the module
+   * limits above, and backend_vulkan_devices_activate() runs even before this
+   * function, when hashconfig->pw_max is still zero. Reporting the limit keeps
+   * the "Kernel.Feature" line honest and lets the wordlist reader skip longer
+   * candidates instead of silently truncating them.
+   *
+   * hashconfig is global, so the clamp is skipped as soon as a non-Vulkan
+   * device takes part in the session: shortening it there would silently cut
+   * the OpenCL device's candidates as well. A mixed session keeps the OpenCL
+   * limits, and the Vulkan program still refuses oversized candidates through
+   * backend_vulkan_validate_workload().
+   */
+
+  if (user_options->optimized_kernel == false)
+  {
+    bool vulkan_device = false;
+    bool other_device  = false;
+
+    for (int device_idx = 0; device_idx < backend_ctx->backend_devices_cnt; device_idx++)
+    {
+      const hc_device_param_t *device_param = &backend_ctx->devices_param[device_idx];
+
+      if (device_param->skipped == true) continue;
+      if (backend_ctx->backend_devices_filter[device_idx] != 0) continue;
+
+      if (device_param->is_vulkan == true)
+      {
+        vulkan_device = true;
+      }
+      else
+      {
+        other_device = true;
+      }
+    }
+
+    if ((vulkan_device == true) && (other_device == false) && (hashconfig->pw_max > VK_MD5_STRAIGHT_MAX_LEN))
+    {
+      hashconfig->pw_max = VK_MD5_STRAIGHT_MAX_LEN;
+    }
+  }
+  #endif
 
   if (hashconfig->hook_extra_param_size)
   {

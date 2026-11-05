@@ -2503,19 +2503,11 @@ void backend_vulkan_devices_activate (hashcat_ctx_t *hashcat_ctx, const int othe
       backend_ctx->backend_devices_active++;
 
       /**
-       * No OpenCL device is active in a Vulkan run (selection rules above).
-       * Undo the Adreno-only optimized-kernel preference so the session uses
-       * the pure mode 0 limits and the one-block Vulkan kernel, not the
-       * OpenCL 0..31 optimized password limit.
+       * The password-length limit of the Vulkan program is published by
+       * hashconfig_init() after the module limits: device activation runs
+       * before that call, so hashconfig->pw_max is still zero here and any
+       * assignment made at this point would be overwritten.
        */
-
-      if (user_options->optimized_kernel == false)
-      {
-        hashconfig_t *hashconfig = hashcat_ctx->hashconfig;
-
-        hashconfig->opti_type &= ~OPTI_TYPE_OPTIMIZED_KERNEL;
-        hashconfig->pw_max = PW_MAX;
-      }
     }
 
     event_log_info (hashcat_ctx, "Vulkan device #%u: self-check passed (mode 0 straight); schedulable=1.", device_param->device_id + 1);
