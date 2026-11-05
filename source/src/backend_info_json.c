@@ -178,11 +178,20 @@ void backend_info_json (hashcat_ctx_t *hashcat_ctx, const char *version_tag)
     }
 
     /**
-     * Vulkan devices are discovered and verified but never scheduled in this
-     * version, so schedulable stays false even when detected is true.
+     * Vulkan is schedulable only when at least one registered program exists
+     * and its fixed-vector self-check passed on a device in this process.
+     * backend_vulkan_devices_activate() sets that flag; OpenCL and the other
+     * backends keep their previous definition.
      */
 
-    const bool schedulable = (backend_idx < 4) ? detected : false;
+    bool schedulable = (backend_idx < 4) ? detected : false;
+
+    if (backend_idx == 4)
+    {
+      #if defined (WITH_VULKAN_DISCOVERY)
+      schedulable = (detected == true) && (backend_ctx->vulkan_devices_schedulable > 0);
+      #endif
+    }
 
     printf ("    {\n");
     printf ("      \"id\": ");

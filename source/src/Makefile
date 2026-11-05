@@ -487,21 +487,33 @@ NATIVE_OBJS             := $(foreach OBJ,$(OBJS_ALL),obj/$(OBJ).NATIVE.o)
 LINUX_OBJS              := $(foreach OBJ,$(OBJS_ALL),obj/$(OBJ).LINUX.o)
 WIN_OBJS                := $(foreach OBJ,$(OBJS_ALL),obj/$(OBJ).WIN.o)
 
+## Vulkan compute backend.
+##
+## The backend is an Android-only target. ENABLE_VULKAN=1 links it into the
+## normal frontend and therefore into the published release archives;
+## ENABLE_VULKAN_DISCOVERY=1 keeps the diagnostic-only build path used by the
+## M1/M2 evidence runs. Both flags select the same objects and the same
+## WITH_VULKAN_DISCOVERY compile define.
+
+VULKAN_OBJECTS          := backend_vulkan backend_vulkan_device backend_vulkan_programs backend_vulkan_session backend_vulkan_kernel backend_vulkan_md5_format backend_vulkan_program vulkan-auto-config vulkan-core11-policy vulkan-core10-device-catalog
+
+VULKAN_BUILD            := 0
+
+ifeq ($(ENABLE_VULKAN),1)
+VULKAN_BUILD            := 1
+endif
+
 ifeq ($(ENABLE_VULKAN_DISCOVERY),1)
+VULKAN_BUILD            := 1
+endif
+
+ifeq ($(VULKAN_BUILD),1)
 ifeq ($(UNAME),Android)
 CFLAGS_NATIVE           += -DWITH_VULKAN_DISCOVERY -I../tools
 LFLAGS_VULKAN           := -lvulkan
-NATIVE_OBJS             += obj/backend_vulkan.NATIVE.o
-NATIVE_OBJS             += obj/backend_vulkan_device.NATIVE.o
-NATIVE_OBJS             += obj/backend_vulkan_session.NATIVE.o
-NATIVE_OBJS             += obj/backend_vulkan_kernel.NATIVE.o
-NATIVE_OBJS             += obj/backend_vulkan_md5_format.NATIVE.o
-NATIVE_OBJS             += obj/backend_vulkan_program.NATIVE.o
-NATIVE_OBJS             += obj/vulkan-auto-config.NATIVE.o
-NATIVE_OBJS             += obj/vulkan-core11-policy.NATIVE.o
-NATIVE_OBJS             += obj/vulkan-core10-device-catalog.NATIVE.o
+NATIVE_OBJS             += $(foreach OBJ,$(VULKAN_OBJECTS),obj/$(OBJ).NATIVE.o)
 else
-$(error ENABLE_VULKAN_DISCOVERY=1 requires the Android build target)
+$(error ENABLE_VULKAN=1 and ENABLE_VULKAN_DISCOVERY=1 require the Android build target)
 endif
 endif
 
@@ -732,7 +744,7 @@ uninstall:
 obj/%.NATIVE.o: src/%.c
 	$(CC) -c $(CCFLAGS) $(CFLAGS_NATIVE) $< -o $@ -fpic
 
-ifeq ($(ENABLE_VULKAN_DISCOVERY),1)
+ifeq ($(VULKAN_BUILD),1)
 obj/vulkan-%.NATIVE.o: ../tools/vulkan-%.c
 	$(CC) -c $(CCFLAGS) $(CFLAGS_NATIVE) $< -o $@ -fpic
 endif

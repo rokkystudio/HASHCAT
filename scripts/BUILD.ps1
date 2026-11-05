@@ -12,6 +12,7 @@ param(
     [string]$VersionTag = 'v7.1.2',
     [string]$SourceRef = '',
     [bool]$Package = $true,
+    [switch]$EnableVulkan,
     [switch]$EnableVulkanDiscovery,
     [ValidatePattern('^vulkan-[a-z0-9-]+$')]
     [string]$VulkanOutputName = 'vulkan-hashcat-frontend-20261101',
@@ -358,7 +359,7 @@ function Restore-SourceCheckout([string]$SourceDirectory) {
 Builds one Android ABI from the monorepo hashcat source tree.
 
 .DESCRIPTION
-Uses Android NDK Clang through MSYS2, builds the hashcat frontend and native modules/bridges, then copies ABI-specific binaries and shared runtime assets into build and release directories. With EnableVulkanDiscovery, passes the Android-only Vulkan 1.0 discovery flag to the native Makefile and places the resulting binaries under the explicitly selected VulkanOutputName diagnostic directory. This mode requires Package=false and produces no release archive. VulkanComptime supplies an explicit reproducible Unix-epoch build time; normal releases continue to use their existing Makefile COMPTIME policy.
+Uses Android NDK Clang through MSYS2, builds the hashcat frontend and native modules/bridges, then copies ABI-specific binaries and shared runtime assets into build and release directories. With EnableVulkan, passes ENABLE_VULKAN=1 to the native Makefile so Vulkan is linked into the normal frontend and packaged into the ordinary release archive. With EnableVulkanDiscovery, passes the Android-only Vulkan 1.0 discovery flag to the native Makefile and places the resulting binaries under the explicitly selected VulkanOutputName diagnostic directory; that mode requires Package=false and produces no release archive. VulkanComptime supplies an explicit reproducible Unix-epoch build time; normal releases continue to use their existing Makefile COMPTIME policy.
 #>
 function Invoke-AndroidTarget([pscustomobject]$Config, [string]$ResolvedAndroidNdk, [string]$ResolvedMsys2Bash) {
     $ndkToolchainBin = Join-Path $ResolvedAndroidNdk 'toolchains\llvm\prebuilt\windows-x86_64\bin'
@@ -385,6 +386,15 @@ function Invoke-AndroidTarget([pscustomobject]$Config, [string]$ResolvedAndroidN
 
     # hashcat's Rust bridge rules can build host .dll/.so plugins, but they do not currently cross-build
     # Rust sub-plugins for Android ABIs. Keep Android artifacts native/NDK-only instead of mixing host Rust output.
+    if ($EnableVulkan) {
+        $makeVars += @(
+            'ENABLE_VULKAN=1',
+            # Android libraries are loaded relative to the executable, so the
+            # production archive must not embed the host MSYS2 prefix.
+            'SHARED_FOLDER='
+        )
+    }
+
     if ($EnableVulkanDiscovery) {
         $makeVars += @(
             'ENABLE_VULKAN_DISCOVERY=1',
@@ -510,6 +520,20 @@ $DesktopTargets = @($ExpandedTargets | Where-Object { -not $AndroidTargetSpecs.C
 if ($EnableVulkanDiscovery -eq $false) {
     if ($PSBoundParameters.ContainsKey('VulkanOutputName') -or $PSBoundParameters.ContainsKey('VulkanComptime')) {
         throw 'VulkanOutputName and VulkanComptime require -EnableVulkanDiscovery.'
+    }
+}
+
+if ($EnableVulkan) {
+    if ($EnableVulkanDiscovery) {
+        throw 'Use either -EnableVulkan (production) or -EnableVulkanDiscovery (diagnostic), not both.'
+    }
+
+    if ($DesktopTargets.Count -gt 0 -or $AndroidTargets.Count -eq 0) {
+        throw 'Vulkan production builds require only explicit Android build targets.'
+    }
+
+    if ([int]$AndroidApi -lt 24) {
+        throw 'Vulkan 1.0 requires Android API 24 or later.'
     }
 }
 

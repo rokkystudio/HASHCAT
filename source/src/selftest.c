@@ -1185,6 +1185,19 @@ static int process_selftest (hashcat_ctx_t *hashcat_ctx, hc_device_param_t *devi
 
   if (hashconfig->st_hash == NULL) return 0;
 
+  /**
+   * The built-in hashcat self-test drives OpenCL/CUDA/HIP/Metal kernels only.
+   * Vulkan already passed its own fixed-vector device check before the device
+   * became schedulable, and mode 0 straight has no other stage to test.
+   */
+
+  if (device_param->is_vulkan == true)
+  {
+    event_log_info (hashcat_ctx, "Vulkan: hashcat kernel self-test skipped; the registered mode 0 program passed its fixed-vector device check.");
+
+    return 0;
+  }
+
   u32 highest_pw_len = 0;
   u32 num_cracked = 0;
 

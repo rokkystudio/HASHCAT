@@ -715,6 +715,20 @@ HC_API_CALL void *thread_autotune (void *p)
   device_param->at_status = AT_STATUS_FAILED;
   device_param->at_rc = -1; // generic error
 
+  /**
+   * Vulkan has no autotune in M3. backend_session_begin() already fixed the
+   * batch shape (or took -n/-u verbatim), so report success without measuring
+   * the unsupported OpenCL/CUDA tuning kernels.
+   */
+
+  if (device_param->is_vulkan == true)
+  {
+    device_param->at_status = AT_STATUS_PASSED;
+    device_param->at_rc = 0;
+
+    return NULL;
+  }
+
   if (device_param->is_cuda == true)
   {
     if (hc_cuCtxPushCurrent (hashcat_ctx, device_param->cuda_context) == -1) return NULL;

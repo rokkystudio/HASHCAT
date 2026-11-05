@@ -1045,6 +1045,36 @@ int gidd_to_pw_t (hashcat_ctx_t *hashcat_ctx, hc_device_param_t *device_param, c
   pw_idx.cnt = 0;
   pw_idx.len = 0;
 
+  /**
+   * Vulkan keeps the authoritative candidate arrays on the host: they were
+   * expanded and uploaded from pws_comp/pws_idx for this batch. Reading them
+   * back avoids a device round trip and is byte-identical to the uploaded
+   * pw_t records.
+   */
+
+  if (device_param->is_vulkan == true)
+  {
+    const pw_idx_t *host_idx = &device_param->pws_idx[gidd];
+
+    const u32 off = host_idx->off;
+    const u32 cnt = host_idx->cnt;
+    const u32 len = host_idx->len;
+
+    for (u32 i = 0; i < cnt && i < 64; i++)
+    {
+      pw->i[i] = device_param->pws_comp[off + i];
+    }
+
+    for (u32 i = cnt; i < 64; i++)
+    {
+      pw->i[i] = 0;
+    }
+
+    pw->pw_len = len;
+
+    return 0;
+  }
+
   if (device_param->is_cuda == true)
   {
     if (hc_cuCtxPushCurrent (hashcat_ctx, device_param->cuda_context) == -1) return -1;
@@ -3689,6 +3719,13 @@ int run_copy (hashcat_ctx_t *hashcat_ctx, hc_device_param_t *device_param, const
   user_options_t       *user_options        = hashcat_ctx->user_options;
   user_options_extra_t *user_options_extra  = hashcat_ctx->user_options_extra;
 
+  /**
+   * Vulkan expands pws_comp/pws_idx on the host inside run_cracker; there is
+   * no device decompress stage to launch here.
+   */
+
+  if (device_param->is_vulkan == true) return 0;
+
   // init speed timer
 
   #if defined (_WIN)
@@ -4108,6 +4145,62 @@ int run_cracker (hashcat_ctx_t *hashcat_ctx, hc_device_param_t *device_param, co
   straight_ctx_t        *straight_ctx       = hashcat_ctx->straight_ctx;
   user_options_t        *user_options       = hashcat_ctx->user_options;
   user_options_extra_t  *user_options_extra = hashcat_ctx->user_options_extra;
+
+  /**
+   * Vulkan mode 0 straight: the whole attack for one batch is upload,
+   * dispatch the single inside-kernel program and process its result. The
+   * rest of this function is the OpenCL/CUDA/HIP/Metal multi-kernel graph.
+   */
+
+  #if defined (WITH_VULKAN_DISCOVERY)
+  if (device_param->is_vulkan == true)
+  {
+    if (hashes->salts_cnt == 0) return 0;
+
+    const salt_t *salt_buf = &hashes->salts_buf[0];
+
+    device_param->kernel_param.salt_pos_host       = 0;
+    device_param->kernel_param.digests_cnt         = salt_buf->digests_cnt;
+    device_param->kernel_param.digests_offset_host = salt_buf->digests_offset;
+    device_param->kernel_param.loop_pos            = 0;
+    device_param->kernel_param.loop_cnt            = 0;
+    device_param->kernel_param.il_cnt              = 1;
+    device_param->kernel_param.combs_mode          = 0;
+    device_param->kernel_param.salt_repeat         = 0;
+
+    if (backend_vulkan_device_run_md5_straight (hashcat_ctx, device_param, pws_pos, pws_cnt) != 0) return -1;
+
+    check_cracked (hashcat_ctx, device_param);
+
+    if (status_ctx->run_thread_level2 == true)
+    {
+      const u64 perf_sum_all = pws_cnt;
+
+      const double speed_msec = hc_timer_get (device_param->timer_speed);
+
+      hc_timer_set (&device_param->timer_speed);
+
+      u32 speed_pos = device_param->speed_pos;
+
+      device_param->speed_cnt[speed_pos]  = perf_sum_all;
+      device_param->speed_msec[speed_pos] = speed_msec;
+
+      speed_pos++;
+
+      if (speed_pos == SPEED_CACHE) speed_pos = 0;
+
+      device_param->speed_pos = speed_pos;
+
+      hc_thread_mutex_lock (status_ctx->mux_counter);
+
+      status_ctx->words_progress_done[0] += perf_sum_all;
+
+      hc_thread_mutex_unlock (status_ctx->mux_counter);
+    }
+
+    return 0;
+  }
+  #endif
 
   // do the on-the-fly combinator mode encoding
 
@@ -5552,7 +5645,7 @@ int backend_ctx_init (hashcat_ctx_t *hashcat_ctx)
     {
       event_log_info (
         hashcat_ctx,
-        "Vulkan 1.0 discovery found %u physical device(s); Vulkan Compute scheduling is not enabled.",
+        "Vulkan 1.0 discovery found %u physical device(s); mode 0 straight is available after the device self-check.",
         backend_ctx->vulkan_devices_cnt
       );
     }
@@ -5570,28 +5663,21 @@ int backend_ctx_init (hashcat_ctx_t *hashcat_ctx)
    * Final checks
    */
 
-  if ((backend_ctx->cuda == NULL) && (backend_ctx->hip == NULL) && (backend_ctx->ocl == NULL) && (backend_ctx->mtl == NULL) && allow_vulkan_information_only == false)
+  /**
+   * A Vulkan catalogue with at least one physical device is a valid starting
+   * point: the device self-check in backend_ctx_devices_init() decides whether
+   * it can actually run mode 0. Aborting here would make
+   * `--backend-ignore-opencl -m 0 -a 0` impossible before the check runs.
+   */
+
+  bool allow_vulkan_execution = false;
+
+  #if defined (WITH_VULKAN_DISCOVERY)
+  allow_vulkan_execution = backend_ctx->vulkan_devices_cnt > 0;
+  #endif
+
+  if ((backend_ctx->cuda == NULL) && (backend_ctx->hip == NULL) && (backend_ctx->ocl == NULL) && (backend_ctx->mtl == NULL) && allow_vulkan_information_only == false && allow_vulkan_execution == false)
   {
-    #if defined (WITH_VULKAN_DISCOVERY)
-    if (backend_ctx->vulkan_devices_cnt > 0)
-    {
-      event_log_error (hashcat_ctx, "Vulkan devices were found but cannot execute hashcat workloads yet.");
-      event_log_warning (hashcat_ctx, "OpenCL, CUDA or HIP is required for hashing; use \"hashcat -I\" or \"hashcat --backend-info-json\" to inspect the Vulkan devices.");
-      event_log_warning (hashcat_ctx, NULL);
-
-      const VkResult vulkan_close_result = backend_vulkan_catalog_close (backend_ctx);
-
-      if (vulkan_close_result != VK_SUCCESS)
-      {
-        event_log_warning (hashcat_ctx, "Vulkan catalogue close failed with VkResult %d.", vulkan_close_result);
-      }
-
-      hcfree (backend_ctx->devices_param);
-
-      return -1;
-    }
-    #endif
-
     #if defined (__APPLE__)
     event_log_error (hashcat_ctx, "ATTENTION! No OpenCL, Metal, HIP or CUDA compatible platform found.");
     #else
@@ -8632,11 +8718,11 @@ static void backend_ctx_devices_init_vulkan_info (hashcat_ctx_t *hashcat_ctx)
   {
     if (backend_vulkan_runtime_check (hashcat_ctx) == 0)
     {
-      event_log_info (hashcat_ctx, "Vulkan data path verified through the hc_vulkan_device owner; hashing remains disabled.");
+      event_log_info (hashcat_ctx, "Vulkan data path verified through the hc_vulkan_device owner; mode 0 straight is schedulable.");
     }
     else
     {
-      event_log_warning (hashcat_ctx, "Vulkan data-path verification reported failures; hashing remains disabled.");
+      event_log_warning (hashcat_ctx, "Vulkan data-path verification reported failures; the device stays unschedulable.");
     }
   }
 }
@@ -8706,6 +8792,13 @@ int backend_ctx_devices_init (hashcat_ctx_t *hashcat_ctx, const int comptime)
   backend_vulkan_devices_init (hashcat_ctx);
 
   backend_ctx->backend_devices_cnt += backend_ctx->vulkan_devices_active;
+
+  /**
+   * Activate Vulkan devices that were selected explicitly or that are the
+   * only remaining backend. The self-check gates every activation.
+   */
+
+  backend_vulkan_devices_activate (hashcat_ctx, backend_ctx->backend_devices_active, user_options->backend_info > 0);
   #endif
 
   #if defined (__APPLE__)
@@ -8781,9 +8874,22 @@ int backend_ctx_devices_init (hashcat_ctx_t *hashcat_ctx, const int comptime)
    * so report the ignored Vulkan id instead of silently dropping it.
    */
 
-  if ((vulkan_device_id > 0) && (backend_ctx->backend_devices_active > 0) && (user_options->backend_info == 0))
+  if ((vulkan_device_id > 0) && (backend_ctx->backend_devices_active > 0) && (backend_ctx->vulkan_devices_schedulable == 0) && (user_options->backend_info == 0))
   {
-    event_log_warning (hashcat_ctx, "Device #%u is a Vulkan device and cannot execute hashcat workloads yet; it is ignored.", vulkan_device_id);
+    event_log_warning (hashcat_ctx, "Device #%u is a Vulkan device and did not pass the mode 0 self-check; it is ignored.", vulkan_device_id);
+  }
+  #endif
+
+  #if defined (WITH_VULKAN_DISCOVERY)
+  /**
+   * Keep the M1/M2 diagnostic chain available on a schedulable device. The
+   * runner enables it explicitly with HASHCAT_VULKAN_RUNTIME_ITERATIONS, so
+   * ordinary -I/--backend-info-json output stays fast and quiet.
+   */
+
+  if ((user_options->backend_info > 0) && (backend_ctx->backend_devices_active > 0) && (backend_ctx->vulkan_devices_active > 0) && (getenv ("HASHCAT_VULKAN_RUNTIME_ITERATIONS") != NULL))
+  {
+    backend_ctx_devices_init_vulkan_info (hashcat_ctx);
   }
   #endif
 
@@ -8816,7 +8922,7 @@ int backend_ctx_devices_init (hashcat_ctx_t *hashcat_ctx, const int comptime)
     #if defined (WITH_VULKAN_DISCOVERY)
     if (backend_ctx->vulkan_devices_active > 0)
     {
-      event_log_warning (hashcat_ctx, "Vulkan devices were found but cannot execute hashcat workloads yet; no usable compute device is left.");
+      event_log_warning (hashcat_ctx, "Vulkan devices were found but none passed the mode 0 self-check; no usable compute device is left.");
     }
     #endif
 
@@ -9378,7 +9484,7 @@ int backend_ctx_devices_init (hashcat_ctx_t *hashcat_ctx, const int comptime)
     #if defined (WITH_VULKAN_DISCOVERY)
     if (backend_ctx->vulkan_devices_active > 0)
     {
-      event_log_warning (hashcat_ctx, "Vulkan devices were found but cannot execute hashcat workloads yet; no usable compute device is left.");
+      event_log_warning (hashcat_ctx, "Vulkan devices were found but none passed the mode 0 self-check; no usable compute device is left.");
     }
     #endif
 
@@ -10262,6 +10368,7 @@ static bool load_kernel (hashcat_ctx_t *hashcat_ctx, hc_device_param_t *device_p
 
     if (device_param->is_opencl == true)
     {
+
       size_t build_log_size = 0;
 
       int CL_rc;
@@ -14316,6 +14423,29 @@ int backend_session_begin (hashcat_ctx_t *hashcat_ctx)
       }
     }
 
+    /**
+     * Vulkan has no autotune in M3. -n/-u are taken as-is; otherwise one
+     * fixed batch shape (64 invocations per workgroup, 64 accel steps) is
+     * used. The SPIR-V program declares local_size_x = 64.
+     */
+
+    if (device_param->is_vulkan == true)
+    {
+      device_param->device_processors = 16;
+
+      device_param->kernel_threads_min = 64;
+      device_param->kernel_threads_max = 64;
+
+      const u32 fixed_accel = (user_options->kernel_accel_chgd == true) ? user_options->kernel_accel : 64u;
+      const u32 fixed_loops = (user_options->kernel_loops_chgd == true) ? user_options->kernel_loops : 1u;
+
+      device_param->kernel_accel_min = fixed_accel;
+      device_param->kernel_accel_max = fixed_accel;
+
+      device_param->kernel_loops_min = fixed_loops;
+      device_param->kernel_loops_max = fixed_loops;
+    }
+
     device_param->kernel_loops_min_sav = device_param->kernel_loops_min;
     device_param->kernel_loops_max_sav = device_param->kernel_loops_max;
 
@@ -14634,6 +14764,75 @@ int backend_session_begin (hashcat_ctx_t *hashcat_ctx)
         case 0: break;
       }
     }
+
+    #if defined (WITH_VULKAN_DISCOVERY)
+    /**
+     * Vulkan does not use the OpenCL/CUDA kernel graph: there is no shared
+     * kernel, no per-mode kernel object and no decompress kernel to build.
+     * Compute the batch shape and the buffer sizes that the generic code
+     * would compute, allocate the host candidate arrays, open the Vulkan
+     * runtime with those sizes and skip the whole kernel-loading section.
+     */
+
+    if (device_param->is_vulkan == true)
+    {
+      const u32 hardware_power = ((hashconfig->opts_type & OPTS_TYPE_MP_MULTI_DISABLE)     ? 1 : device_param->device_processors)
+                               * ((hashconfig->opts_type & OPTS_TYPE_THREAD_MULTI_DISABLE) ? 1 : device_param->kernel_threads_max);
+
+      const u64 kernel_power = (u64) hardware_power * device_param->kernel_accel_max;
+
+      device_param->kernel_threads = device_param->kernel_threads_max;
+      device_param->kernel_accel   = device_param->kernel_accel_max;
+      device_param->kernel_loops   = device_param->kernel_loops_max;
+
+      device_param->hardware_power = hardware_power;
+      device_param->kernel_power   = kernel_power;
+
+      device_param->size_pws      = kernel_power * sizeof (pw_t);
+      device_param->size_pws_amp  = 1;
+      device_param->size_pws_comp = kernel_power * (sizeof (u32) * 64);
+      device_param->size_pws_idx  = (kernel_power + 1) * sizeof (pw_idx_t);
+      device_param->size_tmps     = kernel_power * hashconfig->tmp_size;
+      device_param->size_hooks    = kernel_power * hashconfig->hook_size;
+
+      device_param->pws_comp = (u32 *) hcmalloc (device_param->size_pws_comp);
+      device_param->pws_idx  = (pw_idx_t *) hcmalloc (device_param->size_pws_idx);
+
+      device_param->combs_buf  = (pw_t *) hccalloc (KERNEL_COMBS, sizeof (pw_t));
+      device_param->hooks_buf  = hcmalloc (device_param->size_hooks ? device_param->size_hooks : 4);
+      device_param->scratch_buf = (char *) hcmalloc (HCBUFSIZ_LARGE);
+
+      device_param->kernel_param.bitmap_mask         = bitmap_ctx->bitmap_mask;
+      device_param->kernel_param.bitmap_shift1       = bitmap_ctx->bitmap_shift1;
+      device_param->kernel_param.bitmap_shift2       = bitmap_ctx->bitmap_shift2;
+      device_param->kernel_param.salt_pos_host       = 0;
+      device_param->kernel_param.loop_pos            = 0;
+      device_param->kernel_param.loop_cnt            = 0;
+      device_param->kernel_param.il_cnt              = 0;
+      device_param->kernel_param.digests_cnt         = 0;
+      device_param->kernel_param.digests_offset_host = 0;
+      device_param->kernel_param.combs_mode          = 0;
+      device_param->kernel_param.salt_repeat         = 0;
+      device_param->kernel_param.pws_pos             = 0;
+      device_param->kernel_param.gid_max             = 0;
+
+      if (backend_vulkan_validate_workload (hashcat_ctx, device_param) != 0) return -1;
+
+      if (backend_vulkan_devices_session_begin (hashcat_ctx, device_param) != 0) return -1;
+
+      /**
+       * The generic tail below accumulates this value and emits the
+       * post-init event; keep both for the Vulkan fast path too, otherwise
+       * backend_session_begin() rejects the session with power 0.
+       */
+
+      hardware_power_all += hardware_power;
+
+      EVENT_DATA (EVENT_BACKEND_DEVICE_INIT_POST, &backend_devices_idx, sizeof (int));
+
+      continue;
+    }
+    #endif
 
     // kern type
 
@@ -16155,9 +16354,14 @@ int backend_session_begin (hashcat_ctx_t *hashcat_ctx)
 
     /**
      * kernel name
+     *
+     * Vulkan has no per-mode OpenCL/CUDA kernel objects to create here; the
+     * registered SPIR-V program was prepared by the Vulkan session hook below.
+     * A backend that matches none of these branches therefore leaves rc at 0
+     * instead of failing the whole session.
      */
 
-    int rc = -1;
+    int rc = 0;
 
     if (device_param->is_cuda == true)
     {
@@ -17014,6 +17218,11 @@ int backend_session_begin (hashcat_ctx_t *hashcat_ctx)
     device_param->size_brain_link_out = size_brain_link_out;
     #endif
 
+    /**
+     * Vulkan devices left the per-device loop through the dedicated branch
+     * above; the code below only configures OpenCL/CUDA/HIP/Metal buffers.
+     */
+
     if (device_param->is_cuda == true)
     {
       if (hc_cuMemAlloc (hashcat_ctx, &device_param->cuda_d_pws_buf,      size_pws)      == -1) return -1;
@@ -17427,6 +17636,14 @@ void backend_session_destroy (hashcat_ctx_t *hashcat_ctx)
     hcfree (device_param->combs_buf);
     hcfree (device_param->hooks_buf);
     hcfree (device_param->scratch_buf);
+
+    #if defined (WITH_VULKAN_DISCOVERY)
+    if (device_param->is_vulkan == true)
+    {
+      backend_vulkan_devices_memory_term (hashcat_ctx, device_param);
+    }
+    #endif
+
     #ifdef WITH_BRAIN
     hcfree (device_param->brain_link_in_buf);
     hcfree (device_param->brain_link_out_buf);

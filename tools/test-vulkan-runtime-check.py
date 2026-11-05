@@ -4,8 +4,8 @@
 Checks that the -I chain ran through hc_vulkan_device, that the data-path
 check dispatched more than 65535 workgroups and matched the CPU reference,
 that the per-element counter covers every element, that the repeated
-init/check/term loop reported no failures, and that the JSON keeps Vulkan
-detected but unschedulable.
+init/check/term loop reported no failures, and that JSON reports Vulkan as
+detected and schedulable after the mode 0 self-check.
 
 Exit code 0 only when every check passes.
 """
@@ -91,6 +91,8 @@ def verify_log(path: pathlib.Path) -> dict:
 
     if "Vulkan dispatch m2-check-sum complete" not in text:
         raise Failure("the log has no dispatch completion line")
+    if "self-check passed (mode 0 straight)" not in text:
+        raise Failure("the log has no mode 0 self-check line")
 
     return {
         "groups": groups,
@@ -124,8 +126,8 @@ def verify_json(path: pathlib.Path) -> dict:
 
     if vulkan is None:
         raise Failure("backend JSON has no vulkan entry")
-    if vulkan.get("schedulable") is not False:
-        raise Failure("vulkan.schedulable is not false")
+    if vulkan.get("schedulable") is not True:
+        raise Failure("vulkan.schedulable is not true")
     if vulkan.get("detected") is not True:
         raise Failure("vulkan.detected is not true")
     if not vulkan.get("devices"):

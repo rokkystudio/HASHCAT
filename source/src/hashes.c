@@ -23,6 +23,10 @@
 #include "locking.h"
 #include "hashes.h"
 
+#if defined (WITH_VULKAN_DISCOVERY)
+#include "backend_vulkan_device.h"
+#endif
+
 #ifdef WITH_BRAIN
 #include "brain.h"
 #endif
@@ -612,6 +616,13 @@ int check_cracked (hashcat_ctx_t *hashcat_ctx, hc_device_param_t *device_param)
     if (hc_clEnqueueReadBuffer (hashcat_ctx, device_param->opencl_command_queue, device_param->opencl_d_result, CL_TRUE, 0, sizeof (u32), &num_cracked, 0, NULL, NULL) == -1) return -1;
   }
 
+  #if defined (WITH_VULKAN_DISCOVERY)
+  if (device_param->is_vulkan == true)
+  {
+    if (backend_vulkan_device_download (hashcat_ctx, device_param, HC_VK_BUFFER_RESULT, &num_cracked, sizeof (u32)) != 0) return -1;
+  }
+  #endif
+
   if (num_cracked == 0 || user_options->speed_only == true)
   {
     // we want to get the num_cracked in benchmark mode because it has an influence in performance
@@ -682,6 +693,20 @@ int check_cracked (hashcat_ctx_t *hashcat_ctx, hc_device_param_t *device_param)
       return -1;
     }
   }
+
+  #if defined (WITH_VULKAN_DISCOVERY)
+  if (device_param->is_vulkan == true)
+  {
+    rc = backend_vulkan_device_download (hashcat_ctx, device_param, HC_VK_BUFFER_PLAIN, cracked, (VkDeviceSize) (num_cracked * sizeof (plain_t)));
+
+    if (rc != 0)
+    {
+      hcfree (cracked);
+
+      return -1;
+    }
+  }
+  #endif
 
   u32 cpt_cracked = 0;
 
@@ -824,6 +849,13 @@ int check_cracked (hashcat_ctx_t *hashcat_ctx, hc_device_param_t *device_param)
 
     if (hc_clFlush (hashcat_ctx, device_param->opencl_command_queue) == -1) return -1;
   }
+
+  #if defined (WITH_VULKAN_DISCOVERY)
+  if (device_param->is_vulkan == true)
+  {
+    if (backend_vulkan_device_memset (hashcat_ctx, device_param, HC_VK_BUFFER_RESULT, 0, sizeof (u32)) != 0) return -1;
+  }
+  #endif
 
   return 0;
 }

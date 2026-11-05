@@ -169,6 +169,14 @@ typedef struct hc_vulkan_device
 
   bool device_ready;
   bool memory_ready;
+
+  /**
+   * Set only after the fixed-vector mode 0 self-check passed on this physical
+   * device in this process. It is the schedulability gate for
+   * --backend-info-json and for accepting work.
+   */
+
+  bool schedulable;
 } hc_vulkan_device_t;
 
 /**
@@ -182,6 +190,38 @@ typedef struct hc_vulkan_device
  */
 
 void backend_vulkan_devices_init (hashcat_ctx_t *hashcat_ctx);
+
+/**
+ * Decide whether registered Vulkan devices may receive work in this run.
+ *
+ * other_active is the number of non-Vulkan devices that are already
+ * schedulable. A Vulkan device is activated when it was selected explicitly
+ * with -d/--backend-device or when no other device is left (the documented
+ * --backend-ignore-opencl path). It becomes schedulable only after the fixed
+ * MD5 straight self-check passed; a failed check leaves it skipped.
+ *
+ * need_info forces the self-check even when the device will not run work, so
+ * --backend-info-json can report a truthful schedulable flag.
+ */
+
+void backend_vulkan_devices_activate (hashcat_ctx_t *hashcat_ctx, const int other_active, const int need_info);
+
+/**
+ * Open the runtime with the real hashconfig buffer sizes and upload the
+ * immutable per-run data (digests, salts, esalts) into the Vulkan buffers.
+ * Called from backend_session_begin() for an active Vulkan device.
+ */
+
+int backend_vulkan_devices_session_begin (hashcat_ctx_t *hashcat_ctx, hc_device_param_t *device_param);
+
+/**
+ * Refuse a workload the registered program cannot execute.
+ *
+ * Supported: -m 0 -a 0, no rules, no -O, no --increment, no brain, no -S,
+ * no benchmark. Everything else returns -1 with an explanatory message.
+ */
+
+int backend_vulkan_validate_workload (hashcat_ctx_t *hashcat_ctx, hc_device_param_t *device_param);
 
 /**
  * Release every Vulkan resource owned by the registered devices.
@@ -284,6 +324,20 @@ int backend_vulkan_device_copy (hashcat_ctx_t *hashcat_ctx, hc_device_param_t *d
 const struct vk_program *backend_vulkan_program_by_name (const char *name);
 
 /**
+ * Enumerate the immutable program registry.
+ *
+ * program_count() is the number of registered programs; program_at() returns
+ * NULL outside the valid range. The mode 0 straight entry is exposed by its
+ * stable name so the scheduler does not depend on registry order.
+ */
+
+u32 backend_vulkan_program_count (void);
+
+const struct vk_program *backend_vulkan_program_at (const u32 index);
+
+const struct vk_program *backend_vulkan_program_md5_straight (void);
+
+/**
  * Validate a registry program against the v1 ABI and the physical device,
  * then create and cache its Compute pipeline.
  *
@@ -326,6 +380,28 @@ int backend_vulkan_device_readback_result (hashcat_ctx_t *hashcat_ctx, hc_device
  */
 
 int backend_vulkan_device_run_check (hashcat_ctx_t *hashcat_ctx, hc_device_param_t *device_param);
+
+/**
+ * Run the fixed-vector mode 0 / -a 0 check through the registered program.
+ *
+ * Uploads three known plaintexts and two known MD5 digests, dispatches the
+ * real straight kernel, and compares the plain_t records against the CPU
+ * reference. Requires an open runtime; used as the schedulability gate.
+ */
+
+int backend_vulkan_device_md5_straight_check (hashcat_ctx_t *hashcat_ctx, hc_device_param_t *device_param);
+
+/**
+ * Execute one mode 0 / -a 0 candidate batch on the Vulkan device.
+ *
+ * Candidates are expanded from the host pws_comp/pws_idx arrays into pw_t
+ * records and uploaded; the kernel salts, digests and offsets come from
+ * device_param->kernel_param. Candidates above the one-block limit are
+ * refused. The result buffer is pre-filled before the dispatch; the caller
+ * reads it through check_cracked().
+ */
+
+int backend_vulkan_device_run_md5_straight (hashcat_ctx_t *hashcat_ctx, hc_device_param_t *device_param, const u64 pws_pos, const u64 pws_cnt);
 
 #endif // WITH_VULKAN_DISCOVERY
 

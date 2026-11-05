@@ -422,6 +422,24 @@ static int calc (hashcat_ctx_t *hashcat_ctx, hc_device_param_t *device_param)
   const u32 attack_mode = user_options->attack_mode;
   const u32 attack_kern = user_options_extra->attack_kern;
 
+  /**
+   * Vulkan has no autotune and no OpenCL host-side kernel graph, so the
+   * generic dispatcher must not start from the zero/legacy values left by
+   * the autotune placeholder. Recompute the batch shape from the fixed
+   * fields before the candidate loop reads kernel_power.
+   */
+
+  #if defined (WITH_VULKAN_DISCOVERY)
+  if (device_param->is_vulkan == true)
+  {
+    const u64 hardware_power = (u64) device_param->device_processors * (u64) device_param->kernel_threads;
+    const u64 kernel_power   = hardware_power * (u64) (device_param->kernel_accel ? device_param->kernel_accel : 64);
+
+    device_param->hardware_power = (u32) hardware_power;
+    device_param->kernel_power   = kernel_power ? kernel_power : 65536;
+  }
+  #endif
+
   if (user_options->slow_candidates == true)
   {
     #ifdef WITH_BRAIN

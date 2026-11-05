@@ -8,6 +8,7 @@ param(
     [string]$AndroidApi = '26',
     [string]$VersionTag = 'v7.1.2',
     [bool]$Package = $true,
+    [switch]$NoVulkan,
     [switch]$Clean
 )
 
@@ -26,4 +27,6 @@ foreach ($item in $Abi) {
     }
 }
 
-& (Join-Path $PSScriptRoot 'BUILD.ps1') -Target @($targets) -AndroidNdk $AndroidNdk -AndroidApi $AndroidApi -Msys2Bash $Msys2Bash -Msys2Root $Msys2Root -MakeJobs $MakeJobs -VersionTag $VersionTag -Package:$Package -Clean:$Clean
+# Vulkan is part of the normal Android runtime since M3. -NoVulkan keeps the
+# old OpenCL-only layout available for debugging and bisects.
+& (Join-Path $PSScriptRoot 'BUILD.ps1') -Target @($targets) -AndroidNdk $AndroidNdk -AndroidApi $AndroidApi -Msys2Bash $Msys2Bash -Msys2Root $Msys2Root -MakeJobs $MakeJobs -VersionTag $VersionTag -Package:$Package -EnableVulkan:(-not $NoVulkan) -Clean:$Clean

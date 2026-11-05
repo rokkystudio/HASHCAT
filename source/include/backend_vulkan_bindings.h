@@ -31,10 +31,15 @@
  *   set 0, b11  bitmap_s1_d
  *   set 0, b12  bitmap_s2_a
  *   set 0, b13  bitmap_s2_b
+ *   set 0, b14  plains_buf          (added in version 2)
  *
  * b0 is not a descriptor: the kernel_param block travels in a Compute push
  * constant range. A program whose push-constant block does not fit is
  * rejected instead of silently falling back to a different layout.
+ *
+ * Version 2 adds plains_buf so a mode program can emit plain_t records with
+ * the same mark_hash() semantics as OpenCL instead of overloading result.
+ * The entries b0..b13 keep their version-1 meaning.
  *
  * Dispatch splitting convention: the last four bytes of the push-constant
  * block hold the base workgroup of the current vkCmdDispatch chunk. The host
@@ -46,11 +51,55 @@
  * Changing any entry, count or kind requires a new VK_BINDINGS_VERSION.
  */
 
-#define VK_BINDINGS_VERSION 1u
+#define VK_BINDINGS_VERSION 2u
 
-#define VK_BINDING_COUNT 14u
+#define VK_BINDING_COUNT 15u
 
 #define VK_BINDINGS_PUSH_CONSTANT_MAX 128u
+
+/**
+ * Program flags describe the mode boundaries a program was built for. The
+ * scheduler checks them before it accepts an attack; a program that does not
+ * name a supported boundary is never scheduled.
+ */
+
+#define VK_PROGRAM_FLAG_MODE0_MD5   (1u << 0)
+#define VK_PROGRAM_FLAG_STRAIGHT    (1u << 1)
+#define VK_PROGRAM_FLAG_NO_RULES    (1u << 2)
+#define VK_PROGRAM_FLAG_NO_BRAIN    (1u << 3)
+#define VK_PROGRAM_FLAG_ONE_BLOCK   (1u << 4)
+
+#define VK_MD5_STRAIGHT_MAX_LEN 55u
+
+/**
+ * Push-constant block of the mode 0 straight program.
+ *
+ * The first member is hashcat's kernel_param_t, byte-for-byte. The trailing
+ * word is the base workgroup of the current split vkCmdDispatch chunk; it is
+ * the required last-four-bytes convention documented above. The GLSL module
+ * declares the same bytes as uint pairs, so it does not depend on the
+ * optional shaderInt64 device feature.
+ */
+
+typedef struct vk_md5_straight_push
+{
+  kernel_param_t kernel_param;
+  u32            base_workgroup;
+} vk_md5_straight_push_t;
+
+#define VK_MD5_STRAIGHT_PUSH_BYTES ((u32) (offsetof (vk_md5_straight_push_t, base_workgroup) + sizeof (u32)))
+
+_Static_assert (sizeof (kernel_param_t) == 72u,
+                "kernel_param_t must keep the 72-byte v1 push-constant layout");
+
+_Static_assert (sizeof (pw_t) == 260u,
+                "the mode 0 program assumes the 65-word pw_t stride");
+
+_Static_assert (sizeof (plain_t) == 40u,
+                "the mode 0 program writes 8-byte aligned 40-byte plain_t records");
+
+_Static_assert (offsetof (vk_md5_straight_push_t, base_workgroup) == 72u,
+                "base_workgroup must follow kernel_param_t immediately");
 
 typedef enum vk_binding_kind
 {
@@ -105,13 +154,14 @@ static const vk_binding_t vk_hashcat_bindings[VK_BINDING_COUNT] =
   { 0u, 10u, VK_BINDING_KIND_STORAGE_BUFFER, HC_VK_BUFFER_BITMAP_S1_C,   0u },
   { 0u, 11u, VK_BINDING_KIND_STORAGE_BUFFER, HC_VK_BUFFER_BITMAP_S1_D,   0u },
   { 0u, 12u, VK_BINDING_KIND_STORAGE_BUFFER, HC_VK_BUFFER_BITMAP_S2_A,   0u },
-  { 0u, 13u, VK_BINDING_KIND_STORAGE_BUFFER, HC_VK_BUFFER_BITMAP_S2_B,   0u }
+  { 0u, 13u, VK_BINDING_KIND_STORAGE_BUFFER, HC_VK_BUFFER_BITMAP_S2_B,   0u },
+  { 0u, 14u, VK_BINDING_KIND_STORAGE_BUFFER, HC_VK_BUFFER_PLAIN,         0u }
 };
 
 _Static_assert (sizeof (vk_hashcat_bindings) / sizeof (vk_hashcat_bindings[0]) == VK_BINDING_COUNT,
                 "binding table size must match VK_BINDING_COUNT");
 
-_Static_assert (VK_BINDINGS_VERSION == 1u,
+_Static_assert (VK_BINDINGS_VERSION == 2u,
                 "descriptor layout changes require a new VK_BINDINGS_VERSION");
 
 _Static_assert (sizeof (kernel_param_t) <= VK_BINDINGS_PUSH_CONSTANT_MAX,

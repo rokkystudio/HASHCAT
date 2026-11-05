@@ -1,0 +1,230 @@
+#version 450
+
+/*
+ * mode 0 (MD5), attack -a 0, one-block candidates.
+ *
+ * One invocation computes MD5 over one password candidate from pws_buf and
+ * compares the four digest words against the target digests. On a match the
+ * invocation reserves an entry in the result counter and writes a plain_t
+ * record exactly as OpenCL's COMPARE_M_SCALAR -> mark_hash() does.
+ *
+ * Supported candidates: 0..55 bytes (a single 512-bit MD5 block). The host
+ * refuses longer candidates before dispatch; the early return below only
+ * keeps a malformed buffer from producing out-of-bounds reads.
+ *
+ * The descriptor table is Vulkan ABI v2 (source/include/backend_vulkan_bindings.h):
+ *   b1 pws_buf, b2 digests_buf, b7 result, b14 plains.
+ * kernel_param travels in push constants; the final word is the base
+ * workgroup of the current split vkCmdDispatch chunk.
+ */
+
+layout (local_size_x = 64, local_size_y = 1, local_size_z = 1) in;
+
+layout (push_constant) uniform HashcatKernelParam
+{
+  uint bitmap_mask;
+  uint bitmap_shift1;
+  uint bitmap_shift2;
+  uint salt_pos_host;
+  uint loop_pos_lo;
+  uint loop_pos_hi;
+  uint loop_cnt_lo;
+  uint loop_cnt_hi;
+  uint il_cnt_lo;
+  uint il_cnt_hi;
+  uint digests_cnt;
+  uint digests_offset_host;
+  uint combs_mode;
+  uint salt_repeat;
+  uint pws_pos_lo;
+  uint pws_pos_hi;
+  uint gid_max_lo;
+  uint gid_max_hi;
+  uint base_workgroup;
+} pc;
+
+layout (set = 0, binding = 1, std430) readonly buffer PwsBuffer
+{
+  uint words[];
+} pws_buf;
+
+layout (set = 0, binding = 2, std430) readonly buffer DigestsBuffer
+{
+  uint words[];
+} digests_buf;
+
+layout (set = 0, binding = 7, std430) buffer ResultBuffer
+{
+  uint words[];
+} result_buf;
+
+layout (set = 0, binding = 14, std430) buffer PlainsBuffer
+{
+  uint words[];
+} plains_buf;
+
+uint rotate_left (uint value, uint amount)
+{
+  return (value << amount) | (value >> (32u - amount));
+}
+
+void main ()
+{
+  const uint gid = (pc.base_workgroup + gl_WorkGroupID.x) * gl_WorkGroupSize.x + gl_LocalInvocationID.x;
+
+  if (gid >= pc.gid_max_lo) return;
+
+  /* pw_t is 64 message words followed by pw_len. Keep the host layout. */
+  const uint pw_base = gid * 65u;
+
+  const uint pw_len = pws_buf.words[pw_base + 64u];
+
+  if (pw_len > 55u) return;
+
+  uint block[16];
+
+  for (uint i = 0u; i < 16u; i++)
+  {
+    block[i] = 0u;
+  }
+
+  const uint full_words = pw_len >> 2u;
+
+  for (uint i = 0u; i < full_words; i++)
+  {
+    block[i] = pws_buf.words[pw_base + i];
+  }
+
+  const uint tail = pw_len & 3u;
+
+  if (tail != 0u)
+  {
+    uint mask = 0x000000ffu;
+
+    if (tail == 2u) mask = 0x0000ffffu;
+    if (tail == 3u) mask = 0x00ffffffu;
+
+    block[full_words] = pws_buf.words[pw_base + full_words] & mask;
+  }
+
+  block[pw_len >> 2u] |= 0x80u << (8u * (pw_len & 3u));
+
+  block[14] = pw_len << 3u;
+
+  const uint shifts[64] = uint[64](
+     7u, 12u, 17u, 22u,  7u, 12u, 17u, 22u,
+     7u, 12u, 17u, 22u,  7u, 12u, 17u, 22u,
+     5u,  9u, 14u, 20u,  5u,  9u, 14u, 20u,
+     5u,  9u, 14u, 20u,  5u,  9u, 14u, 20u,
+     4u, 11u, 16u, 23u,  4u, 11u, 16u, 23u,
+     4u, 11u, 16u, 23u,  4u, 11u, 16u, 23u,
+     6u, 10u, 15u, 21u,  6u, 10u, 15u, 21u,
+     6u, 10u, 15u, 21u,  6u, 10u, 15u, 21u
+  );
+
+  const uint constants[64] = uint[64](
+    0xd76aa478u, 0xe8c7b756u, 0x242070dbu, 0xc1bdceeeu,
+    0xf57c0fafu, 0x4787c62au, 0xa8304613u, 0xfd469501u,
+    0x698098d8u, 0x8b44f7afu, 0xffff5bb1u, 0x895cd7beu,
+    0x6b901122u, 0xfd987193u, 0xa679438eu, 0x49b40821u,
+    0xf61e2562u, 0xc040b340u, 0x265e5a51u, 0xe9b6c7aau,
+    0xd62f105du, 0x02441453u, 0xd8a1e681u, 0xe7d3fbc8u,
+    0x21e1cde6u, 0xc33707d6u, 0xf4d50d87u, 0x455a14edu,
+    0xa9e3e905u, 0xfcefa3f8u, 0x676f02d9u, 0x8d2a4c8au,
+    0xfffa3942u, 0x8771f681u, 0x6d9d6122u, 0xfde5380cu,
+    0xa4beea44u, 0x4bdecfa9u, 0xf6bb4b60u, 0xbebfbc70u,
+    0x289b7ec6u, 0xeaa127fau, 0xd4ef3085u, 0x04881d05u,
+    0xd9d4d039u, 0xe6db99e5u, 0x1fa27cf8u, 0xc4ac5665u,
+    0xf4292244u, 0x432aff97u, 0xab9423a7u, 0xfc93a039u,
+    0x655b59c3u, 0x8f0ccc92u, 0xffeff47du, 0x85845dd1u,
+    0x6fa87e4fu, 0xfe2ce6e0u, 0xa3014314u, 0x4e0811a1u,
+    0xf7537e82u, 0xbd3af235u, 0x2ad7d2bbu, 0xeb86d391u
+  );
+
+  uint a = 0x67452301u;
+  uint b = 0xefcdab89u;
+  uint c = 0x98badcfeu;
+  uint d = 0x10325476u;
+
+  const uint initial_a = a;
+  const uint initial_b = b;
+  const uint initial_c = c;
+  const uint initial_d = d;
+
+  for (uint i = 0u; i < 64u; i++)
+  {
+    uint f;
+    uint g;
+
+    if (i < 16u)
+    {
+      f = (b & c) | ((~b) & d);
+      g = i;
+    }
+    else if (i < 32u)
+    {
+      f = (d & b) | ((~d) & c);
+      g = (5u * i + 1u) & 15u;
+    }
+    else if (i < 48u)
+    {
+      f = b ^ c ^ d;
+      g = (3u * i + 5u) & 15u;
+    }
+    else
+    {
+      f = c ^ (b | (~d));
+      g = (7u * i) & 15u;
+    }
+
+    const uint previous_d = d;
+
+    d = c;
+    c = b;
+    b += rotate_left (a + f + constants[i] + block[g], shifts[i]);
+    a = previous_d;
+  }
+
+  a += initial_a;
+  b += initial_b;
+  c += initial_c;
+  d += initial_d;
+
+  /* Mode 0 uses DGST_R0..DGST_R3 = digest words 0..3 of a 4-word digest_t. */
+  for (uint digest_pos = 0u; digest_pos < pc.digests_cnt; digest_pos++)
+  {
+    const uint digest_base = (pc.digests_offset_host + digest_pos) * 4u;
+
+    if (digests_buf.words[digest_base + 0u] != a) continue;
+    if (digests_buf.words[digest_base + 1u] != b) continue;
+    if (digests_buf.words[digest_base + 2u] != c) continue;
+    if (digests_buf.words[digest_base + 3u] != d) continue;
+
+    const uint idx = atomicAdd (result_buf.words[0], 1u);
+
+    if (idx >= pc.digests_cnt)
+    {
+      atomicAdd (result_buf.words[0], 0xffffffffu);
+
+      return;
+    }
+
+    /* plain_t: u64 gidvid, u64 il_pos, u32 salt_pos, u32 digest_pos,
+     *          u32 hash_pos, u32 extra1, u32 extra2. The struct is 8-byte
+     *          aligned, so sizeof(plain_t) is 40 bytes: ten u32 words. */
+    const uint plain_base = idx * 10u;
+
+    plains_buf.words[plain_base + 0u] = gid;
+    plains_buf.words[plain_base + 1u] = 0u;
+    plains_buf.words[plain_base + 2u] = 0u;
+    plains_buf.words[plain_base + 3u] = 0u;
+    plains_buf.words[plain_base + 4u] = pc.salt_pos_host;
+    plains_buf.words[plain_base + 5u] = digest_pos;
+    plains_buf.words[plain_base + 6u] = pc.digests_offset_host + digest_pos;
+    plains_buf.words[plain_base + 7u] = 0u;
+    plains_buf.words[plain_base + 8u] = 0u;
+    plains_buf.words[plain_base + 9u] = 0u;
+
+    return;
+  }
+}

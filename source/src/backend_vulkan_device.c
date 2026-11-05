@@ -39,6 +39,7 @@
 #define HC_VULKAN_DIAG_RESULT_BYTES  (HC_VULKAN_DIAG_KERNEL_POWER * 2ULL * sizeof (u32))
 #define HC_VULKAN_DIAG_TMP_BYTES     16ULL
 #define HC_VULKAN_DIAG_HOOK_BYTES    16ULL
+#define HC_VULKAN_DIAG_PLAIN_ENTRIES 1024ULL
 
 /**
  * Translate a Vulkan vendor id into the short vendor name printed by -I.
@@ -90,44 +91,10 @@ static const char *backend_vulkan_buffer_name (const u32 buffer_idx)
 }
 
 /**
- * Host-side program registry.
- *
- * M2 registers exactly one immutable program: the data-path check shader.
- * Per-mode programs arrive in M3 and must keep the v1 binding table or bump
- * VK_BINDINGS_VERSION.
+ * The immutable program registry lives in backend_vulkan_programs.c. This
+ * file only consumes it through backend_vulkan_program_count/at/by_name so
+ * device code never depends on registry order or storage.
  */
-
-static const vk_program_t backend_vulkan_programs[] =
-{
-  {
-    .name                = "m2-check-sum",
-    .spirv               = backend_vulkan_check_spirv,
-    .spirv_len           = BACKEND_VULKAN_CHECK_SPIRV_BYTES,
-    .local_size          = { 1u, 1u, 1u },
-    .bindings            = vk_hashcat_bindings,
-    .binding_count       = VK_BINDING_COUNT,
-    .push_constant_bytes = 16u,
-    .flags               = 0u,
-    .bindings_version    = VK_BINDINGS_VERSION
-  }
-};
-
-#define BACKEND_VULKAN_PROGRAM_COUNT (sizeof (backend_vulkan_programs) / sizeof (backend_vulkan_programs[0]))
-
-const vk_program_t *backend_vulkan_program_by_name (const char *name)
-{
-  if (name == NULL) return NULL;
-
-  for (u32 program_idx = 0; program_idx < BACKEND_VULKAN_PROGRAM_COUNT; program_idx++)
-  {
-    if (strcmp (backend_vulkan_programs[program_idx].name, name) == 0)
-    {
-      return &backend_vulkan_programs[program_idx];
-    }
-  }
-
-  return NULL;
-}
 
 /**
  * Build the hc_vulkan_device metadata for one catalogued physical device.
@@ -1576,7 +1543,7 @@ static int backend_vulkan_buffer_sizes (hashcat_ctx_t *hashcat_ctx, hc_device_pa
     sizes[bitmap_idx] = HC_VULKAN_DIAG_BITMAP_BYTES;
   }
 
-  sizes[HC_VK_BUFFER_PLAIN]         = sizeof (plain_t);
+  sizes[HC_VK_BUFFER_PLAIN]         = HC_VULKAN_DIAG_PLAIN_ENTRIES * sizeof (plain_t);
   sizes[HC_VK_BUFFER_DIGESTS]       = 256;
   sizes[HC_VK_BUFFER_DIGESTS_SHOWN] = sizeof (u32);
   sizes[HC_VK_BUFFER_SALTS]         = sizeof (salt_t);
@@ -1849,9 +1816,11 @@ int backend_vulkan_devices_memory_init (hashcat_ctx_t *hashcat_ctx, hc_device_pa
 
   vulkan->memory_ready = true;
 
-  for (u32 program_idx = 0; program_idx < BACKEND_VULKAN_PROGRAM_COUNT; program_idx++)
+  for (u32 program_idx = 0; program_idx < backend_vulkan_program_count (); program_idx++)
   {
-    if (backend_vulkan_device_program_prepare (hashcat_ctx, device_param, &backend_vulkan_programs[program_idx]) != 0)
+    const vk_program_t *program = backend_vulkan_program_at (program_idx);
+
+    if (backend_vulkan_device_program_prepare (hashcat_ctx, device_param, program) != 0)
     {
       backend_vulkan_device_close (vulkan);
 
@@ -1944,6 +1913,240 @@ int backend_vulkan_devices_memory_term (hashcat_ctx_t *hashcat_ctx, hc_device_pa
 }
 
 /**
+ * Fixed CPU reference digests for the mode 0 self-check.
+ *
+ * The values are the standard MD5 digests of the fixed public strings below,
+ * stored as hashcat's little-endian digest_buf words:
+ *   "hashcat"          -> 8743b52063cd84097a65d1633f5c74f5
+ *   'a' * 55           -> ef1772b6dff9a122358552954ad0df65
+ */
+
+static const u32 backend_vulkan_md5_kat_digest_hashcat[4] = { 0x20b54387u, 0x0984cd63u, 0x63d1657au, 0xf5745c3fu };
+static const u32 backend_vulkan_md5_kat_digest_a55[4]     = { 0xb67217efu, 0x22a1f9dfu, 0x95528535u, 0x65dfd04au };
+
+/**
+ * Run a fixed-vector MD5 straight check through the real program.
+ *
+ * Three candidates are uploaded through the normal buffer path: "hashcat"
+ * (matches digest 0), "hashcat!" (matches nothing) and 55 x 'a' (matches
+ * digest 1). The program must report exactly two hits and their plain_t
+ * records must carry the right gidvid/digest_pos/hash_pos. This is the CPU-
+ * referenced KAT for the single stage mode 0 uses.
+ */
+
+int backend_vulkan_device_md5_straight_check (hashcat_ctx_t *hashcat_ctx, hc_device_param_t *device_param)
+{
+  if ((device_param == NULL) || (device_param->vulkan == NULL)) return -1;
+
+  hc_vulkan_device_t *vulkan = device_param->vulkan;
+
+  if (vulkan->memory_ready == false) return -1;
+
+  const vk_program_t *program = backend_vulkan_program_md5_straight ();
+
+  if (program == NULL)
+  {
+    event_log_error (hashcat_ctx, "Vulkan mode 0 straight program is not registered.");
+
+    return -1;
+  }
+
+  pw_t *pws = (pw_t *) hccalloc (3, sizeof (pw_t));
+
+  if (pws == NULL) return -1;
+
+  memcpy (pws[0].i, "hashcat", 7);
+  pws[0].pw_len = 7;
+
+  memcpy (pws[1].i, "hashcat!", 8);
+  pws[1].pw_len = 8;
+
+  memset (pws[2].i, 'a', 55);
+  pws[2].pw_len = 55;
+
+  u32 digests[8];
+
+  memcpy (&digests[0], backend_vulkan_md5_kat_digest_hashcat, sizeof (backend_vulkan_md5_kat_digest_hashcat));
+  memcpy (&digests[4], backend_vulkan_md5_kat_digest_a55,     sizeof (backend_vulkan_md5_kat_digest_a55));
+
+  int rc = -1;
+
+  if (backend_vulkan_device_upload (hashcat_ctx, device_param, HC_VK_BUFFER_PWS, pws, 3 * sizeof (pw_t)) != 0) goto done;
+  if (backend_vulkan_device_upload (hashcat_ctx, device_param, HC_VK_BUFFER_DIGESTS, digests, sizeof (digests)) != 0) goto done;
+  if (backend_vulkan_device_memset (hashcat_ctx, device_param, HC_VK_BUFFER_RESULT, 0, sizeof (u32)) != 0) goto done;
+
+  {
+    vk_md5_straight_push_t push;
+
+    memset (&push, 0, sizeof (push));
+
+    push.kernel_param.salt_pos_host       = 0;
+    push.kernel_param.digests_cnt         = 2;
+    push.kernel_param.digests_offset_host = 0;
+    push.kernel_param.il_cnt              = 1;
+    push.kernel_param.pws_pos             = 0;
+    push.kernel_param.gid_max             = 3;
+
+    const u64 group_count = (3 + program->local_size[0] - 1) / program->local_size[0];
+
+    if (backend_vulkan_device_dispatch (hashcat_ctx, device_param, program, group_count, &push, VK_MD5_STRAIGHT_PUSH_BYTES) != 0) goto done;
+  }
+
+  {
+    u32 count = 0;
+
+    if (backend_vulkan_device_download (hashcat_ctx, device_param, HC_VK_BUFFER_RESULT, &count, sizeof (count)) != 0) goto done;
+
+    if (count != 2)
+    {
+      event_log_error (hashcat_ctx, "Vulkan MD5 straight self-check: expected 2 hits, got %u.", count);
+
+      goto done;
+    }
+
+    plain_t plains[2];
+
+    if (backend_vulkan_device_download (hashcat_ctx, device_param, HC_VK_BUFFER_PLAIN, plains, 2 * sizeof (plain_t)) != 0) goto done;
+
+    u32 seen_hashcat = 0;
+    u32 seen_a55     = 0;
+
+    for (u32 idx = 0; idx < 2; idx++)
+    {
+      if ((plains[idx].salt_pos != 0) || (plains[idx].il_pos != 0)) continue;
+
+      if ((plains[idx].gidvid == 0) && (plains[idx].digest_pos == 0) && (plains[idx].hash_pos == 0)) seen_hashcat = 1;
+      if ((plains[idx].gidvid == 2) && (plains[idx].digest_pos == 1) && (plains[idx].hash_pos == 1)) seen_a55     = 1;
+    }
+
+    if ((seen_hashcat == 0) || (seen_a55 == 0))
+    {
+      event_log_error (hashcat_ctx, "Vulkan MD5 straight self-check: plain_t records do not match the CPU reference.");
+
+      goto done;
+    }
+
+    event_log_info (hashcat_ctx, "Vulkan MD5 straight self-check passed: vectors=3 hits=2 (1-block 0..55 bytes).");
+  }
+
+  rc = 0;
+
+done:
+  hcfree (pws);
+
+  return rc;
+}
+
+/**
+ * Expand the host candidate arrays and dispatch one mode 0 straight batch.
+ *
+ * hashcat keeps fast-attack candidates compressed in pws_comp/pws_idx on the
+ * host and normally expands them with the OpenCL decompress kernel. Vulkan
+ * expands the same arrays on the host and uploads pw_t records directly, so
+ * the GPU only executes the real MD5/compare stage. A candidate longer than
+ * one MD5 block is refused with a message instead of being skipped.
+ */
+
+int backend_vulkan_device_run_md5_straight (hashcat_ctx_t *hashcat_ctx, hc_device_param_t *device_param, const u64 pws_pos, const u64 pws_cnt)
+{
+  if ((device_param == NULL) || (device_param->vulkan == NULL)) return -1;
+
+  if (pws_cnt == 0) return 0;
+
+  hc_vulkan_device_t *vulkan = device_param->vulkan;
+
+  if (vulkan->memory_ready == false) return -1;
+
+  if ((pws_cnt * sizeof (pw_t)) > device_param->size_pws)
+  {
+    event_log_error (hashcat_ctx, "Vulkan device #%u: %llu candidates do not fit the %llu-byte pws buffer.",
+                     device_param->device_id + 1,
+                     (unsigned long long) pws_cnt,
+                     (unsigned long long) device_param->size_pws);
+
+    return -1;
+  }
+
+  const vk_program_t *program = backend_vulkan_program_md5_straight ();
+
+  if (program == NULL) return -1;
+
+  pw_t *pws = (pw_t *) hccalloc ((size_t) pws_cnt, sizeof (pw_t));
+
+  if (pws == NULL) return -1;
+
+  int rc = -1;
+
+  for (u64 idx = 0; idx < pws_cnt; idx++)
+  {
+    const pw_idx_t *pw_idx = &device_param->pws_idx[idx];
+
+    if (pw_idx->len > VK_MD5_STRAIGHT_MAX_LEN)
+    {
+      event_log_error (hashcat_ctx, "Vulkan mode 0 straight supports candidates of 1..%u bytes; candidate %llu is %u bytes.",
+                       VK_MD5_STRAIGHT_MAX_LEN,
+                       (unsigned long long) idx,
+                       pw_idx->len);
+
+      goto done;
+    }
+
+    u32 words = (pw_idx->len + 3u) / 4u;
+
+    if (words > 64u) words = 64u;
+
+    for (u32 word = 0; word < words; word++)
+    {
+      pws[idx].i[word] = device_param->pws_comp[pw_idx->off + word];
+    }
+
+    pws[idx].pw_len = pw_idx->len;
+  }
+
+  if (backend_vulkan_device_upload (hashcat_ctx, device_param, HC_VK_BUFFER_PWS, pws, (VkDeviceSize) (pws_cnt * sizeof (pw_t))) != 0)
+  {
+    event_log_error (hashcat_ctx, "Vulkan mode 0: pws upload failed.");
+
+    goto done;
+  }
+
+  if (backend_vulkan_device_memset (hashcat_ctx, device_param, HC_VK_BUFFER_RESULT, 0, sizeof (u32)) != 0)
+  {
+    event_log_error (hashcat_ctx, "Vulkan mode 0: result pre-fill failed.");
+
+    goto done;
+  }
+
+  {
+    vk_md5_straight_push_t push;
+
+    memset (&push, 0, sizeof (push));
+
+    push.kernel_param = device_param->kernel_param;
+    push.kernel_param.il_cnt  = 1;
+    push.kernel_param.pws_pos = pws_pos;
+    push.kernel_param.gid_max = pws_cnt;
+
+    const u64 local  = program->local_size[0];
+    const u64 groups = (pws_cnt + local - 1) / local;
+
+    if (backend_vulkan_device_dispatch (hashcat_ctx, device_param, program, groups, &push, VK_MD5_STRAIGHT_PUSH_BYTES) != 0)
+    {
+      event_log_error (hashcat_ctx, "Vulkan mode 0: dispatch failed.");
+
+      goto done;
+    }
+  }
+
+  rc = 0;
+
+done:
+  hcfree (pws);
+
+  return rc;
+}
+
+/**
  * Fill one device table entry from a catalogued physical device.
  *
  * The entry is marked is_vulkan and skipped. Vulkan hashing is not enabled in
@@ -1976,10 +2179,45 @@ static void backend_vulkan_device_register (hashcat_ctx_t *hashcat_ctx, const u3
 
   device_param->device_name = hcstrdup (vulkan->name);
 
-  device_param->device_processors         = 0;
-  device_param->device_maxclock_frequency = 0;
-  device_param->device_global_mem         = 0;
-  device_param->device_available_mem      = 0;
+  /**
+   * Memory accounting for the generic size/tuning code. The heap sum is the
+   * device-local total; available memory starts at half of it because the
+   * Android driver does not expose a reliable free-memory query here. The
+   * single-allocation ceiling is capped at 512 MiB so the accel shrink loop
+   * keeps one Vulkan batch well below the mobile heap limits.
+   */
+
+  VkDeviceSize heap_bytes = 0;
+
+  for (u32 heap_idx = 0; heap_idx < vulkan->memory_properties.memoryHeapCount; heap_idx++)
+  {
+    if (vulkan->memory_properties.memoryHeaps[heap_idx].flags & VK_MEMORY_HEAP_DEVICE_LOCAL_BIT)
+    {
+      heap_bytes += vulkan->memory_properties.memoryHeaps[heap_idx].size;
+    }
+  }
+
+  if (heap_bytes == 0) heap_bytes = 512ULL * 1024ULL * 1024ULL;
+
+  VkDeviceSize max_alloc = vulkan->properties.limits.maxStorageBufferRange;
+
+  if (max_alloc > (512ULL * 1024ULL * 1024ULL)) max_alloc = 512ULL * 1024ULL * 1024ULL;
+
+  device_param->device_processors         = 16;
+  device_param->device_maxclock_frequency = 1000;
+  device_param->device_global_mem         = (u64) heap_bytes;
+  device_param->device_available_mem      = (u64) (heap_bytes / 2);
+  device_param->device_maxmem_alloc       = (u64) max_alloc;
+  device_param->device_maxworkgroup_size  = vulkan->properties.limits.maxComputeWorkGroupInvocations;
+
+  if (vulkan->device_type == VK_PHYSICAL_DEVICE_TYPE_CPU)
+  {
+    device_param->opencl_device_type = CL_DEVICE_TYPE_CPU;
+  }
+  else
+  {
+    device_param->opencl_device_type = CL_DEVICE_TYPE_GPU;
+  }
 
   device_param->is_vulkan = true;
   device_param->vulkan    = vulkan;
@@ -2056,7 +2294,215 @@ void backend_vulkan_devices_term (hashcat_ctx_t *hashcat_ctx)
     device_param->is_vulkan = false;
   }
 
-  backend_ctx->vulkan_devices_active = 0;
+  backend_ctx->vulkan_devices_active      = 0;
+  backend_ctx->vulkan_devices_schedulable = 0;
+}
+
+/**
+ * Validate one workload against the boundaries of the registered program.
+ *
+ * The M3 program implements exactly mode 0, attack -a 0, one MD5 block, no
+ * rules, no brain, no -O, no --increment, no slow candidates and no
+ * benchmark. Everything else is refused here, before any GPU work, with a
+ * message that names the unsupported option.
+ */
+
+int backend_vulkan_validate_workload (hashcat_ctx_t *hashcat_ctx, hc_device_param_t *device_param)
+{
+  const hashconfig_t   *hashconfig   = hashcat_ctx->hashconfig;
+  const user_options_t *user_options = hashcat_ctx->user_options;
+
+  (void) device_param;
+
+  if (hashconfig->hash_mode != 0)
+  {
+    event_log_error (hashcat_ctx, "Vulkan backend: hash mode %u is not implemented; only -m 0 (MD5) is available.", hashconfig->hash_mode);
+
+    return -1;
+  }
+
+  if (user_options->attack_mode != ATTACK_MODE_STRAIGHT)
+  {
+    event_log_error (hashcat_ctx, "Vulkan backend: attack mode -a %u is not implemented; only -a 0 (straight wordlist) is available.", user_options->attack_mode);
+
+    return -1;
+  }
+
+  if ((user_options->rp_files_cnt > 0) || (user_options->rp_gen > 0))
+  {
+    event_log_error (hashcat_ctx, "Vulkan backend: rules (-r / --generate-rules) are not implemented.");
+
+    return -1;
+  }
+
+  /**
+   * The Android OpenCL path may force the Adreno optimized kernel on its own
+   * (fork patch P3). That changes hashconfig->opti_type before a Vulkan run
+   * even when the user did not pass -O, so the refusal keys on the user
+   * option, not on the derived hashconfig bit. The activation hook clears the
+   * derived bit for a Vulkan session.
+   */
+
+  if (user_options->optimized_kernel == true)
+  {
+    event_log_error (hashcat_ctx, "Vulkan backend: -O / --optimized-kernel is not implemented.");
+
+    return -1;
+  }
+
+  if (user_options->increment != INCREMENT_NONE)
+  {
+    event_log_error (hashcat_ctx, "Vulkan backend: --increment is not implemented.");
+
+    return -1;
+  }
+
+  if (user_options->slow_candidates == true)
+  {
+    event_log_error (hashcat_ctx, "Vulkan backend: -S / --slow-candidates is not implemented.");
+
+    return -1;
+  }
+
+  if (strcmp (user_options->encoding_from, user_options->encoding_to) != 0)
+  {
+    event_log_error (hashcat_ctx, "Vulkan backend: --encoding-from / --encoding-to are not implemented.");
+
+    return -1;
+  }
+
+  if (user_options->benchmark == true)
+  {
+    event_log_error (hashcat_ctx, "Vulkan backend: benchmark mode (-b) is not implemented.");
+
+    return -1;
+  }
+
+  if ((hashcat_ctx->brain_ctx != NULL) && (hashcat_ctx->brain_ctx->enabled == true))
+  {
+    event_log_error (hashcat_ctx, "Vulkan backend: brain is not implemented.");
+
+    return -1;
+  }
+
+  if (hashconfig->attack_exec != ATTACK_EXEC_INSIDE_KERNEL)
+  {
+    event_log_error (hashcat_ctx, "Vulkan backend: this hash mode does not use an inside-kernel attack.");
+
+    return -1;
+  }
+
+  return 0;
+}
+
+/**
+ * Open the runtime with the real hashconfig sizes and upload immutable data.
+ */
+
+int backend_vulkan_devices_session_begin (hashcat_ctx_t *hashcat_ctx, hc_device_param_t *device_param)
+{
+  const hashes_t *hashes = hashcat_ctx->hashes;
+
+  if (backend_vulkan_devices_memory_init (hashcat_ctx, device_param) != 0) return -1;
+
+  if ((device_param->size_digests > 0) && (hashes->digests_buf != NULL))
+  {
+    if (backend_vulkan_device_upload (hashcat_ctx, device_param, HC_VK_BUFFER_DIGESTS, hashes->digests_buf, (VkDeviceSize) device_param->size_digests) != 0) return -1;
+  }
+
+  if ((device_param->size_salts > 0) && (hashes->salts_buf != NULL))
+  {
+    if (backend_vulkan_device_upload (hashcat_ctx, device_param, HC_VK_BUFFER_SALTS, hashes->salts_buf, (VkDeviceSize) device_param->size_salts) != 0) return -1;
+  }
+
+  if ((device_param->size_esalts > 0) && (hashes->esalts_buf != NULL))
+  {
+    if (backend_vulkan_device_upload (hashcat_ctx, device_param, HC_VK_BUFFER_ESALTS, hashes->esalts_buf, (VkDeviceSize) device_param->size_esalts) != 0) return -1;
+  }
+
+  return 0;
+}
+
+/**
+ * Self-check one device and decide whether it may receive work.
+ */
+
+void backend_vulkan_devices_activate (hashcat_ctx_t *hashcat_ctx, const int other_active, const int need_info)
+{
+  backend_ctx_t        *backend_ctx  = hashcat_ctx->backend_ctx;
+  const user_options_t *user_options = hashcat_ctx->user_options;
+
+  const bool explicit_selection = (user_options->backend_devices != NULL);
+
+  for (u32 vulkan_device_idx = 0; vulkan_device_idx < backend_ctx->vulkan_devices_active; vulkan_device_idx++)
+  {
+    const int backend_device_idx = backend_ctx->backend_device_from_vulkan[vulkan_device_idx];
+
+    if (backend_device_idx < 0) continue;
+    if (backend_device_idx >= DEVICES_MAX) continue;
+
+    hc_device_param_t *device_param = &backend_ctx->devices_param[backend_device_idx];
+
+    if ((device_param->is_vulkan == false) || (device_param->vulkan == NULL)) continue;
+
+    const bool selected  = explicit_selection && (backend_ctx->backend_devices_filter[device_param->device_id] == 0);
+    const bool only_device = (other_active == 0);
+    const bool should_run  = selected || only_device;
+
+    /**
+     * A Vulkan device that will not run work only needs opening when the
+     * caller asks for backend information, because schedulable must be true
+     * in --backend-info-json even when OpenCL is the active backend.
+     */
+
+    if ((should_run == false) && (need_info == 0)) continue;
+
+    int check_rc = -1;
+
+    if (backend_vulkan_devices_memory_init (hashcat_ctx, device_param) == 0)
+    {
+      check_rc = backend_vulkan_device_md5_straight_check (hashcat_ctx, device_param);
+
+      backend_vulkan_devices_memory_term (hashcat_ctx, device_param);
+    }
+
+    if (check_rc != 0)
+    {
+      device_param->vulkan->schedulable = false;
+
+      event_log_error (hashcat_ctx, "Vulkan device #%u: self-check failed; the device is not schedulable.", device_param->device_id + 1);
+
+      continue;
+    }
+
+    device_param->vulkan->schedulable = true;
+
+    backend_ctx->vulkan_devices_schedulable++;
+
+    if (should_run == true)
+    {
+      device_param->skipped = false;
+
+      backend_ctx->backend_devices_active++;
+
+      /**
+       * No OpenCL device is active in a Vulkan run (selection rules above).
+       * Undo the Adreno-only optimized-kernel preference so the session uses
+       * the pure mode 0 limits and the one-block Vulkan kernel, not the
+       * OpenCL 0..31 optimized password limit.
+       */
+
+      if (user_options->optimized_kernel == false)
+      {
+        hashconfig_t *hashconfig = hashcat_ctx->hashconfig;
+
+        hashconfig->opti_type &= ~OPTI_TYPE_OPTIMIZED_KERNEL;
+        hashconfig->pw_max = PW_MAX;
+      }
+    }
+
+    event_log_info (hashcat_ctx, "Vulkan device #%u: self-check passed (mode 0 straight); schedulable=1.", device_param->device_id + 1);
+  }
 }
 
 u32 backend_vulkan_device_selected (hashcat_ctx_t *hashcat_ctx)

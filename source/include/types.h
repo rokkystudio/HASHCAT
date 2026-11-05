@@ -2148,6 +2148,7 @@ typedef struct backend_ctx
   int                 rc_vulkan_init;
 
   int                 vulkan_devices_active;
+  int                 vulkan_devices_schedulable;
   int                 backend_device_from_vulkan[DEVICES_MAX];
 
 } backend_ctx_t;
