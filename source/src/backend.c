@@ -4168,6 +4168,14 @@ int run_cracker (hashcat_ctx_t *hashcat_ctx, hc_device_param_t *device_param, co
     device_param->kernel_param.combs_mode          = 0;
     device_param->kernel_param.salt_repeat         = 0;
 
+    /**
+     * Start the batch timer before the dispatch. The speed block below reads
+     * the elapsed time and resets the timer, so the first measurement covers
+     * this batch and not the time since process start.
+     */
+
+    hc_timer_set (&device_param->timer_speed);
+
     if (backend_vulkan_device_run_md5_straight (hashcat_ctx, device_param, pws_pos, pws_cnt) != 0) return -1;
 
     check_cracked (hashcat_ctx, device_param);
@@ -4190,13 +4198,19 @@ int run_cracker (hashcat_ctx_t *hashcat_ctx, hc_device_param_t *device_param, co
       if (speed_pos == SPEED_CACHE) speed_pos = 0;
 
       device_param->speed_pos = speed_pos;
-
-      hc_thread_mutex_lock (status_ctx->mux_counter);
-
-      status_ctx->words_progress_done[0] += perf_sum_all;
-
-      hc_thread_mutex_unlock (status_ctx->mux_counter);
     }
+
+    /**
+     * Progress is counted for every completed batch. Upstream counts it inside
+     * the level-2 block, which drops the final partial batch and leaves the
+     * status at 98% while the workload is in fact finished.
+     */
+
+    hc_thread_mutex_lock (status_ctx->mux_counter);
+
+    status_ctx->words_progress_done[0] += pws_cnt;
+
+    hc_thread_mutex_unlock (status_ctx->mux_counter);
 
     return 0;
   }
