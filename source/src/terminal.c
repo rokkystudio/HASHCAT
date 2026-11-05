@@ -17,6 +17,10 @@
 #include "timer.h"
 #include "terminal.h"
 
+#if defined (WITH_VULKAN_DISCOVERY)
+#include "backend_vulkan_device.h"
+#endif
+
 static const size_t MAXIMUM_EXAMPLE_HASH_LENGTH = 200;
 
 static const size_t TERMINAL_LINE_LENGTH = 79;
@@ -2200,11 +2204,21 @@ void backend_info (hashcat_ctx_t *hashcat_ctx)
       u32   device_maxclock_frequency = device_param->device_maxclock_frequency;
       u64   device_global_mem         = device_param->device_global_mem;
       u64   device_available_mem      = device_param->device_available_mem;
-      u32   vulkan_vendor_id          = (u32) device_param->opencl_device_vendor_id;
-      char *vulkan_vendor             = device_param->opencl_device_vendor;
-      char *vulkan_version            = device_param->opencl_device_version;
+      u32         vulkan_vendor_id = 0;
+      const char *vulkan_vendor    = "";
+      const char *vulkan_version   = "";
+      const char *vulkan_device_type = "GPU";
 
-      const char *vulkan_device_type = (device_param->opencl_device_type & CL_DEVICE_TYPE_CPU) ? "CPU" : "GPU";
+      if ((device_param->is_vulkan == true) && (device_param->vulkan != NULL))
+      {
+        const hc_vulkan_device_t *vulkan = device_param->vulkan;
+
+        vulkan_vendor_id = vulkan->vendor_id;
+        vulkan_vendor    = vulkan->vendor;
+        vulkan_version   = vulkan->api_version_string;
+
+        vulkan_device_type = (vulkan->device_type == VK_PHYSICAL_DEVICE_TYPE_CPU) ? "CPU" : "GPU";
+      }
 
       event_log_info (hashcat_ctx, "  Backend Device ID #%02u", device_id + 1);
       event_log_info (hashcat_ctx, "    Type...........: %s", vulkan_device_type);

@@ -8,6 +8,10 @@
 
 #include "backend_info_json.h"
 
+#if defined (WITH_VULKAN_DISCOVERY)
+#include "backend_vulkan_device.h"
+#endif
+
 /**
  * Print one JSON string literal, including the surrounding quotes.
  *
@@ -65,7 +69,7 @@ static const char *json_device_type (const hc_device_param_t *device_param)
 {
   if (device_param->is_vulkan == true)
   {
-    if (device_param->opencl_device_type & CL_DEVICE_TYPE_CPU) return "CPU";
+    if ((device_param->vulkan != NULL) && (device_param->vulkan->device_type == VK_PHYSICAL_DEVICE_TYPE_CPU)) return "CPU";
 
     return "GPU";
   }
@@ -91,7 +95,12 @@ static const char *json_device_type (const hc_device_param_t *device_param)
  */
 static u32 json_device_vendor_id (const hc_device_param_t *device_param)
 {
-  if ((device_param->is_opencl == true) || (device_param->is_vulkan == true))
+  if (device_param->is_vulkan == true)
+  {
+    return (device_param->vulkan != NULL) ? device_param->vulkan->vendor_id : 0;
+  }
+
+  if (device_param->is_opencl == true)
   {
     return (u32) device_param->opencl_device_vendor_id;
   }

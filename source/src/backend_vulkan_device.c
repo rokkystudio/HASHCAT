@@ -40,16 +40,54 @@ static const char *backend_vulkan_vendor_name (const u32 vendor_id)
 }
 
 /**
+ * Build the hc_vulkan_device metadata for one catalogued physical device.
+ *
+ * No Vulkan logical device is created here. This function only copies the
+ * immutable properties needed by -I and --backend-info-json into the owned
+ * structure, so no reader has to look at opencl_device_* slots any more.
+ */
+
+static hc_vulkan_device_t *backend_vulkan_device_metadata_create (const vulkan_core10_device_catalog_t *catalog, const u32 device_index)
+{
+  hc_vulkan_device_t *vulkan = (hc_vulkan_device_t *) hccalloc (1, sizeof (hc_vulkan_device_t));
+
+  if (vulkan == NULL) return NULL;
+
+  vulkan->index = device_index;
+
+  vulkan->physical = catalog->physical[device_index];
+
+  vkGetPhysicalDeviceProperties (vulkan->physical, &vulkan->properties);
+
+  vkGetPhysicalDeviceMemoryProperties (vulkan->physical, &vulkan->memory_properties);
+
+  snprintf (vulkan->name, sizeof (vulkan->name), "%s", vulkan->properties.deviceName);
+
+  vulkan->vendor_id   = vulkan->properties.vendorID;
+  vulkan->device_type = (u32) vulkan->properties.deviceType;
+  vulkan->api_version = vulkan->properties.apiVersion;
+
+  snprintf (vulkan->vendor, sizeof (vulkan->vendor), "%s", backend_vulkan_vendor_name (vulkan->properties.vendorID));
+
+  snprintf (vulkan->api_version_string, sizeof (vulkan->api_version_string), "Vulkan %u.%u",
+            VK_API_VERSION_MAJOR (vulkan->properties.apiVersion),
+            VK_API_VERSION_MINOR (vulkan->properties.apiVersion));
+
+  vulkan->device = VK_NULL_HANDLE;
+
+  return vulkan;
+}
+
+/**
  * Fill one device table entry from a catalogued physical device.
  *
  * The entry is marked is_vulkan and skipped. Vulkan hashing is not enabled in
  * this milestone, so every scheduling loop must ignore the entry while the
  * information output still lists it and -d can name it.
  *
- * The generic device table has no backend-neutral type, vendor id or version
- * fields. The OpenCL metadata slots are reused here: they are only read when
- * is_opencl is true, and the Vulkan output paths read them through is_vulkan.
- * M2 moves this data into hc_vulkan_device.
+ * The generic device_name remains a separate allocation because the generic
+ * destroy loop frees it independently of the Vulkan payload. No Vulkan data
+ * is stored in the OpenCL metadata slots any more.
  */
 
 static void backend_vulkan_device_register (hashcat_ctx_t *hashcat_ctx, const u32 device_index, const int backend_device_idx)
@@ -58,27 +96,20 @@ static void backend_vulkan_device_register (hashcat_ctx_t *hashcat_ctx, const u3
 
   const vulkan_core10_device_catalog_t *catalog = backend_ctx->vulkan_catalog;
 
-  VkPhysicalDeviceProperties properties = { 0 };
+  hc_vulkan_device_t *vulkan = backend_vulkan_device_metadata_create (catalog, device_index);
 
-  vkGetPhysicalDeviceProperties (catalog->physical[device_index], &properties);
+  if (vulkan == NULL)
+  {
+    event_log_warning (hashcat_ctx, "Vulkan device %u metadata allocation failed; the device is not registered.", device_index);
+
+    return;
+  }
 
   hc_device_param_t *device_param = &backend_ctx->devices_param[backend_device_idx];
 
   device_param->device_id = backend_device_idx;
 
-  device_param->device_name = hcstrdup (properties.deviceName);
-
-  device_param->opencl_device_type      = (properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_CPU) ? CL_DEVICE_TYPE_CPU : CL_DEVICE_TYPE_GPU;
-  device_param->opencl_device_vendor_id = properties.vendorID;
-  device_param->opencl_device_vendor    = hcstrdup (backend_vulkan_vendor_name (properties.vendorID));
-
-  char version[64];
-
-  snprintf (version, sizeof (version), "Vulkan %u.%u",
-            VK_API_VERSION_MAJOR (properties.apiVersion),
-            VK_API_VERSION_MINOR (properties.apiVersion));
-
-  device_param->opencl_device_version = hcstrdup (version);
+  device_param->device_name = hcstrdup (vulkan->name);
 
   device_param->device_processors         = 0;
   device_param->device_maxclock_frequency = 0;
@@ -86,7 +117,7 @@ static void backend_vulkan_device_register (hashcat_ctx_t *hashcat_ctx, const u3
   device_param->device_available_mem      = 0;
 
   device_param->is_vulkan = true;
-  device_param->vulkan    = NULL;
+  device_param->vulkan    = vulkan;
 
   device_param->skipped = true;
 
@@ -120,16 +151,106 @@ void backend_vulkan_devices_init (hashcat_ctx_t *hashcat_ctx)
 
     backend_vulkan_device_register (hashcat_ctx, device_index, backend_device_idx);
 
-    backend_ctx->vulkan_devices_active++;
-
     const hc_device_param_t *device_param = &backend_ctx->devices_param[backend_device_idx];
+
+    if (device_param->vulkan == NULL) continue;
+
+    backend_ctx->vulkan_devices_active++;
 
     event_log_info (hashcat_ctx, "Vulkan Device #%02d: %s, %s, %s",
                     device_param->device_id + 1,
-                    device_param->device_name,
-                    device_param->opencl_device_vendor,
-                    device_param->opencl_device_version);
+                    device_param->vulkan->name,
+                    device_param->vulkan->vendor,
+                    device_param->vulkan->api_version_string);
   }
+}
+
+/**
+ * Release one Vulkan payload. In M2 this also owns the logical device, its
+ * buffers and pipelines; the teardown is written so that a partially
+ * initialized payload is always safe to free.
+ */
+
+static void backend_vulkan_device_destroy (hc_vulkan_device_t *vulkan)
+{
+  if (vulkan == NULL) return;
+
+  if (vulkan->device != VK_NULL_HANDLE)
+  {
+    vkDeviceWaitIdle (vulkan->device);
+
+    for (u32 pipeline_idx = 0; pipeline_idx < vulkan->pipeline_count; pipeline_idx++)
+    {
+      if (vulkan->pipelines[pipeline_idx].pipeline != VK_NULL_HANDLE)
+      {
+        vkDestroyPipeline (vulkan->device, vulkan->pipelines[pipeline_idx].pipeline, NULL);
+      }
+
+      if (vulkan->pipelines[pipeline_idx].shader_module != VK_NULL_HANDLE)
+      {
+        vkDestroyShaderModule (vulkan->device, vulkan->pipelines[pipeline_idx].shader_module, NULL);
+      }
+    }
+
+    for (u32 buffer_idx = 0; buffer_idx < vulkan->buffer_count; buffer_idx++)
+    {
+      hc_vulkan_buffer_t *buffer = &vulkan->buffers[buffer_idx];
+
+      if (buffer->host_mapped != NULL && buffer->host_memory != VK_NULL_HANDLE)
+      {
+        vkUnmapMemory (vulkan->device, buffer->host_memory);
+      }
+
+      if (buffer->host_buffer != VK_NULL_HANDLE)
+      {
+        vkDestroyBuffer (vulkan->device, buffer->host_buffer, NULL);
+      }
+
+      if (buffer->host_memory != VK_NULL_HANDLE)
+      {
+        vkFreeMemory (vulkan->device, buffer->host_memory, NULL);
+      }
+
+      if (buffer->buffer != VK_NULL_HANDLE)
+      {
+        vkDestroyBuffer (vulkan->device, buffer->buffer, NULL);
+      }
+
+      if (buffer->memory != VK_NULL_HANDLE)
+      {
+        vkFreeMemory (vulkan->device, buffer->memory, NULL);
+      }
+    }
+
+    if (vulkan->descriptor_pool != VK_NULL_HANDLE)
+    {
+      vkDestroyDescriptorPool (vulkan->device, vulkan->descriptor_pool, NULL);
+    }
+
+    if (vulkan->descriptor_set_layout != VK_NULL_HANDLE)
+    {
+      vkDestroyDescriptorSetLayout (vulkan->device, vulkan->descriptor_set_layout, NULL);
+    }
+
+    if (vulkan->pipeline_layout != VK_NULL_HANDLE)
+    {
+      vkDestroyPipelineLayout (vulkan->device, vulkan->pipeline_layout, NULL);
+    }
+
+    if (vulkan->command_pool != VK_NULL_HANDLE)
+    {
+      vkDestroyCommandPool (vulkan->device, vulkan->command_pool, NULL);
+    }
+
+    if (vulkan->fence != VK_NULL_HANDLE)
+    {
+      vkDestroyFence (vulkan->device, vulkan->fence, NULL);
+    }
+
+    vkDestroyDevice (vulkan->device, NULL);
+  }
+
+  hcfree (vulkan);
 }
 
 void backend_vulkan_devices_term (hashcat_ctx_t *hashcat_ctx)
@@ -147,13 +268,10 @@ void backend_vulkan_devices_term (hashcat_ctx_t *hashcat_ctx)
 
     if (device_param->is_vulkan == false) continue;
 
-    hcfree (device_param->opencl_device_vendor);
-    hcfree (device_param->opencl_device_version);
+    backend_vulkan_device_destroy (device_param->vulkan);
 
-    device_param->opencl_device_vendor  = NULL;
-    device_param->opencl_device_version = NULL;
-
-    device_param->vulkan = NULL;
+    device_param->vulkan    = NULL;
+    device_param->is_vulkan = false;
   }
 
   backend_ctx->vulkan_devices_active = 0;
