@@ -187,6 +187,14 @@ counter that differs from the element count, or on any Vulkan error.
 
 ## Verification results
 
+Build results:
+
+| target | result |
+| --- | --- |
+| `BUILD-DESKTOP.ps1` (windows-x64) | ok, 2456 runtime files |
+| `BUILD-ANDROID-ARM64.ps1` (release arm64-v8a) | ok, frontend 1,519,224 bytes, 582 modules |
+| `BUILD.ps1 -EnableVulkanDiscovery` (diagnostic arm64-v8a) | ok, frontend 1,552,008 bytes, 582 modules |
+
 Builds and devices used:
 
 | item | value |
