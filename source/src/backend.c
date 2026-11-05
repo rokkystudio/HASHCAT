@@ -14776,6 +14776,14 @@ int backend_session_begin (hashcat_ctx_t *hashcat_ctx)
 
     if (device_param->is_vulkan == true)
     {
+      /**
+       * The generic vector-width block derives the width from the OpenCL device
+       * type, so a Vulkan device keeps width 0. A zero width collapses the element
+       * count and the workload silently produces no hits.
+       */
+
+      device_param->vector_width = 1;
+
       const u32 hardware_power = ((hashconfig->opts_type & OPTS_TYPE_MP_MULTI_DISABLE)     ? 1 : device_param->device_processors)
                                * ((hashconfig->opts_type & OPTS_TYPE_THREAD_MULTI_DISABLE) ? 1 : device_param->kernel_threads_max);
 

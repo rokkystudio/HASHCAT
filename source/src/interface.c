@@ -385,14 +385,38 @@ int hashconfig_init (hashcat_ctx_t *hashcat_ctx)
 
       if ((adreno_optout == NULL) || (strcmp (adreno_optout, "1") != 0))
       {
+        bool adreno_selected  = false;
+        bool vulkan_selected  = false;
+
         for (int device_idx = 0; device_idx < hashcat_ctx->backend_ctx->backend_devices_cnt; device_idx++)
         {
           hc_device_param_t *device_param = &hashcat_ctx->backend_ctx->devices_param[device_idx];
+
+          if (device_param->skipped == true) continue;
+          if (hashcat_ctx->backend_ctx->backend_devices_filter[device_idx] != 0) continue;
+
+          if (device_param->is_vulkan == true)
+          {
+            vulkan_selected = true;
+
+            continue;
+          }
 
           if (device_param->is_opencl   == false) continue;
           if (device_param->device_name == NULL)  continue;
           if (strstr (device_param->device_name, "Adreno") == NULL) continue;
 
+          adreno_selected = true;
+        }
+
+        /**
+         * The Vulkan backend has no optimized program and inherits the mode
+         * limits of the derived bit, so the preference is only applied when no
+         * Vulkan device takes part in this session.
+         */
+
+        if ((adreno_selected == true) && (vulkan_selected == false))
+        {
           adreno_prefers_optimized = true;
 
           if (user_options->quiet == false)
@@ -401,8 +425,6 @@ int hashconfig_init (hashcat_ctx_t *hashcat_ctx)
             event_log_warning (hashcat_ctx, "Pure kernels of several modes fail to link on this driver (CL_OUT_OF_HOST_MEMORY)");
             event_log_warning (hashcat_ctx, NULL);
           }
-
-          break;
         }
       }
     }
