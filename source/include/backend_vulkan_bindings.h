@@ -95,8 +95,15 @@ _Static_assert (sizeof (kernel_param_t) == 72u,
 _Static_assert (sizeof (pw_t) == 260u,
                 "the mode 0 program assumes the 65-word pw_t stride");
 
-_Static_assert (sizeof (plain_t) == 40u,
-                "the mode 0 program writes 8-byte aligned 40-byte plain_t records");
+/**
+ * The mode 0 program writes 8-byte aligned 40-byte plain_t records. The host
+ * structure contains a pointer, so its size depends on the target: 40 bytes on
+ * 64-bit ABIs and 36 bytes on 32-bit ones. A build-time equality assert would
+ * reject every 32-bit target, so the size is validated at device registration
+ * instead and the Vulkan device is simply not offered when it does not match.
+ */
+
+#define VK_PLAIN_T_HOST_SIZE 40u
 
 _Static_assert (offsetof (vk_md5_straight_push_t, base_workgroup) == 72u,
                 "base_workgroup must follow kernel_param_t immediately");

@@ -2173,9 +2173,26 @@ static void backend_vulkan_device_register (hashcat_ctx_t *hashcat_ctx, const u3
     return;
   }
 
+  /**
+   * The mode 0 push-constant and plain_t layout is defined for 64-bit hosts.
+   * A 32-bit build keeps working for every other backend, but must not offer a
+   * Vulkan device whose result records would not match the shader layout.
+   */
+
+  if (sizeof (plain_t) != VK_PLAIN_T_HOST_SIZE)
+  {
+    event_log_warning (hashcat_ctx, "Vulkan device %u: host plain_t is %u bytes, the mode 0 program expects %u; the device is not registered.",
+      device_index,
+      (unsigned int) sizeof (plain_t),
+      (unsigned int) VK_PLAIN_T_HOST_SIZE);
+
+    return;
+  }
+
   hc_device_param_t *device_param = &backend_ctx->devices_param[backend_device_idx];
 
   device_param->device_id = backend_device_idx;
+
 
   device_param->device_name = hcstrdup (vulkan->name);
 
