@@ -201,6 +201,81 @@ void backend_vulkan_devices_term (hashcat_ctx_t *hashcat_ctx);
 
 u32 backend_vulkan_device_selected (hashcat_ctx_t *hashcat_ctx);
 
+/**
+ * Open the logical device and allocate the complete hashcat buffer set.
+ *
+ * Requires a registered Vulkan device_param. When hashcat already computed
+ * the per-device sizes for an active hashconfig they are reused unchanged;
+ * otherwise the fixed diagnostic layout is used. Each buffer prefers a
+ * host-visible coherent memory type, falls back to host-visible
+ * non-coherent with explicit cache maintenance, and uses a device-local
+ * allocation plus a host-visible staging buffer only when the driver exposes
+ * no host-visible type. A buffer larger than maxStorageBufferRange is
+ * refused before any Vulkan allocation. On failure every partially created
+ * object is released.
+ */
+
+int backend_vulkan_devices_memory_init (hashcat_ctx_t *hashcat_ctx, hc_device_param_t *device_param);
+
+/**
+ * Release the logical device and every buffer but keep the metadata.
+ *
+ * Safe on a device that was never opened and on a partially initialized
+ * runtime. The hc_vulkan_device allocation itself stays owned by
+ * backend_vulkan_devices_term.
+ */
+
+int backend_vulkan_devices_memory_term (hashcat_ctx_t *hashcat_ctx, hc_device_param_t *device_param);
+
+/**
+ * Validate the memory path without a shader.
+ *
+ * Uploads a deterministic 4 KiB pattern into pws_buf through the normal
+ * transfer entry point and compares the download byte-for-byte. Returns zero
+ * only on exact equality.
+ */
+
+int backend_vulkan_device_memory_selftest (hashcat_ctx_t *hashcat_ctx, hc_device_param_t *device_param);
+
+/**
+ * Report the current process RSS in KiB from /proc/self/status, or zero when
+ * the file is unavailable. Used by the repeated init/term diagnostic.
+ */
+
+u64 backend_vulkan_process_rss_kib (void);
+
+/**
+ * Upload bytes into one fixed buffer slot.
+ *
+ * The whole range must fit the requested slot size. Non-coherent mappings are
+ * flushed before the GPU sees the data; staged slots are copied through their
+ * host-visible allocation and the copy is fence-completed before return.
+ */
+
+int backend_vulkan_device_upload (hashcat_ctx_t *hashcat_ctx, hc_device_param_t *device_param, const u32 buffer_idx, const void *source, const VkDeviceSize bytes);
+
+/**
+ * Download bytes from one fixed buffer slot.
+ *
+ * Staged slots are copied back first; non-coherent mappings are invalidated
+ * before the host reads them. The caller must ensure the producing GPU
+ * submission already completed.
+ */
+
+int backend_vulkan_device_download (hashcat_ctx_t *hashcat_ctx, hc_device_param_t *device_param, const u32 buffer_idx, void *destination, const VkDeviceSize bytes);
+
+/**
+ * Fill one fixed buffer slot with a byte value.
+ */
+
+int backend_vulkan_device_memset (hashcat_ctx_t *hashcat_ctx, hc_device_param_t *device_param, const u32 buffer_idx, const int value, const VkDeviceSize bytes);
+
+/**
+ * Copy one fixed buffer slot into another through the host-visible path.
+ */
+
+int backend_vulkan_device_copy (hashcat_ctx_t *hashcat_ctx, hc_device_param_t *device_param, const u32 source_idx, const u32 destination_idx, const VkDeviceSize bytes);
+
 #endif // WITH_VULKAN_DISCOVERY
 
 #endif // HC_BACKEND_VULKAN_DEVICE_H

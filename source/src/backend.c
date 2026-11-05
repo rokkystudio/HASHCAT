@@ -8521,6 +8521,86 @@ static void backend_ctx_devices_init_opencl (hashcat_ctx_t *hashcat_ctx, int *vi
  * Each failure is reported without registering a hashing device, changing
  * ordinary GPU backend arrays or scheduling any production workload.
  */
+static int backend_vulkan_runtime_memory_check (hashcat_ctx_t *hashcat_ctx)
+{
+  backend_ctx_t *backend_ctx = hashcat_ctx->backend_ctx;
+
+  int iterations = 1;
+
+  const char *iterations_env = getenv ("HASHCAT_VULKAN_RUNTIME_ITERATIONS");
+
+  if ((iterations_env != NULL) && (iterations_env[0] != 0))
+  {
+    const int requested = atoi (iterations_env);
+
+    if (requested > 0) iterations = requested;
+  }
+
+  const u64 rss_start = backend_vulkan_process_rss_kib ();
+
+  u64 rss_peak = rss_start;
+
+  int failures = 0;
+
+  for (int iteration = 0; iteration < iterations; iteration++)
+  {
+    for (int vulkan_device_idx = 0; vulkan_device_idx < backend_ctx->vulkan_devices_active; vulkan_device_idx++)
+    {
+      const int backend_device_idx = backend_ctx->backend_device_from_vulkan[vulkan_device_idx];
+
+      if (backend_device_idx < 0) continue;
+      if (backend_device_idx >= DEVICES_MAX) continue;
+
+      hc_device_param_t *device_param = &backend_ctx->devices_param[backend_device_idx];
+
+      if (device_param->is_vulkan == false) continue;
+
+      if (backend_vulkan_devices_memory_init (hashcat_ctx, device_param) != 0)
+      {
+        event_log_warning (hashcat_ctx, "Vulkan memory init failed for device #%u on iteration %d.", device_param->device_id + 1, iteration + 1);
+
+        failures++;
+
+        continue;
+      }
+
+      const u32 buffer_count = device_param->vulkan->buffer_count;
+
+      if (backend_vulkan_device_memory_selftest (hashcat_ctx, device_param) != 0)
+      {
+        event_log_warning (hashcat_ctx, "Vulkan upload/download selftest failed for device #%u on iteration %d.", device_param->device_id + 1, iteration + 1);
+
+        failures++;
+      }
+
+      if (backend_vulkan_devices_memory_term (hashcat_ctx, device_param) != 0)
+      {
+        failures++;
+      }
+
+      const u64 rss_now = backend_vulkan_process_rss_kib ();
+
+      if (rss_now > rss_peak) rss_peak = rss_now;
+
+      event_log_info (hashcat_ctx, "Vulkan runtime iteration %d/%d: device #%u buffers=%u rss=%llu KiB",
+                      iteration + 1, iterations, device_param->device_id + 1, buffer_count, (unsigned long long) rss_now);
+    }
+  }
+
+  const u64 rss_end = backend_vulkan_process_rss_kib ();
+
+  if (rss_end > rss_peak) rss_peak = rss_end;
+
+  event_log_info (hashcat_ctx, "Vulkan memory lifecycle: iterations=%d rss_start=%llu rss_peak=%llu rss_end=%llu failures=%d",
+                  iterations,
+                  (unsigned long long) rss_start,
+                  (unsigned long long) rss_peak,
+                  (unsigned long long) rss_end,
+                  failures);
+
+  return (failures == 0) ? 0 : -1;
+}
+
 static void backend_ctx_devices_init_vulkan_info (hashcat_ctx_t *hashcat_ctx)
 {
   backend_ctx_t  *backend_ctx  = hashcat_ctx->backend_ctx;
@@ -8528,6 +8608,15 @@ static void backend_ctx_devices_init_vulkan_info (hashcat_ctx_t *hashcat_ctx)
 
   if (user_options->backend_info > 0 && backend_ctx->vulkan_catalog != NULL)
   {
+    if (backend_vulkan_runtime_memory_check (hashcat_ctx) == 0)
+    {
+      event_log_info (hashcat_ctx, "Vulkan hashcat buffer set allocated and verified through the hc_vulkan_device owner; hashing remains disabled.");
+    }
+    else
+    {
+      event_log_warning (hashcat_ctx, "Vulkan hashcat buffer set verification reported failures; hashing remains disabled.");
+    }
+
     const vulkan_auto_compute_requirements_t workload =
     {
       .local_size = { 1u, 1u, 1u },
