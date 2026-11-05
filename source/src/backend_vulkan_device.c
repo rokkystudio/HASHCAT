@@ -948,6 +948,394 @@ static VkResult backend_vulkan_buffer_copy (hc_vulkan_device_t *vulkan, VkBuffer
 }
 
 /**
+ * Record a Compute write-to-read/write dependency between dispatch chunks.
+ */
+
+static void backend_vulkan_barrier_compute_to_compute (hc_vulkan_device_t *vulkan)
+{
+  const VkMemoryBarrier barrier =
+  {
+    .sType         = VK_STRUCTURE_TYPE_MEMORY_BARRIER,
+    .srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT,
+    .dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT
+  };
+
+  vkCmdPipelineBarrier (vulkan->command_buffer,
+                        VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+                        VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+                        0, 1, &barrier, 0, NULL, 0, NULL);
+}
+
+/**
+ * Record a Compute write-to-host-read dependency for the result buffer.
+ */
+
+static void backend_vulkan_barrier_compute_to_host (hc_vulkan_device_t *vulkan, VkBuffer buffer)
+{
+  const VkBufferMemoryBarrier barrier =
+  {
+    .sType               = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER,
+    .srcAccessMask       = VK_ACCESS_SHADER_WRITE_BIT,
+    .dstAccessMask       = VK_ACCESS_HOST_READ_BIT,
+    .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+    .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+    .buffer              = buffer,
+    .offset              = 0,
+    .size                = VK_WHOLE_SIZE
+  };
+
+  vkCmdPipelineBarrier (vulkan->command_buffer,
+                        VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+                        VK_PIPELINE_STAGE_HOST_BIT,
+                        0, 0, NULL, 1, &barrier, 0, NULL);
+}
+
+/**
+ * Dispatch one registry program over group_count workgroups.
+ *
+ * The group count is split into chunks no larger than
+ * maxComputeWorkGroupCount[0]; Adreno reports 65535, so a 131072-group check
+ * needs three vkCmdDispatch calls in one command buffer. A full Compute
+ * write-to-read barrier separates chunks. The reusable fence is reset before
+ * the submission and waited on with a fixed timeout.
+ */
+
+int backend_vulkan_device_dispatch (hashcat_ctx_t *hashcat_ctx, hc_device_param_t *device_param, const vk_program_t *program, const u64 group_count, const void *push_constants, const u32 push_constant_bytes)
+{
+  if ((device_param == NULL) || (device_param->vulkan == NULL)) return -1;
+  if ((program == NULL) || (group_count == 0)) return -1;
+
+  hc_vulkan_device_t *vulkan = device_param->vulkan;
+
+  if (vulkan->memory_ready == false) return -1;
+
+  if (push_constant_bytes > program->push_constant_bytes) return -1;
+
+  if (push_constant_bytes > VK_BINDINGS_PUSH_CONSTANT_MAX) return -1;
+
+  if (backend_vulkan_device_program_prepare (hashcat_ctx, device_param, program) != 0) return -1;
+
+  const hc_vulkan_pipeline_t *pipeline = NULL;
+
+  for (u32 pipeline_idx = 0; pipeline_idx < vulkan->pipeline_count; pipeline_idx++)
+  {
+    if (vulkan->pipelines[pipeline_idx].program == program)
+    {
+      pipeline = &vulkan->pipelines[pipeline_idx];
+
+      break;
+    }
+  }
+
+  if (pipeline == NULL) return -1;
+
+  const u32 max_groups = vulkan->properties.limits.maxComputeWorkGroupCount[0];
+
+  if (max_groups == 0) return -1;
+
+  /**
+   * A split dispatch restarts gl_GlobalInvocationID at zero. The last four
+   * bytes of the push-constant block carry the base workgroup of the current
+   * chunk, so a program that can be split must declare at least one u32.
+   */
+
+  if ((group_count > max_groups) && (push_constant_bytes < sizeof (u32))) return -1;
+
+  if (push_constant_bytes > 0)
+  {
+    if (push_constants == NULL) return -1;
+
+    memcpy (vulkan->push_constants, push_constants, push_constant_bytes);
+
+    vulkan->push_constant_bytes = push_constant_bytes;
+  }
+
+  VkResult result = backend_vulkan_command_begin (vulkan);
+
+  if (result != VK_SUCCESS) return -1;
+
+  vkCmdBindPipeline (vulkan->command_buffer, VK_PIPELINE_BIND_POINT_COMPUTE, pipeline->pipeline);
+
+  vkCmdBindDescriptorSets (vulkan->command_buffer, VK_PIPELINE_BIND_POINT_COMPUTE, vulkan->pipeline_layout, 0, 1, &vulkan->descriptor_set, 0, NULL);
+
+  u64 remaining = group_count;
+
+  u32 split_count = 0;
+
+  while (remaining > 0)
+  {
+    const u64 chunk_base = group_count - remaining;
+
+    const u32 chunk_groups = (remaining > max_groups) ? max_groups : (u32) remaining;
+
+    if (push_constant_bytes >= sizeof (u32))
+    {
+      const u32 base_group = (u32) chunk_base;
+
+      memcpy (vulkan->push_constants + push_constant_bytes - sizeof (u32), &base_group, sizeof (u32));
+
+      vkCmdPushConstants (vulkan->command_buffer, vulkan->pipeline_layout, VK_SHADER_STAGE_COMPUTE_BIT, 0, push_constant_bytes, vulkan->push_constants);
+    }
+
+    vkCmdDispatch (vulkan->command_buffer, chunk_groups, 1, 1);
+
+    split_count++;
+
+    remaining -= chunk_groups;
+
+    if (remaining > 0)
+    {
+      backend_vulkan_barrier_compute_to_compute (vulkan);
+    }
+  }
+
+  backend_vulkan_barrier_compute_to_host (vulkan, vulkan->buffers[HC_VK_BUFFER_RESULT].buffer);
+
+  result = backend_vulkan_command_submit_and_wait (vulkan);
+
+  if (result != VK_SUCCESS)
+  {
+    event_log_warning (hashcat_ctx, "Vulkan dispatch of %s failed: groups=%llu splits=%u VkResult=%d.",
+                       program->name,
+                       (unsigned long long) group_count,
+                       split_count,
+                       result);
+
+    if (result == VK_TIMEOUT)
+    {
+      vkDeviceWaitIdle (vulkan->device);
+    }
+
+    return -1;
+  }
+
+  vulkan->dispatch_groups_total  += group_count;
+  vulkan->dispatch_splits        += split_count;
+
+  if (group_count > vulkan->dispatch_groups_largest)
+  {
+    vulkan->dispatch_groups_largest = group_count;
+  }
+
+  event_log_info (hashcat_ctx, "Vulkan dispatch %s complete: groups=%llu splits=%u local=%ux%ux%u.",
+                  program->name,
+                  (unsigned long long) group_count,
+                  split_count,
+                  program->local_size[0],
+                  program->local_size[1],
+                  program->local_size[2]);
+
+  return 0;
+}
+
+/**
+ * Read back the complete result buffer after a dispatch.
+ */
+
+int backend_vulkan_device_readback_result (hashcat_ctx_t *hashcat_ctx, hc_device_param_t *device_param, void *destination, const VkDeviceSize bytes)
+{
+  return backend_vulkan_device_download (hashcat_ctx, device_param, HC_VK_BUFFER_RESULT, destination, bytes);
+}
+
+/**
+ * Push-constant block shared with tools/vulkan-hashcat-check.comp.
+ */
+
+typedef struct vk_check_parameters
+{
+  u32 total_elements;
+  u32 stride;
+  u32 seed;
+  u32 base_group;
+} vk_check_parameters_t;
+
+/**
+ * Fill pws_buf with a deterministic pattern and verify the complete GPU path.
+ *
+ * The check program processes every 32-bit word of pws_buf exactly once,
+ * writes one (sum, count) pair per workgroup and is dispatched with
+ * group_count = ceil(kernel_power / local_size_x). With the 131072-element
+ * diagnostic layout and local_size_x = 1 this is 131072 groups, above the
+ * 65535 Adreno limit, so the dispatch-splitting path is part of the test.
+ *
+ * The CPU reference uses the same wrapping arithmetic and compares every
+ * group, not only the total. An unwritten group stays at 0xffffffff because
+ * the result buffer is pre-filled with 0xff.
+ */
+
+int backend_vulkan_device_run_check (hashcat_ctx_t *hashcat_ctx, hc_device_param_t *device_param)
+{
+  if ((device_param == NULL) || (device_param->vulkan == NULL)) return -1;
+
+  hc_vulkan_device_t *vulkan = device_param->vulkan;
+
+  if (vulkan->memory_ready == false) return -1;
+
+  const vk_program_t *program = backend_vulkan_program_by_name ("m2-check-sum");
+
+  if (program == NULL) return -1;
+
+  hc_vulkan_buffer_t *pws = &vulkan->buffers[HC_VK_BUFFER_PWS];
+
+  const VkDeviceSize pattern_bytes = pws->requested_size;
+
+  if ((pattern_bytes == 0) || ((pattern_bytes % sizeof (u32)) != 0)) return -1;
+
+  const u64 total_elements = pattern_bytes / sizeof (u32);
+
+  if (total_elements > 0xffffffffULL) return -1;
+
+  const u64 local_size = (u64) program->local_size[0] * (u64) program->local_size[1] * (u64) program->local_size[2];
+
+  if (local_size == 0) return -1;
+
+  u64 kernel_power = device_param->kernel_power;
+
+  if (kernel_power == 0) kernel_power = pattern_bytes / sizeof (pw_t);
+
+  if (kernel_power == 0) return -1;
+
+  const u64 group_count = (kernel_power + local_size - 1) / local_size;
+
+  const VkDeviceSize result_bytes = (VkDeviceSize) group_count * 2ULL * sizeof (u32);
+
+  if (result_bytes > vulkan->buffers[HC_VK_BUFFER_RESULT].requested_size) return -1;
+
+  u8 *pattern = (u8 *) hcmalloc ((size_t) pattern_bytes);
+
+  if (pattern == NULL) return -1;
+
+  for (VkDeviceSize idx = 0; idx < pattern_bytes; idx++)
+  {
+    pattern[idx] = (u8) ((idx * 37ULL + 11ULL) & 0xffULL);
+  }
+
+  int rc = -1;
+
+  u32 *result_words = (u32 *) hcmalloc ((size_t) result_bytes);
+
+  u32 *reference_sum = (u32 *) hccalloc ((size_t) group_count, sizeof (u32));
+
+  u32 *reference_cnt = (u32 *) hccalloc ((size_t) group_count, sizeof (u32));
+
+  if ((result_words == NULL) || (reference_sum == NULL) || (reference_cnt == NULL)) goto cleanup;
+
+  if (backend_vulkan_device_upload (hashcat_ctx, device_param, HC_VK_BUFFER_PWS, pattern, pattern_bytes) != 0)
+  {
+    event_log_warning (hashcat_ctx, "Vulkan check could not upload the pws_buf pattern.");
+
+    goto cleanup;
+  }
+
+  if (backend_vulkan_device_memset (hashcat_ctx, device_param, HC_VK_BUFFER_RESULT, 0xff, result_bytes) != 0)
+  {
+    event_log_warning (hashcat_ctx, "Vulkan check could not initialize the result buffer.");
+
+    goto cleanup;
+  }
+
+  const vk_check_parameters_t parameters =
+  {
+    .total_elements = (u32) total_elements,
+    .stride         = (u32) group_count,
+    .seed           = 0x9e3779b9u,
+    .base_group     = 0u
+  };
+
+  if (backend_vulkan_device_dispatch (hashcat_ctx, device_param, program, group_count, &parameters, sizeof (parameters)) != 0)
+  {
+    event_log_warning (hashcat_ctx, "Vulkan check dispatch failed.");
+
+    goto cleanup;
+  }
+
+  if (backend_vulkan_device_readback_result (hashcat_ctx, device_param, result_words, result_bytes) != 0)
+  {
+    event_log_warning (hashcat_ctx, "Vulkan check result readback failed.");
+
+    goto cleanup;
+  }
+
+  /**
+   * CPU reference: element index i is handled by invocation (i mod stride),
+   * which is its workgroup because local_size is 1.
+   */
+
+  const u32 *pattern_words = (const u32 *) pattern;
+
+  u64 total_count = 0;
+
+  for (u64 element = 0; element < total_elements; element++)
+  {
+    const u32 value = pattern_words[element];
+
+    const u32 contribution = (value * 1664525u + 1013904223u) ^ ((u32) element * 2654435769u) ^ parameters.seed;
+
+    const u64 group = element % group_count;
+
+    reference_sum[group] += contribution;
+    reference_cnt[group] += 1u;
+  }
+
+  u64 mismatches = 0;
+
+  for (u64 group = 0; group < group_count; group++)
+  {
+    const u32 actual_sum = result_words[group * 2 + 0];
+    const u32 actual_cnt = result_words[group * 2 + 1];
+
+    if ((actual_sum != reference_sum[group]) || (actual_cnt != reference_cnt[group]))
+    {
+      mismatches++;
+    }
+
+    total_count += actual_cnt;
+  }
+
+  if (mismatches != 0)
+  {
+    event_log_warning (hashcat_ctx, "Vulkan check mismatch: %llu of %llu groups differ from the CPU reference.",
+                       (unsigned long long) mismatches,
+                       (unsigned long long) group_count);
+
+    goto cleanup;
+  }
+
+  if (total_count != total_elements)
+  {
+    event_log_warning (hashcat_ctx, "Vulkan check coverage mismatch: %llu of %llu elements were reported.",
+                       (unsigned long long) total_count,
+                       (unsigned long long) total_elements);
+
+    goto cleanup;
+  }
+
+  u32 total_sum = 0;
+
+  for (u64 group = 0; group < group_count; group++)
+  {
+    total_sum += reference_sum[group];
+  }
+
+  event_log_info (hashcat_ctx, "Vulkan check passed: groups=%llu elements=%llu sum=%08x count=%llu dispatch_splits=%u",
+                  (unsigned long long) group_count,
+                  (unsigned long long) total_elements,
+                  total_sum,
+                  (unsigned long long) total_count,
+                  vulkan->dispatch_splits);
+
+  rc = 0;
+
+cleanup:
+  hcfree (pattern);
+  hcfree (result_words);
+  hcfree (reference_sum);
+  hcfree (reference_cnt);
+
+  return rc;
+}
+
+/**
  * Upload bytes into one buffer slot.
  */
 
@@ -1305,14 +1693,23 @@ static void backend_vulkan_device_close (hc_vulkan_device_t *vulkan)
       vkUnmapMemory (vulkan->device, buffer->host_memory);
     }
 
-    if (buffer->host_buffer != VK_NULL_HANDLE)
-    {
-      vkDestroyBuffer (vulkan->device, buffer->host_buffer, NULL);
-    }
+    /**
+     * Direct mode aliases host_buffer/host_memory to buffer/memory. Destroying
+     * both would release the same Vulkan object twice; only the staging mode
+     * owns a second pair.
+     */
 
-    if (buffer->host_memory != VK_NULL_HANDLE)
+    if (buffer->staging == VK_TRUE)
     {
-      vkFreeMemory (vulkan->device, buffer->host_memory, NULL);
+      if (buffer->host_buffer != VK_NULL_HANDLE)
+      {
+        vkDestroyBuffer (vulkan->device, buffer->host_buffer, NULL);
+      }
+
+      if (buffer->host_memory != VK_NULL_HANDLE)
+      {
+        vkFreeMemory (vulkan->device, buffer->host_memory, NULL);
+      }
     }
 
     if (buffer->buffer != VK_NULL_HANDLE)
