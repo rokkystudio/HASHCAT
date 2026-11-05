@@ -101,13 +101,15 @@ Field rules:
   `metal`, `opencl`, `vulkan`, whether or not the interface is compiled in,
   opened, or owns devices.
 - `detected` is `true` when the interface opened and reported at least one
-  device.
+  device. For Vulkan this means the catalogue opened and enumerated at least
+  one physical device.
 - `schedulable` is `true` when hashcat can schedule its kernels on that
   backend. `vulkan` is `false` in this version even when `detected` is `true`.
-- `devices` lists only devices registered as compute devices. `id` equals the
-  backend device id printed by `-I` and accepted by `-d` in the same
-  configuration. Vulkan registers no devices in this version, so its array is
-  always empty.
+- `devices` lists the devices hashcat registered for that interface. `id`
+  equals the backend device id printed by `-I` and accepted by `-d` in the same
+  configuration. With `ENABLE_VULKAN_DISCOVERY`, Vulkan devices are registered
+  and listed here; they are never schedulable, so `schedulable` stays `false`
+  and a Vulkan-only selection is rejected with an explanatory message.
 - `type` is one of `GPU`, `CPU`, `FPGA`, `ACCEL`. hashcat has no FPGA device
   class today, so `FPGA` belongs to the enum but is never emitted.
 - `vendor_id` is the OpenCL vendor id, printed as an unsigned number
@@ -170,8 +172,11 @@ without `ENABLE_VULKAN_DISCOVERY`.
 ## Limitations of this version
 
 - `vulkan.schedulable` is always `false`; Vulkan devices are discovered and
-  verified in information mode but never receive hashcat work.
-- `devices` for Vulkan is always empty.
+  verified in information mode and listed as devices, but they never receive
+  hashcat work.
+- `vulkan.devices` can list registered devices when the build has
+  `ENABLE_VULKAN_DISCOVERY`; selecting one with `-d` is rejected with an
+  explanatory message instead of a kernel error.
 - `modes` is reserved and always `{}`.
 - `--backend-ignore-metal` exists only in macOS builds; the other four
   `--backend-ignore-*` flags exist everywhere.

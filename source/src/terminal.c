@@ -2176,6 +2176,51 @@ void backend_info (hashcat_ctx_t *hashcat_ctx)
     }
   }
 
+  #if defined (WITH_VULKAN_DISCOVERY)
+  if (user_options->machine_readable == false)
+  {
+    const int vulkan_devices_cnt = backend_ctx->vulkan_devices_active;
+
+    if (vulkan_devices_cnt > 0)
+    {
+      event_log_info (hashcat_ctx, "Vulkan Info:");
+      event_log_info (hashcat_ctx, "============");
+      event_log_info (hashcat_ctx, NULL);
+    }
+
+    for (int vulkan_devices_idx = 0; vulkan_devices_idx < vulkan_devices_cnt; vulkan_devices_idx++)
+    {
+      const int backend_devices_idx = backend_ctx->backend_device_from_vulkan[vulkan_devices_idx];
+
+      const hc_device_param_t *device_param = backend_ctx->devices_param + backend_devices_idx;
+
+      int   device_id                 = device_param->device_id;
+      char *device_name               = device_param->device_name;
+      u32   device_processors         = device_param->device_processors;
+      u32   device_maxclock_frequency = device_param->device_maxclock_frequency;
+      u64   device_global_mem         = device_param->device_global_mem;
+      u64   device_available_mem      = device_param->device_available_mem;
+      u32   vulkan_vendor_id          = (u32) device_param->opencl_device_vendor_id;
+      char *vulkan_vendor             = device_param->opencl_device_vendor;
+      char *vulkan_version            = device_param->opencl_device_version;
+
+      const char *vulkan_device_type = (device_param->opencl_device_type & CL_DEVICE_TYPE_CPU) ? "CPU" : "GPU";
+
+      event_log_info (hashcat_ctx, "  Backend Device ID #%02u", device_id + 1);
+      event_log_info (hashcat_ctx, "    Type...........: %s", vulkan_device_type);
+      event_log_info (hashcat_ctx, "    Vendor.ID......: %u", vulkan_vendor_id);
+      event_log_info (hashcat_ctx, "    Vendor.........: %s", vulkan_vendor);
+      event_log_info (hashcat_ctx, "    Name...........: %s", device_name);
+      event_log_info (hashcat_ctx, "    Version........: %s", vulkan_version);
+      event_log_info (hashcat_ctx, "    Processor(s)...: %u", device_processors);
+      event_log_info (hashcat_ctx, "    Clock..........: %u", device_maxclock_frequency);
+      event_log_info (hashcat_ctx, "    Memory.Total...: %" PRIu64 " MB", device_global_mem / 1024 / 1024);
+      event_log_info (hashcat_ctx, "    Memory.Free....: %" PRIu64 " MB", device_available_mem / 1024 / 1024);
+      event_log_info (hashcat_ctx, NULL);
+    }
+  }
+  #endif
+
   if (user_options->machine_readable == true)
   {
     printf ("}");

@@ -56,11 +56,20 @@ static void json_print_string (const char *value)
  * Map a registered compute device to one of the four contract type names.
  *
  * OpenCL exposes an explicit device type; CUDA, HIP and Metal only register
- * GPU devices. hashcat prints "Accelerator" for the remaining OpenCL classes,
- * so the contract value for those is "ACCEL". No backend emits FPGA today.
+ * GPU devices. Vulkan devices store their physical-device class in the reused
+ * OpenCL type slot. hashcat prints "Accelerator" for the remaining OpenCL
+ * classes, so the contract value for those is "ACCEL". No backend emits FPGA
+ * today.
  */
 static const char *json_device_type (const hc_device_param_t *device_param)
 {
+  if (device_param->is_vulkan == true)
+  {
+    if (device_param->opencl_device_type & CL_DEVICE_TYPE_CPU) return "CPU";
+
+    return "GPU";
+  }
+
   if (device_param->is_opencl == true)
   {
     if (device_param->opencl_device_type & CL_DEVICE_TYPE_CPU)         return "CPU";
@@ -76,12 +85,13 @@ static const char *json_device_type (const hc_device_param_t *device_param)
 /**
  * Return the vendor id hashcat reported for the device.
  *
- * Only the OpenCL interface exposes a numeric vendor id; it is unsigned because
- * generic ids such as Qualcomm's 0x80000000 do not fit into a signed value.
+ * OpenCL and Vulkan expose a numeric vendor id (Vulkan stores it in the reused
+ * OpenCL slot). It is unsigned because generic ids such as Qualcomm's
+ * 0x80000000 do not fit into a signed value.
  */
 static u32 json_device_vendor_id (const hc_device_param_t *device_param)
 {
-  if (device_param->is_opencl == true)
+  if ((device_param->is_opencl == true) || (device_param->is_vulkan == true))
   {
     return (u32) device_param->opencl_device_vendor_id;
   }
@@ -119,15 +129,16 @@ void backend_info_json (hashcat_ctx_t *hashcat_ctx, const char *version_tag)
   #if defined (WITH_VULKAN_DISCOVERY)
   interface_open[4] = (backend_ctx->vulkan_catalog != NULL);
 
-  devices_cnt[4] = (int) backend_ctx->vulkan_devices_cnt;
+  devices_cnt[4] = backend_ctx->vulkan_devices_active;
   #endif
 
-  const int *device_map[4];
+  const int *device_map[5];
 
   device_map[0] = backend_ctx->backend_device_from_cuda;
   device_map[1] = backend_ctx->backend_device_from_hip;
   device_map[2] = backend_ctx->backend_device_from_metal;
   device_map[3] = backend_ctx->backend_device_from_opencl;
+  device_map[4] = backend_ctx->backend_device_from_vulkan;
 
   printf ("{\n");
   printf ("  \"schema\": 1,\n");
@@ -138,7 +149,18 @@ void backend_info_json (hashcat_ctx_t *hashcat_ctx, const char *version_tag)
 
   for (int backend_idx = 0; backend_idx < 5; backend_idx++)
   {
-    const bool detected = (interface_open[backend_idx] == true) && (devices_cnt[backend_idx] > 0);
+    bool detected = (interface_open[backend_idx] == true) && (devices_cnt[backend_idx] > 0);
+
+    /**
+     * Vulkan detection comes from the opened catalogue. The registered device
+     * array can be smaller than the physical-device count only when the device
+     * table is exhausted, and detection must still be reported in that case.
+     */
+
+    if (backend_idx == 4)
+    {
+      detected = (interface_open[4] == true) && (backend_ctx->vulkan_devices_cnt > 0);
+    }
 
     /**
      * Vulkan devices are discovered and verified but never scheduled in this

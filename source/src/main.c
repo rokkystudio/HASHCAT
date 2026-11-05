@@ -162,11 +162,29 @@ static void main_log_advice (MAYBE_UNUSED hashcat_ctx_t *hashcat_ctx, MAYBE_UNUS
 
 static void main_log_info (MAYBE_UNUSED hashcat_ctx_t *hashcat_ctx, MAYBE_UNUSED const void *buf, MAYBE_UNUSED const size_t len)
 {
+  // --backend-info-json reserves stdout for the JSON document, so every
+  // informational message (including Vulkan discovery diagnostics) goes to
+  // stderr instead of corrupting the machine-readable output.
+
+  if (hashcat_ctx->user_options->backend_info_json > 0)
+  {
+    main_log (hashcat_ctx, stderr, LOGLEVEL_INFO);
+
+    return;
+  }
+
   main_log (hashcat_ctx, stdout, LOGLEVEL_INFO);
 }
 
 static void main_log_warning (MAYBE_UNUSED hashcat_ctx_t *hashcat_ctx, MAYBE_UNUSED const void *buf, MAYBE_UNUSED const size_t len)
 {
+  if (hashcat_ctx->user_options->backend_info_json > 0)
+  {
+    main_log (hashcat_ctx, stderr, LOGLEVEL_WARNING);
+
+    return;
+  }
+
   main_log (hashcat_ctx, stdout, LOGLEVEL_WARNING);
 }
 

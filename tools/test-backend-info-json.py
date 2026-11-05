@@ -143,8 +143,9 @@ def validate_document(document):
             if backend["schedulable"] is not False:
                 raise Failure("vulkan must never be schedulable in schema 1")
 
-            if backend["devices"]:
-                raise Failure("vulkan must not list devices in schema 1")
+            # Vulkan devices may be registered and listed since device
+            # registration landed. They are validated by the shared device
+            # loop below and must still never be schedulable.
 
         if backend["detected"] and not backend["devices"] and expected_id != "vulkan":
             raise Failure("backend %s is detected but lists no devices" % expected_id)
