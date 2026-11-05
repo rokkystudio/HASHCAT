@@ -30,6 +30,7 @@
 #if defined (WITH_VULKAN_DISCOVERY)
 #include "backend_vulkan.h"
 #include "backend_vulkan_device.h"
+#include "backend_vulkan_bindings.h"
 #include "backend_vulkan_kernel.h"
 #include "backend_vulkan_sha256.h"
 #endif
@@ -8565,6 +8566,29 @@ static int backend_vulkan_runtime_memory_check (hashcat_ctx_t *hashcat_ctx)
       }
 
       const u32 buffer_count = device_param->vulkan->buffer_count;
+
+      if (getenv ("HASHCAT_VULKAN_BINDINGS_MISMATCH_TEST") != NULL)
+      {
+        const vk_program_t *program = backend_vulkan_program_by_name ("m2-check-sum");
+
+        if (program != NULL)
+        {
+          vk_program_t stale_program = *program;
+
+          stale_program.bindings_version = VK_BINDINGS_VERSION + 1u;
+
+          if (backend_vulkan_device_program_prepare (hashcat_ctx, device_param, &stale_program) == 0)
+          {
+            event_log_warning (hashcat_ctx, "Vulkan bindings mismatch test was not rejected.");
+
+            failures++;
+          }
+          else
+          {
+            event_log_info (hashcat_ctx, "Vulkan bindings mismatch rejected before pipeline creation.");
+          }
+        }
+      }
 
       if (backend_vulkan_device_memory_selftest (hashcat_ctx, device_param) != 0)
       {

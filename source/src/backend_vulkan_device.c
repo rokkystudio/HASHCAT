@@ -13,6 +13,8 @@
 
 #include "backend_vulkan.h"
 #include "backend_vulkan_device.h"
+#include "backend_vulkan_bindings.h"
+#include "backend_vulkan_check_spirv.h"
 
 #include <inttypes.h>
 #include <stdio.h>
@@ -85,6 +87,46 @@ static const char *backend_vulkan_buffer_name (const u32 buffer_idx)
   if (buffer_idx >= HC_VK_BUFFER_COUNT) return "unknown";
 
   return names[buffer_idx];
+}
+
+/**
+ * Host-side program registry.
+ *
+ * M2 registers exactly one immutable program: the data-path check shader.
+ * Per-mode programs arrive in M3 and must keep the v1 binding table or bump
+ * VK_BINDINGS_VERSION.
+ */
+
+static const vk_program_t backend_vulkan_programs[] =
+{
+  {
+    .name                = "m2-check-sum",
+    .spirv               = backend_vulkan_check_spirv,
+    .spirv_len           = BACKEND_VULKAN_CHECK_SPIRV_BYTES,
+    .local_size          = { 1u, 1u, 1u },
+    .bindings            = vk_hashcat_bindings,
+    .binding_count       = VK_BINDING_COUNT,
+    .push_constant_bytes = 16u,
+    .flags               = 0u,
+    .bindings_version    = VK_BINDINGS_VERSION
+  }
+};
+
+#define BACKEND_VULKAN_PROGRAM_COUNT (sizeof (backend_vulkan_programs) / sizeof (backend_vulkan_programs[0]))
+
+const vk_program_t *backend_vulkan_program_by_name (const char *name)
+{
+  if (name == NULL) return NULL;
+
+  for (u32 program_idx = 0; program_idx < BACKEND_VULKAN_PROGRAM_COUNT; program_idx++)
+  {
+    if (strcmp (backend_vulkan_programs[program_idx].name, name) == 0)
+    {
+      return &backend_vulkan_programs[program_idx];
+    }
+  }
+
+  return NULL;
 }
 
 /**
@@ -361,6 +403,300 @@ static VkResult backend_vulkan_buffer_create (hc_vulkan_device_t *vulkan, hc_vul
 }
 
 /**
+ * Create the version-1 descriptor layout, pool, set and pipeline layout.
+ *
+ * The layout contains one storage buffer for every binding 1..13 of the v1
+ * table. b0 is the push-constant kernel_param block and therefore has no
+ * descriptor entry.
+ */
+
+static VkResult backend_vulkan_descriptors_create (hc_vulkan_device_t *vulkan)
+{
+  if (vulkan->properties.limits.maxPushConstantsSize < VK_BINDINGS_PUSH_CONSTANT_MAX)
+  {
+    return VK_ERROR_FEATURE_NOT_PRESENT;
+  }
+
+  VkDescriptorSetLayoutBinding layout_bindings[VK_BINDING_COUNT - 1u];
+
+  for (u32 table_idx = 1; table_idx < VK_BINDING_COUNT; table_idx++)
+  {
+    const vk_binding_t *binding = &vk_hashcat_bindings[table_idx];
+
+    layout_bindings[table_idx - 1u].binding         = binding->binding;
+    layout_bindings[table_idx - 1u].descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+    layout_bindings[table_idx - 1u].descriptorCount = 1;
+    layout_bindings[table_idx - 1u].stageFlags      = VK_SHADER_STAGE_COMPUTE_BIT;
+    layout_bindings[table_idx - 1u].pImmutableSamplers = NULL;
+  }
+
+  const VkDescriptorSetLayoutCreateInfo layout_info =
+  {
+    .sType        = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
+    .bindingCount = VK_BINDING_COUNT - 1u,
+    .pBindings    = layout_bindings
+  };
+
+  VkResult result = vkCreateDescriptorSetLayout (vulkan->device, &layout_info, NULL, &vulkan->descriptor_set_layout);
+
+  if (result != VK_SUCCESS) return result;
+
+  const VkPushConstantRange push_range =
+  {
+    .stageFlags = VK_SHADER_STAGE_COMPUTE_BIT,
+    .offset     = 0,
+    .size       = VK_BINDINGS_PUSH_CONSTANT_MAX
+  };
+
+  const VkPipelineLayoutCreateInfo pipeline_layout_info =
+  {
+    .sType                  = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
+    .setLayoutCount         = 1,
+    .pSetLayouts            = &vulkan->descriptor_set_layout,
+    .pushConstantRangeCount = 1,
+    .pPushConstantRanges    = &push_range
+  };
+
+  result = vkCreatePipelineLayout (vulkan->device, &pipeline_layout_info, NULL, &vulkan->pipeline_layout);
+
+  if (result != VK_SUCCESS) return result;
+
+  const VkDescriptorPoolSize pool_size =
+  {
+    .type            = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+    .descriptorCount = VK_BINDING_COUNT - 1u
+  };
+
+  const VkDescriptorPoolCreateInfo pool_info =
+  {
+    .sType         = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
+    .maxSets       = 1,
+    .poolSizeCount = 1,
+    .pPoolSizes    = &pool_size
+  };
+
+  result = vkCreateDescriptorPool (vulkan->device, &pool_info, NULL, &vulkan->descriptor_pool);
+
+  if (result != VK_SUCCESS) return result;
+
+  const VkDescriptorSetAllocateInfo set_info =
+  {
+    .sType              = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
+    .descriptorPool     = vulkan->descriptor_pool,
+    .descriptorSetCount = 1,
+    .pSetLayouts        = &vulkan->descriptor_set_layout
+  };
+
+  result = vkAllocateDescriptorSets (vulkan->device, &set_info, &vulkan->descriptor_set);
+
+  if (result != VK_SUCCESS) return result;
+
+  vulkan->descriptor_binding_count = VK_BINDING_COUNT - 1u;
+
+  return VK_SUCCESS;
+}
+
+/**
+ * Point every v1 descriptor at its fixed buffer slot.
+ */
+
+static VkResult backend_vulkan_descriptors_update (hc_vulkan_device_t *vulkan)
+{
+  VkDescriptorBufferInfo buffer_infos[VK_BINDING_COUNT - 1u];
+  VkWriteDescriptorSet   writes[VK_BINDING_COUNT - 1u];
+
+  memset (buffer_infos, 0, sizeof (buffer_infos));
+  memset (writes,       0, sizeof (writes));
+
+  for (u32 table_idx = 1; table_idx < VK_BINDING_COUNT; table_idx++)
+  {
+    const vk_binding_t *binding = &vk_hashcat_bindings[table_idx];
+
+    if (binding->buffer_index >= HC_VK_BUFFER_COUNT) return VK_ERROR_INITIALIZATION_FAILED;
+
+    const hc_vulkan_buffer_t *buffer = &vulkan->buffers[binding->buffer_index];
+
+    buffer_infos[table_idx - 1u].buffer = buffer->buffer;
+    buffer_infos[table_idx - 1u].offset = 0;
+    buffer_infos[table_idx - 1u].range  = buffer->size;
+
+    writes[table_idx - 1u].sType           = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    writes[table_idx - 1u].dstSet          = vulkan->descriptor_set;
+    writes[table_idx - 1u].dstBinding      = binding->binding;
+    writes[table_idx - 1u].dstArrayElement = 0;
+    writes[table_idx - 1u].descriptorCount = 1;
+    writes[table_idx - 1u].descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+    writes[table_idx - 1u].pBufferInfo     = &buffer_infos[table_idx - 1u];
+  }
+
+  vkUpdateDescriptorSets (vulkan->device, VK_BINDING_COUNT - 1u, writes, 0, NULL);
+
+  return VK_SUCCESS;
+}
+
+/**
+ * Validate a registry program against the device and create its pipeline.
+ *
+ * A version or table mismatch is rejected before any Vulkan object is
+ * created, so a stale program can never feed a different ABI.
+ */
+
+int backend_vulkan_device_program_prepare (hashcat_ctx_t *hashcat_ctx, hc_device_param_t *device_param, const vk_program_t *program)
+{
+  if ((device_param == NULL) || (device_param->vulkan == NULL) || (program == NULL)) return -1;
+
+  hc_vulkan_device_t *vulkan = device_param->vulkan;
+
+  if (vulkan->memory_ready == false) return -1;
+
+  if (program->name == NULL) return -1;
+
+  if (program->bindings_version != VK_BINDINGS_VERSION)
+  {
+    event_log_error (hashcat_ctx, "Vulkan program %s uses bindings version %u, expected %u.", program->name, program->bindings_version, VK_BINDINGS_VERSION);
+
+    return -1;
+  }
+
+  if ((program->bindings == NULL) || (program->binding_count != VK_BINDING_COUNT))
+  {
+    event_log_error (hashcat_ctx, "Vulkan program %s does not carry the complete v1 binding table.", program->name);
+
+    return -1;
+  }
+
+  if (memcmp (program->bindings, vk_hashcat_bindings, sizeof (vk_hashcat_bindings)) != 0)
+  {
+    event_log_error (hashcat_ctx, "Vulkan program %s binding table differs from v1.", program->name);
+
+    return -1;
+  }
+
+  if ((program->spirv == NULL) || (program->spirv_len < 5u * sizeof (uint32_t)) || ((program->spirv_len % sizeof (uint32_t)) != 0))
+  {
+    event_log_error (hashcat_ctx, "Vulkan program %s has an invalid SPIR-V length.", program->name);
+
+    return -1;
+  }
+
+  if (program->spirv[0] != 0x07230203u)
+  {
+    event_log_error (hashcat_ctx, "Vulkan program %s does not start with the SPIR-V magic word.", program->name);
+
+    return -1;
+  }
+
+  const u32 local_x = program->local_size[0];
+  const u32 local_y = program->local_size[1];
+  const u32 local_z = program->local_size[2];
+
+  if ((local_x == 0) || (local_y == 0) || (local_z == 0))
+  {
+    event_log_error (hashcat_ctx, "Vulkan program %s declares a zero local size.", program->name);
+
+    return -1;
+  }
+
+  const u64 invocations = (u64) local_x * (u64) local_y * (u64) local_z;
+
+  if (invocations > vulkan->properties.limits.maxComputeWorkGroupInvocations)
+  {
+    event_log_error (hashcat_ctx, "Vulkan program %s needs %llu invocations per workgroup, device limit is %u.",
+                     program->name,
+                     (unsigned long long) invocations,
+                     vulkan->properties.limits.maxComputeWorkGroupInvocations);
+
+    return -1;
+  }
+
+  if ((local_x > vulkan->properties.limits.maxComputeWorkGroupSize[0]) ||
+      (local_y > vulkan->properties.limits.maxComputeWorkGroupSize[1]) ||
+      (local_z > vulkan->properties.limits.maxComputeWorkGroupSize[2]))
+  {
+    event_log_error (hashcat_ctx, "Vulkan program %s local size exceeds the device workgroup limits.", program->name);
+
+    return -1;
+  }
+
+  if (program->push_constant_bytes > VK_BINDINGS_PUSH_CONSTANT_MAX)
+  {
+    event_log_error (hashcat_ctx, "Vulkan program %s needs %u push-constant bytes, limit is %u.",
+                     program->name,
+                     program->push_constant_bytes,
+                     VK_BINDINGS_PUSH_CONSTANT_MAX);
+
+    return -1;
+  }
+
+  for (u32 pipeline_idx = 0; pipeline_idx < vulkan->pipeline_count; pipeline_idx++)
+  {
+    if (vulkan->pipelines[pipeline_idx].program == program) return 0;
+  }
+
+  if (vulkan->pipeline_count >= HC_VULKAN_MAX_PIPELINES) return -1;
+
+  const VkShaderModuleCreateInfo module_info =
+  {
+    .sType    = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
+    .codeSize = program->spirv_len,
+    .pCode    = program->spirv
+  };
+
+  VkShaderModule shader_module = VK_NULL_HANDLE;
+
+  VkResult result = vkCreateShaderModule (vulkan->device, &module_info, NULL, &shader_module);
+
+  if (result != VK_SUCCESS)
+  {
+    event_log_error (hashcat_ctx, "Vulkan program %s shader module creation failed with VkResult %d.", program->name, result);
+
+    return -1;
+  }
+
+  const VkComputePipelineCreateInfo pipeline_info =
+  {
+    .sType  = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO,
+    .stage  =
+    {
+      .sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+      .stage  = VK_SHADER_STAGE_COMPUTE_BIT,
+      .module = shader_module,
+      .pName  = "main"
+    },
+    .layout = vulkan->pipeline_layout
+  };
+
+  VkPipeline pipeline = VK_NULL_HANDLE;
+
+  result = vkCreateComputePipelines (vulkan->device, VK_NULL_HANDLE, 1, &pipeline_info, NULL, &pipeline);
+
+  if (result != VK_SUCCESS)
+  {
+    vkDestroyShaderModule (vulkan->device, shader_module, NULL);
+
+    event_log_error (hashcat_ctx, "Vulkan program %s pipeline creation failed with VkResult %d.", program->name, result);
+
+    return -1;
+  }
+
+  hc_vulkan_pipeline_t *entry = &vulkan->pipelines[vulkan->pipeline_count];
+
+  entry->program       = program;
+  entry->shader_module = shader_module;
+  entry->pipeline      = pipeline;
+
+  vulkan->pipeline_count++;
+
+  event_log_info (hashcat_ctx, "Vulkan program %s ready: %zu bytes SPIR-V, local=%ux%ux%u, push_constants=%u.",
+                  program->name,
+                  program->spirv_len,
+                  local_x, local_y, local_z,
+                  program->push_constant_bytes);
+
+  return 0;
+}
+
+/**
  * Open the logical device, Compute queue and the reusable command/fence pair.
  */
 
@@ -433,6 +769,10 @@ static VkResult backend_vulkan_device_open (hc_vulkan_device_t *vulkan)
   };
 
   result = vkCreateFence (vulkan->device, &fence_info, NULL, &vulkan->fence);
+
+  if (result != VK_SUCCESS) return result;
+
+  result = backend_vulkan_descriptors_create (vulkan);
 
   if (result != VK_SUCCESS) return result;
 
@@ -1088,7 +1428,28 @@ int backend_vulkan_devices_memory_init (hashcat_ctx_t *hashcat_ctx, hc_device_pa
     return -1;
   }
 
+  const VkResult descriptor_result = backend_vulkan_descriptors_update (vulkan);
+
+  if (descriptor_result != VK_SUCCESS)
+  {
+    event_log_error (hashcat_ctx, "Vulkan device #%u: descriptor update failed with VkResult %d.", device_param->device_id + 1, descriptor_result);
+
+    backend_vulkan_device_close (vulkan);
+
+    return -1;
+  }
+
   vulkan->memory_ready = true;
+
+  for (u32 program_idx = 0; program_idx < BACKEND_VULKAN_PROGRAM_COUNT; program_idx++)
+  {
+    if (backend_vulkan_device_program_prepare (hashcat_ctx, device_param, &backend_vulkan_programs[program_idx]) != 0)
+    {
+      backend_vulkan_device_close (vulkan);
+
+      return -1;
+    }
+  }
 
   return 0;
 }

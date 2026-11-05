@@ -276,6 +276,25 @@ int backend_vulkan_device_memset (hashcat_ctx_t *hashcat_ctx, hc_device_param_t 
 
 int backend_vulkan_device_copy (hashcat_ctx_t *hashcat_ctx, hc_device_param_t *device_param, const u32 source_idx, const u32 destination_idx, const VkDeviceSize bytes);
 
+/**
+ * Look up one immutable program in the host registry by its stable name.
+ * Returns NULL for an unknown or NULL name.
+ */
+
+const struct vk_program *backend_vulkan_program_by_name (const char *name);
+
+/**
+ * Validate a registry program against the v1 ABI and the physical device,
+ * then create and cache its Compute pipeline.
+ *
+ * Rejects a bindings-version mismatch, a binding table that differs from
+ * v1, malformed SPIR-V, a local size above the device limits and a
+ * push-constant block above 128 bytes before any pipeline object exists.
+ * Repeated calls for the same program reuse the cached pipeline.
+ */
+
+int backend_vulkan_device_program_prepare (hashcat_ctx_t *hashcat_ctx, hc_device_param_t *device_param, const struct vk_program *program);
+
 #endif // WITH_VULKAN_DISCOVERY
 
 #endif // HC_BACKEND_VULKAN_DEVICE_H
