@@ -110,6 +110,11 @@ Field rules:
   configuration. With `ENABLE_VULKAN_DISCOVERY`, Vulkan devices are registered
   and listed here; they are never schedulable, so `schedulable` stays `false`
   and a Vulkan-only selection is rejected with an explanatory message.
+- Consumers must gate execution on `schedulable`, not on a non-empty `devices`
+  array: `devices` lists the devices registered for an interface, while
+  `schedulable` says whether hashcat can run kernels on that interface.
+  Enabling a backend merely because `devices` is non-empty is a consumer
+  defect, not a contract change.
 - `type` is one of `GPU`, `CPU`, `FPGA`, `ACCEL`. hashcat has no FPGA device
   class today, so `FPGA` belongs to the enum but is never emitted.
 - `vendor_id` is the OpenCL vendor id, printed as an unsigned number
@@ -180,6 +185,9 @@ without `ENABLE_VULKAN_DISCOVERY`.
 - `modes` is reserved and always `{}`.
 - `--backend-ignore-metal` exists only in macOS builds; the other four
   `--backend-ignore-*` flags exist everywhere.
+- Legacy `-I --machine-readable` output keeps its pre-existing layout and does
+  not gain a Vulkan section; `--backend-info-json` is the machine-readable
+  backend contract.
 - `--backend-ignore-vulkan` is accepted everywhere but observable only in
   builds with `ENABLE_VULKAN_DISCOVERY`.
 - `vendor_id` is `0` for CUDA, HIP and Metal devices.

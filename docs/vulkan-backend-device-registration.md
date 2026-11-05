@@ -45,7 +45,9 @@ unchanged.
 
 The `devices` array in the JSON manifest lists registered Vulkan devices with
 the same ids that `-I` prints and `-d` accepts. Schema and field names are
-unchanged (`schema` stays 1).
+unchanged (`schema` stays 1). `devices` means "registered", `schedulable`
+means "can execute hashcat kernels"; consumers must gate on `schedulable`.
+Legacy `-I --machine-readable` keeps its layout without a Vulkan section.
 
 ## Fields that are intentionally zero
 
@@ -123,6 +125,14 @@ still requiring `"schedulable": false`. The OpenCL regression gate
 (`tools/check-opencl-regression.ps1`) is defined against a build without
 Vulkan discovery; a Vulkan-enabled binary intentionally exposes one extra
 device, so compare OpenCL behavior on the non-Vulkan build.
+
+## M2 debt (mandatory first item)
+
+The Vulkan metadata (type, vendor id, vendor name, version) currently lives in
+the reused `opencl_device_*` slots of `hc_device_param_t`. Any code that reads
+those fields without checking `is_opencl` will see Vulkan data. Moving this
+metadata into `hc_vulkan_device` is the mandatory first item of M2, not an
+optional cleanup. Until that move, every reader must test `is_vulkan` first.
 
 ## Still not implemented
 
