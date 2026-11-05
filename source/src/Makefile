@@ -492,6 +492,7 @@ ifeq ($(UNAME),Android)
 CFLAGS_NATIVE           += -DWITH_VULKAN_DISCOVERY -I../tools
 LFLAGS_VULKAN           := -lvulkan
 NATIVE_OBJS             += obj/backend_vulkan.NATIVE.o
+NATIVE_OBJS             += obj/backend_vulkan_device.NATIVE.o
 NATIVE_OBJS             += obj/backend_vulkan_session.NATIVE.o
 NATIVE_OBJS             += obj/backend_vulkan_kernel.NATIVE.o
 NATIVE_OBJS             += obj/backend_vulkan_md5_format.NATIVE.o

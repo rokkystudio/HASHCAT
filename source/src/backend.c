@@ -29,6 +29,7 @@
 
 #if defined (WITH_VULKAN_DISCOVERY)
 #include "backend_vulkan.h"
+#include "backend_vulkan_device.h"
 #include "backend_vulkan_kernel.h"
 #include "backend_vulkan_sha256.h"
 #endif
@@ -54,6 +55,12 @@ static void rebuild_pws_compressed_append (hc_device_param_t *device_param, cons
 //
 static bool is_same_device (const hc_device_param_t *src, const hc_device_param_t *dst)
 {
+  // Vulkan devices carry no PCI address or schedulable identity and must never
+  // collapse with an OpenCL/other device that happens to share zero attributes.
+
+  if (src->is_vulkan == true) return false;
+  if (dst->is_vulkan == true) return false;
+
   // First check by PCI address
 
   if (src->pcie_domain   != dst->pcie_domain)   return false; // PCI domain not available on OpenCL
@@ -5642,6 +5649,10 @@ void backend_ctx_destroy (hashcat_ctx_t *hashcat_ctx)
   }
   #endif
 
+  #if defined (WITH_VULKAN_DISCOVERY)
+  backend_vulkan_devices_term (hashcat_ctx);
+  #endif
+
   hcfree (backend_ctx->devices_param);
 
   if (backend_ctx->ocl)
@@ -8768,6 +8779,18 @@ int backend_ctx_devices_init (hashcat_ctx_t *hashcat_ctx, const int comptime)
   backend_ctx->backend_devices_cnt    = backend_ctx->cuda_devices_cnt    + backend_ctx->hip_devices_cnt    + backend_ctx->metal_devices_cnt    + backend_ctx->opencl_devices_cnt;
   backend_ctx->backend_devices_active = backend_ctx->cuda_devices_active + backend_ctx->hip_devices_active + backend_ctx->metal_devices_active + backend_ctx->opencl_devices_active;
 
+  #if defined (WITH_VULKAN_DISCOVERY)
+  /**
+   * Vulkan devices are appended after every schedulable backend, so existing
+   * -d identifiers keep their values. They are registered as skipped entries
+   * and do not contribute to backend_devices_active while hashing is disabled.
+   */
+
+  backend_vulkan_devices_init (hashcat_ctx);
+
+  backend_ctx->backend_devices_cnt += backend_ctx->vulkan_devices_active;
+  #endif
+
   #if defined (__APPLE__)
   // disable Metal devices if at least one OpenCL device is enabled
   if (backend_ctx->opencl_devices_active > 0)
@@ -9422,6 +9445,8 @@ void backend_ctx_devices_destroy (hashcat_ctx_t *hashcat_ctx)
       session_result
     );
   }
+
+  backend_vulkan_devices_term (hashcat_ctx);
   #endif
 
   for (u32 opencl_platforms_idx = 0; opencl_platforms_idx < backend_ctx->opencl_platforms_cnt; opencl_platforms_idx++)
