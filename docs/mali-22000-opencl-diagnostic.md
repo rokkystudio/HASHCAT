@@ -179,8 +179,16 @@ into that cache, so every later run reused a kernel with a different argument
 list. `rm -f runtime/kernels/m22000-pure.*.kernel` made the argument errors
 disappear; the real kernel accepts all 25 `KERNEL_ATTR` arguments.
 
-Consequence for future source changes: deleting `kernels/` (or blessing the
-cache key with a source hash) is required whenever `OpenCL/*.cl` changes.
+Fix (fork, commit `d653556`): the kernel cache checksum now also covers the
+contents of the `.cl` file, so editing a kernel invalidates its cached binary.
+Verified on the same device: appending a comment to
+`OpenCL/m00000_a3-optimized.cl` changed the cached name from
+`m00000_a3-optimized.83bfec5f.kernel` to `m00000_a3-optimized.488a41ca.kernel`
+and hashcat recompiled for 39 s instead of reusing the stale program. Benchmark
+`-m 0 -b -O` stayed at 1223 MH/s, matching the unpatched build (1208 MH/s).
+
+Until that fix lands in a published runtime, deleting `runtime/kernels/` after an
+`OpenCL/*.cl` change is still required.
 
 ## Remaining limitation
 
@@ -190,3 +198,23 @@ cache turns every later run into a no-op compile, and mode 0 (MD5) keeps the
 stock allocator and its 1 300 mappings. Reducing the compile cost itself still
 requires a fork-side change (see directions 1 and 3 above); the arena shim is a
 runtime workaround, not a compiler fix.
+
+## Real captures on the device (application, OpenCL, Mali-G715)
+
+Captures from `F:\AIRTOOLS\CAPS`, wordlist of the known network passwords,
+run through the application UI (mode 22000, OpenCL backend):
+
+| Capture | Result | Time |
+| --- | --- | --- |
+| `ALEKSEEVKA/YES-baron-01.cap` | `Cracked`, 1/1 | ~1 s after the one-time compile |
+| `LENINA/DIR-806A-1f50-01-YES.cap` | `Cracked`, 1/1 | 1 s |
+| `ALEKSEEVKA/YES-Huawei-0050-02.cap` | `Cracked`, 2/2 | 0 s |
+| `LENINA/MTSRouter-7F6D91-YES.cap` | `Cracked`, 1/1 | 1 s |
+
+Steady-state mask throughput on the same device stayed at 19 036 H/s for 6.5 M
+candidates, and the wordlist runs above do not recompile because the kernel
+cache key is unchanged for a given attack mode.
+
+Note that the cache is keyed per attack mode, so the first wordlist run after a
+mask run pays the ~3 minute Mali compile again (peak RSS ~10.8 GB); later runs
+of the same mode start in about a second.
