@@ -202,10 +202,21 @@ Refusals, all `RC=255`, no crash:
 | `-O` | `Vulkan backend: -O / --optimized-kernel is not implemented.` |
 | 56-byte candidate | `Vulkan mode 0 straight supports candidates of 1..55 bytes; candidate 0 is 56 bytes.` |
 
+### Pixel 9 Pro XL (Mali-G715, Android 16, arm64-v8a)
+
+The same arm64-v8a production binary was pushed to the Pixel and produced the
+same result:
+
+```text
+RC=0
+Status...........: Cracked
+8743b52063cd84097a65d1633f5c74f5:hashcat
+```
+
+`--backend-info-json` reports the Vulkan device as detected and schedulable.
+
 Not yet verified at the time this document was written:
 
-* Pixel 9 Pro XL (Mali-G715): the same arm64 APK/archive was not exercised
-  there in this pass.
 * `-d <vulkan-id>` with OpenCL present: the Adreno fork patch P3 forces the
   optimized kernel bit before a Vulkan run; the refusal now keys on the user
   `-O` option and the activation hook clears the derived bit, but the rebuilt
