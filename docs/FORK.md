@@ -37,6 +37,10 @@
 | P4 | Vulkan-устройства в таблице устройств: `-I`, `-d`, `--backend-info-json` | `include/types.h`, `include/backend_vulkan_device.h`, `src/backend_vulkan_device.c`, `src/backend.c`, `src/backend_info_json.c`, `src/terminal.c`, `src/Makefile` | Vulkan должен быть виден как устройство до включения хеширования | Низкий: устройства помечены skipped, идентификаторы OpenCL не меняются, запуск задачи на Vulkan отклоняется |
 | P5 | Vulkan device runtime M2: память, ABI дескрипторов, SPIR-V pipeline, диспетчеризация, readback, проверка данных | `include/backend_vulkan_device.h`, `include/backend_vulkan_bindings.h`, `include/backend_vulkan_check_spirv.h`, `src/backend_vulkan_device.c`, `src/backend.c`, `src/terminal.c`, `src/backend_info_json.c`, `tools/vulkan-hashcat-check.comp`, `tools/generate-vulkan-check-kernel.py`, `tools/run-vulkan-runtime-check.ps1`, `tools/test-vulkan-runtime-check.py`, `docs/vulkan-backend-runtime.md` | Vulkan-устройство должно пройти полный путь init → buffers → pipeline → dispatch → readback → CPU-сверка до M3 | Средний: только диагностический путь `-I`, Vulkan остаётся `schedulable: false`; OpenCL и `-I` для OpenCL не затрагиваются |
 
+Старые `src/backend_vulkan_session.c` и `src/backend_vulkan_kernel.c` помечены
+в шапке как tools-only: фронтенд их больше не линкует, `-I` идёт через
+`hc_vulkan_device` в `src/backend_vulkan_device.c`.
+
 ### P3 подробнее
 
 Проверено на RedMagic 7S Pro (Adreno 730, Android 13), сборка arm64:

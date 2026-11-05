@@ -4,6 +4,15 @@
  */
 
 /**
+ * TOOLS-ONLY LEGACY EXECUTOR — the hashcat frontend does not link or call it.
+ *
+ * `hashcat -I` runs through hc_vulkan_device in backend_vulkan_device.c.
+ * This file is still compiled by the standalone Vulkan diagnostics under
+ * tools/ so their historical evidence stays reproducible. Do not extend it
+ * for M3 or build new frontend paths on it. See docs/vulkan-backend-runtime.md.
+ */
+
+/**
  * Execute validated Vulkan 1.0 Compute programs in HASHCAT -I.
  *
  * The backend catalogue supplies a real physical device and VkInstance.

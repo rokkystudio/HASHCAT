@@ -12,6 +12,21 @@ Vulkan hashing is still disabled. No hash mode is scheduled, no mode kernel
 exists, `vulkan` stays `schedulable: false`, and `-m 0 -a 0` keeps running
 through OpenCL exactly as before.
 
+## Commit map
+
+| commit | closes |
+| --- | --- |
+| `4e1aaea` | T1 — Vulkan metadata moves into `hc_vulkan_device` |
+| `f29609e` | T2 — full hashcat buffer set, upload/download, teardown |
+| `a7b5caf` | T3 — binding ABI v1, registry, descriptor/pipeline creation |
+| `76adf9c` | T4 dispatch + T6 check program (both landed here) and the direct-buffer teardown fix |
+| `6c6f0d7` | T5 — `-I` chain through the new owner, old diagnostic chain removed |
+| `7087a17` | T6 — runner, verifier, this document, remaining header surface |
+| `395af28` | build artifact sizes |
+
+T4 and T6 share `76adf9c` because of commit staging order; history is kept
+as-is instead of being rewritten.
+
 ## Pipeline
 
 ```text
@@ -214,8 +229,8 @@ Vulkan device #1: buffer pws_buf             33280 KiB (host-visible, coherent=1
 Vulkan program m2-check-sum ready: 1660 bytes SPIR-V, local=1x1x1, push_constants=16.
 Vulkan dispatch m2-check-sum complete: groups=131072 splits=3 local=1x1x1.
 Vulkan check passed: groups=131072 elements=8519680 sum=728f0000 count=8519680 dispatch_splits=30
-Vulkan runtime iteration 10/10: device #1 buffers=37 rss=210248 KiB
-Vulkan memory lifecycle: iterations=10 rss_start=196904 rss_peak=210284 rss_end=210248 failures=0
+Vulkan runtime iteration 10/10: device #1 buffers=37 rss=209444 KiB
+Vulkan memory lifecycle: iterations=10 rss_start=196796 rss_peak=209444 rss_end=209444 failures=0
 Vulkan data path verified through the hc_vulkan_device owner; hashing remains disabled.
 ```
 
@@ -236,17 +251,20 @@ Vulkan memory lifecycle: iterations=10 rss_start=208520 rss_peak=221760 rss_end=
 Vulkan data path verified through the hc_vulkan_device owner; hashing remains disabled.
 ```
 
-The final diagnostic build was also run through the new verifier:
+Both devices were also run through the new verifier on the final build:
 
 ```text
+# RedMagic / Adreno 730
+PASS log: groups=131072 elements=8519680 sum=728f0000 count=8519680 splits=30 iterations=10 rss=196796->209444 KiB
+PASS json: detected=True schedulable=False device=Adreno (TM) 730 vendor_id=20803
+
+# Pixel / Mali-G715
 PASS log: groups=131072 elements=8519680 sum=728f0000 count=8519680 splits=10 iterations=10 rss=208520->221760 KiB
 PASS json: detected=True schedulable=False device=Mali-G715 vendor_id=5045
 ```
 
-The Adreno figures above were captured immediately before the final rebuild.
-The later diff only adds the zero-size clamp for hashconfig-sized layouts and
-a compile guard for non-Vulkan builds; neither is reachable from the `-I`
-diagnostic path.
+The Adreno `splits=30` in the verifier line is the cumulative counter (three
+chunks per iteration); the per-dispatch line still reports `splits=3`.
 
 Mali reports a `maxComputeWorkGroupCount[0]` above 131072, so the same
 workgroup count needs one chunk there. The splitting path itself is exercised
@@ -255,9 +273,41 @@ on Adreno with three chunks per iteration.
 ### RSS
 
 Both devices reach a stable RSS after the driver warms up: Adreno
-196904 -> 210248 KiB and Mali 209256 -> 222872 KiB across ten
+196796 -> 209444 KiB and Mali 208520 -> 221760 KiB across ten
 init/check/term cycles, with no growth between later iterations. A 50-cycle
 run on Adreno was also flat after the first two cycles.
+
+### OpenCL mode 0 noise check
+
+A single `-b -m 0 -w 2` gate sample reported 12,091.2 MH/s against the
+14,042.2 MH/s baseline (−13.9 %). One sample cannot separate drift from a
+regression, so the master binary (`a2626c8`) and this branch were measured in
+alternating order, six pairs, with the order flipped every pair:
+
+| binary | median |
+| --- | --- |
+| master (`a2626c8`) | 13,340.55 MH/s |
+| branch (`feature/vulkan-device-runtime`) | 13,306.25 MH/s |
+| delta | **−0.3 %** |
+
+Per-pair deltas: +2.3, +3.3, −1.4, −0.3, +0.3, −1.2 %. Both binaries land
+around 13.3 GH/s in this session, so the gap to the recorded 14.0 GH/s
+baseline is session drift, not a branch regression; the branch/master ratio
+is flat.
+
+```powershell
+# base binary from master, current binary from the feature branch
+git worktree add D:\PROJECTS\HASHCAT-m2-base master
+Push-Location D:\PROJECTS\HASHCAT-m2-base
+.\scripts\BUILD-DESKTOP.ps1 -Target windows-x64
+Pop-Location
+
+.\tools\benchmark-m0-alternating.ps1 `
+  -BaseHashcat D:\PROJECTS\HASHCAT-m2-base\build\windows-x64\hashcat.exe `
+  -CurrentHashcat build\windows-x64\hashcat.exe -Pairs 6 -Mode 0 -WorkloadProfile 2
+
+git worktree remove --force D:\PROJECTS\HASHCAT-m2-base
+```
 
 ### Reproduce
 
