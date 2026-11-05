@@ -2,6 +2,13 @@
 
 Date: 2026-11-05
 
+> Historical note (M3): this document describes the M2 state, where Vulkan
+> was verified but intentionally unschedulable. Since M3 the backend executes
+> `-m 0 -a 0` and `vulkan.schedulable` can be `true`; see
+> `docs/vulkan-backend-md5-straight.md`. Statements below about "hashing
+> remains disabled" and `schedulable: false` are M2 history, not current
+> behaviour.
+
 Milestone M2 turns the Vulkan entry that M1 registered in the hashcat device
 table into a complete diagnostic compute device: it owns a logical device,
 allocates the whole hashcat buffer set, compiles a SPIR-V program from a

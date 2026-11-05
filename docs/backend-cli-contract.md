@@ -21,7 +21,7 @@ disappear from `-I`, `--backend-info-json`, and from device selection:
 | `--backend-ignore-hip` | HIP | every build |
 | `--backend-ignore-metal` | Metal | macOS builds only |
 | `--backend-ignore-opencl` | OpenCL | every build |
-| `--backend-ignore-vulkan` | Vulkan 1.0 discovery | every build; only builds with `ENABLE_VULKAN_DISCOVERY` open a Vulkan catalogue, elsewhere the flag has no observable effect |
+| `--backend-ignore-vulkan` | Vulkan 1.0 discovery | every build; builds with `ENABLE_VULKAN` or `ENABLE_VULKAN_DISCOVERY` open a Vulkan catalogue, elsewhere the flag has no observable effect |
 
 `--backend-ignore-vulkan` only stops the Vulkan catalogue from being opened.
 It does not change the initialization order of CUDA, HIP, Metal and OpenCL and
@@ -104,12 +104,14 @@ Field rules:
   device. For Vulkan this means the catalogue opened and enumerated at least
   one physical device.
 - `schedulable` is `true` when hashcat can schedule its kernels on that
-  backend. `vulkan` is `false` in this version even when `detected` is `true`.
+  backend. For Vulkan it is `true` only when at least one mode program is
+  registered and the fixed-vector mode 0 self-check passed on a device in this
+  process. A detected Vulkan device whose self-check failed keeps
+  `schedulable: false`.
 - `devices` lists the devices hashcat registered for that interface. `id`
   equals the backend device id printed by `-I` and accepted by `-d` in the same
-  configuration. With `ENABLE_VULKAN_DISCOVERY`, Vulkan devices are registered
-  and listed here; they are never schedulable, so `schedulable` stays `false`
-  and a Vulkan-only selection is rejected with an explanatory message.
+  configuration. Vulkan devices are always listed when the catalogue opened;
+  `schedulable` is the flag that says whether they may receive work.
 - Consumers must gate execution on `schedulable`, not on a non-empty `devices`
   array: `devices` lists the devices registered for an interface, while
   `schedulable` says whether hashcat can run kernels on that interface.
@@ -174,14 +176,45 @@ The device reported one OpenCL device (`QUALCOMM Adreno(TM)`, id 1, vendor
 `2147483648`) and `vulkan.detected = false`, because that runtime was built
 without `ENABLE_VULKAN_DISCOVERY`.
 
+## Vulkan workload contract (M3)
+
+Vulkan is schedulable for exactly one workload: `-m 0 -a 0`, no rules. The
+hashcat invocation is accepted when the Vulkan device was selected with `-d`
+(or is the only active backend, e.g. with `--backend-ignore-opencl`) and the
+self-check passed. Everything else is refused before any GPU work with a
+non-zero exit code (255) and one of the messages below.
+
+| command fragment | exit code | message |
+| --- | --- | --- |
+| `-m 1000` (Vulkan selected) | 255 | `Vulkan backend: hash mode 1000 is not implemented; only -m 0 (MD5) is available.` |
+| `-m 22000` (Vulkan selected) | 255 | `Vulkan backend: hash mode 22000 is not implemented; only -m 0 (MD5) is available.` |
+| `-a 3` | 255 | `Vulkan backend: attack mode -a 3 is not implemented; only -a 0 (straight wordlist) is available.` |
+| `-a 6` / `-a 7` | 255 | `Vulkan backend: attack mode -a 6 is not implemented; only -a 0 (straight wordlist) is available.` |
+| `-r rules.txt` | 255 | `Vulkan backend: rules (-r / --generate-rules) are not implemented.` |
+| `-O` | 255 | `Vulkan backend: -O / --optimized-kernel is not implemented.` |
+| `--increment` | 255 | `Vulkan backend: --increment is not implemented.` |
+| `-S` | 255 | `Vulkan backend: -S / --slow-candidates is not implemented.` |
+| `-b` | 255 | `Vulkan backend: benchmark mode (-b) is not implemented.` |
+| `-z` / `--brain` | 255 | `Vulkan backend: brain is not implemented.` |
+| candidate longer than 55 bytes | 255 | `Vulkan mode 0 straight supports candidates of 1..55 bytes; candidate N is L bytes.` |
+
+The long-candidate refusal is per batch: hashcat streams the wordlist, so the
+first batch that contains an over-long candidate stops the session with this
+message instead of silently skipping it.
+
+`vulkan.devices` lists registered devices when the build has `ENABLE_VULKAN`
+or `ENABLE_VULKAN_DISCOVERY`; `schedulable` now follows the self-check rule
+above, so a consumer that gates on `schedulable` will offer Vulkan only when it
+can actually run mode 0.
+
 ## Limitations of this version
 
-- `vulkan.schedulable` is always `false`; Vulkan devices are discovered and
-  verified in information mode and listed as devices, but they never receive
-  hashcat work.
-- `vulkan.devices` can list registered devices when the build has
-  `ENABLE_VULKAN_DISCOVERY`; selecting one with `-d` is rejected with an
-  explanatory message instead of a kernel error.
+- `vulkan.schedulable` is `true` only for mode 0 / `-a 0` without rules; every
+  other mode or attack is refused (table above).
+- An unselected Vulkan device next to an active OpenCL device is reported as
+  detected and schedulable (after the self-check) but does not receive work in
+  that run, because Vulkan participates only when selected with `-d` or when it
+  is the only active backend.
 - `modes` is reserved and always `{}`.
 - `--backend-ignore-metal` exists only in macOS builds; the other four
   `--backend-ignore-*` flags exist everywhere.
@@ -189,7 +222,7 @@ without `ENABLE_VULKAN_DISCOVERY`.
   not gain a Vulkan section; `--backend-info-json` is the machine-readable
   backend contract.
 - `--backend-ignore-vulkan` is accepted everywhere but observable only in
-  builds with `ENABLE_VULKAN_DISCOVERY`.
+  builds with `ENABLE_VULKAN` or `ENABLE_VULKAN_DISCOVERY`.
 - `vendor_id` is `0` for CUDA, HIP and Metal devices.
 - If no compute device is available, `--backend-info-json` prints no JSON and
   hashcat exits 255.
