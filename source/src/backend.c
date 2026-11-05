@@ -5573,6 +5573,26 @@ int backend_ctx_init (hashcat_ctx_t *hashcat_ctx)
 
   if ((backend_ctx->cuda == NULL) && (backend_ctx->hip == NULL) && (backend_ctx->ocl == NULL) && (backend_ctx->mtl == NULL) && allow_vulkan_information_only == false)
   {
+    #if defined (WITH_VULKAN_DISCOVERY)
+    if (backend_ctx->vulkan_devices_cnt > 0)
+    {
+      event_log_error (hashcat_ctx, "Vulkan devices were found but cannot execute hashcat workloads yet.");
+      event_log_warning (hashcat_ctx, "OpenCL, CUDA or HIP is required for hashing; use \"hashcat -I\" or \"hashcat --backend-info-json\" to inspect the Vulkan devices.");
+      event_log_warning (hashcat_ctx, NULL);
+
+      const VkResult vulkan_close_result = backend_vulkan_catalog_close (backend_ctx);
+
+      if (vulkan_close_result != VK_SUCCESS)
+      {
+        event_log_warning (hashcat_ctx, "Vulkan catalogue close failed with VkResult %d.", vulkan_close_result);
+      }
+
+      hcfree (backend_ctx->devices_param);
+
+      return -1;
+    }
+    #endif
+
     #if defined (__APPLE__)
     event_log_error (hashcat_ctx, "ATTENTION! No OpenCL, Metal, HIP or CUDA compatible platform found.");
     #else
@@ -8855,6 +8875,21 @@ int backend_ctx_devices_init (hashcat_ctx_t *hashcat_ctx, const int comptime)
     //{
   //}
 
+  #if defined (WITH_VULKAN_DISCOVERY)
+  const u32 vulkan_device_id = backend_vulkan_device_selected (hashcat_ctx);
+
+  /**
+   * An explicitly selected Vulkan device cannot receive work. When another
+   * usable device was selected as well the session continues on that device,
+   * so report the ignored Vulkan id instead of silently dropping it.
+   */
+
+  if ((vulkan_device_id > 0) && (backend_ctx->backend_devices_active > 0) && (user_options->backend_info == 0))
+  {
+    event_log_warning (hashcat_ctx, "Device #%u is a Vulkan device and cannot execute hashcat workloads yet; it is ignored.", vulkan_device_id);
+  }
+  #endif
+
   if (backend_ctx->backend_devices_active == 0)
   {
     #if defined (WITH_VULKAN_DISCOVERY)
@@ -8868,7 +8903,25 @@ int backend_ctx_devices_init (hashcat_ctx_t *hashcat_ctx, const int comptime)
     }
     #endif
 
+    #if defined (WITH_VULKAN_DISCOVERY)
+    if (vulkan_device_id > 0)
+    {
+      event_log_error (hashcat_ctx, "Device #%u is a Vulkan device and cannot execute hashcat workloads yet.", vulkan_device_id);
+      event_log_warning (hashcat_ctx, "Select an OpenCL, CUDA or HIP device; use \"hashcat -I\" or \"hashcat --backend-info-json\" to inspect the Vulkan devices.");
+      event_log_warning (hashcat_ctx, NULL);
+
+      return -1;
+    }
+    #endif
+
     event_log_error (hashcat_ctx, "No devices found/left.");
+
+    #if defined (WITH_VULKAN_DISCOVERY)
+    if (backend_ctx->vulkan_devices_active > 0)
+    {
+      event_log_warning (hashcat_ctx, "Vulkan devices were found but cannot execute hashcat workloads yet; no usable compute device is left.");
+    }
+    #endif
 
     return -1;
   }
@@ -9412,7 +9465,25 @@ int backend_ctx_devices_init (hashcat_ctx_t *hashcat_ctx, const int comptime)
     }
     #endif
 
+    #if defined (WITH_VULKAN_DISCOVERY)
+    if (vulkan_device_id > 0)
+    {
+      event_log_error (hashcat_ctx, "Device #%u is a Vulkan device and cannot execute hashcat workloads yet.", vulkan_device_id);
+      event_log_warning (hashcat_ctx, "Select an OpenCL, CUDA or HIP device; use \"hashcat -I\" or \"hashcat --backend-info-json\" to inspect the Vulkan devices.");
+      event_log_warning (hashcat_ctx, NULL);
+
+      return -1;
+    }
+    #endif
+
     event_log_error (hashcat_ctx, "No devices found/left.");
+
+    #if defined (WITH_VULKAN_DISCOVERY)
+    if (backend_ctx->vulkan_devices_active > 0)
+    {
+      event_log_warning (hashcat_ctx, "Vulkan devices were found but cannot execute hashcat workloads yet; no usable compute device is left.");
+    }
+    #endif
 
     return -1;
   }
