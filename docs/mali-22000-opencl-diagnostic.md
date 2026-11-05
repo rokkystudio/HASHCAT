@@ -218,3 +218,23 @@ cache key is unchanged for a given attack mode.
 Note that the cache is keyed per attack mode, so the first wordlist run after a
 mask run pays the ~3 minute Mali compile again (peak RSS ~10.8 GB); later runs
 of the same mode start in about a second.
+
+## Verification of the fork build itself
+
+The Android arm64 runtime built from this branch (commit `d653556`) was pushed
+to `/data/local/tmp/hcfull` together with its own `OpenCL/`, `modules/` and
+`hashcat.hcstat2`, and run on the same device against the mixed fixture:
+
+```
+$ ./libhashcat_exec.so -m 22000 -a 0 --self-test-disable \
+    --potfile-path pot --outfile out --backend-ignore-vulkan mixed.hash words.txt
+Status...........: Cracked
+Recovered........: 4/4 (100.00%) Digests
+EXIT=0
+```
+
+The cached kernel for that build is `m22000-pure.<checksum>.kernel`, where the
+checksum now covers the source file, and a subsequent edit of
+`OpenCL/m00000_a3-optimized.cl` produced a new cache name and a recompile, as
+described above. The same build benchmarks MD5 (`-m 0 -b -O`) at 1223.1 MH/s,
+within 1% of the unpatched build, so the cache-key change has no runtime cost.
