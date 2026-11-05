@@ -15192,13 +15192,6 @@ int backend_session_begin (hashcat_ctx_t *hashcat_ctx)
         get_current_arch(),
         build_options_module_buf);
 
-      memset     (&md5_ctx, 0, sizeof (md5_ctx_t));
-      md5_init   (&md5_ctx);
-      md5_update (&md5_ctx, (u32 *) device_name_chksum, dnclen);
-      md5_final  (&md5_ctx);
-
-      snprintf (device_name_chksum, HCBUFSIZ_TINY, "%08x", md5_ctx.h[0]);
-
       /**
        * kernel source filename
        */
@@ -15213,6 +15206,48 @@ int backend_session_begin (hashcat_ctx_t *hashcat_ctx)
 
         return -1;
       }
+
+      memset     (&md5_ctx, 0, sizeof (md5_ctx_t));
+      md5_init   (&md5_ctx);
+      md5_update (&md5_ctx, (u32 *) device_name_chksum, dnclen);
+
+      /**
+       * kernel source chksum
+       *
+       * The cache key used to cover the device and the build options only, so an
+       * updated .cl file kept executing the program that had been compiled from
+       * an older revision. That is exactly how a stale m22000-pure.cl binary
+       * surfaced as clSetKernelArg(): CL_INVALID_ARG_INDEX on Mali. Mix the
+       * kernel source content into the key so cached binaries follow the source.
+       */
+
+      HCFILE source_fp;
+
+      memset (&source_fp, 0, sizeof (source_fp));
+
+      if (hc_fopen (&source_fp, source_file, "rb") == false)
+      {
+        event_log_error (hashcat_ctx, "%s: %s", source_file, strerror (errno));
+
+        return -1;
+      }
+
+      {
+        u32 source_buf[4096];
+
+        size_t source_len;
+
+        while ((source_len = hc_fread (source_buf, 1, sizeof (source_buf), &source_fp)) > 0)
+        {
+          md5_update (&md5_ctx, source_buf, (u32) source_len);
+        }
+      }
+
+      hc_fclose (&source_fp);
+
+      md5_final  (&md5_ctx);
+
+      snprintf (device_name_chksum, HCBUFSIZ_TINY, "%08x", md5_ctx.h[0]);
 
       /**
        * kernel cached filename
