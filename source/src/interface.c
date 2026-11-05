@@ -386,6 +386,7 @@ int hashconfig_init (hashcat_ctx_t *hashcat_ctx)
       if ((adreno_optout == NULL) || (strcmp (adreno_optout, "1") != 0))
       {
         bool adreno_selected  = false;
+        bool opencl_selected  = false;
         bool vulkan_selected  = false;
 
         for (int device_idx = 0; device_idx < hashcat_ctx->backend_ctx->backend_devices_cnt; device_idx++)
@@ -403,6 +404,8 @@ int hashconfig_init (hashcat_ctx_t *hashcat_ctx)
           }
 
           if (device_param->is_opencl   == false) continue;
+
+          opencl_selected = true;
           if (device_param->device_name == NULL)  continue;
           if (strstr (device_param->device_name, "Adreno") == NULL) continue;
 
@@ -414,6 +417,18 @@ int hashconfig_init (hashcat_ctx_t *hashcat_ctx)
          * limits of the derived bit, so the preference is only applied when no
          * Vulkan device takes part in this session.
          */
+
+        if ((vulkan_selected == true) && (opencl_selected == false))
+        {
+          /**
+           * The mode 0 Vulkan program hashes one MD5 block, so it accepts at
+           * most 55 bytes. Clamping the mode limit keeps the reported kernel
+           * feature honest and rejects longer candidates instead of silently
+           * truncating them.
+           */
+
+          hashconfig->pw_max = 55;
+        }
 
         if ((adreno_selected == true) && (vulkan_selected == false))
         {
